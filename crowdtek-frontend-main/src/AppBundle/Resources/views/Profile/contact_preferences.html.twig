@@ -1,0 +1,77 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+{% block body %}
+ <!-- main body -->
+ <link rel="stylesheet" href="{{ cssPath }}intlTelInput.css" />
+ <style>
+	input.error {
+		border: 1px solid red;
+	}
+
+	label.error {
+		font-weight: normal;
+		color: red;
+	}
+</style>
+    <main role="main">
+       {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt=""> My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                    {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+
+                    <div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<!-- contact preferences -->
+							<div class="tab-pane fade show active" id="contactPreferences" role="tabpanel" aria-labelledby="contactPreferences-tab">
+								<h4 class="mb-2">Contact Preferences</h4>
+								<p class="mb-2">
+                                    Yielders will use the information you provide on this form to be in touch with you and to provide updates and marketing. Do note that opting in allows you to receive emails notifying you as soon as a new asset is live. Please let us know if you would like to hear from us:
+								</p>
+								{{ form_start(form) }}
+                            	{{ form_errors(form) }}
+								<label class="control control--checkbox chk_box">
+                                    {{ form_widget(form.gdpr_accepted) }}
+									I would like to receive marketing and latest asset updates via email from Yielders
+									<p class="mb-2 mt-2">
+										You can change your mind at any time by clicking the unsubscribe link in the footer of any email you receive from us, or by checking/unchecking the above. We always treat your information with respect. For more information about how we use your infomration please refer to our <a href="{{ path('privacy_policy') }}">Privacy Policy</a>.
+									</p>
+                                    <div class="control__indicator"></div>
+                                </label>
+
+								{{ form_end(form) }}
+							</div>
+						</div>
+					</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock %}

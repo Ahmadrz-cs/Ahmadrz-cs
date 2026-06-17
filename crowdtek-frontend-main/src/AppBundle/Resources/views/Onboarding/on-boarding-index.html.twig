@@ -1,0 +1,25 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% if authenticated %}
+    user
+{% endif %}
+
+{% if authenticated is not defined%}
+    user is not logged in
+{% endif %}

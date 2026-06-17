@@ -1,0 +1,20 @@
+{% for role in user.roles %}
+
+{% if role == 'ROLE_ANALYST' %}
+<span class="badge text-bg-info">{{ role|split('_')[1]|capitalize}}</span>
+{% elseif role == 'ROLE_OPERATIONS' %}
+<span class="badge text-bg-primary">Operations</span>
+{% elseif role == 'ROLE_FINANCIAL_OPS' %}
+<span class="badge text-bg-warning">Financial Ops</span>
+{% elseif role == 'ROLE_TECH_OPS' %}
+<span class="badge text-bg-secondary">Tech Ops</span>
+{% elseif role == 'ROLE_ADMIN' %}
+<span class="badge text-bg-dark">Admin</span>
+{% elseif role == 'ROLE_SUPER_ADMIN' %}
+<span class="badge text-bg-danger">Super Admin</span>
+{% elseif role == 'ROLE_USER' %}
+{% else %}
+<span class="badge text-bg-light">{{ role|split('_')[1]|capitalize}}</span>
+{% endif %}
+
+{% endfor %}

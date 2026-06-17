@@ -1,0 +1,12 @@
+<div class="group">
+{{ form_widget(form.firstname, {attr:{onfocus:"addListener();"}}) }}
+    <span class="highlight"></span>
+    <span class="bar"></span>
+{{  form_label(form.firstname, null, {label_attr:{style:"top: -15px;"}}) }}
+</div>
+<div class="group" style="margin-bottom: 6px;">
+{{   form_widget(form.lastname) }}
+    <span class="highlight"></span>
+    <span class="bar"></span>
+{{  form_label(form.lastname, null, {label_attr:{style:"top: -15px;"}}) }}
+</div>

@@ -1,0 +1,26 @@
+# Need at least 1 fairly large investment for testing relisting (fees) on low wallet balance
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseInvestment.yaml
+
+App\Entity\Investment:
+    investment{anne_royalway1} (extends investment_base):
+        user: "@useranne"
+        offering: "@offeringroyalway"
+        orgPricePerShare: "@offeringroyalway->pricePerShare"
+        share_amount: 1015
+
+
+App\Entity\InvestmentStatus:
+    investmentstatusanne_{royalway1} (extends investmentstatus_base):
+
+App\Entity\InvestmentDocuments:
+    idoc_anne_royalway{1}:
+        investment: "@investmentanne_royalway<current()>"
+        document: "@sharecert_anne_royalway<current()>"
+
+
+App\Entity\Document:
+    sharecert_anne_royalway{1} (extends doc_certificate):

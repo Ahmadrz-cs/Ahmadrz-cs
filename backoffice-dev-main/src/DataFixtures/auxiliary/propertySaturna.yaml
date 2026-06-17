@@ -1,0 +1,72 @@
+# This is Quayside B
+# Unique trait - sibling asset to Neptunis
+# Notes - featured
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{saturna} (extends asset_base):
+        name: Saturna Wharf - Bristol
+        alternateName: Bristol Wharf Apts. C
+        briefDescription: Newly renovated apartments set in a classical quayside building.
+        pricePerShare: 1.88
+        amountOfShares: 150000
+        companyNumber: SPVAF00002
+        netProjectedYield: '0.0498'
+        netProjectedIncome: '14043'
+        createdAt: "<dateTimeBetween('-3 months', '-2 months')>"
+        termStart: "@self->createdAt"
+        featured: 1
+
+App\Entity\AssetAddress:
+    assetaddress{saturna} (extends assetaddress_base):
+        address1: Bristol Harbour
+        address2: 30 Wharf Tides
+        city: Bristol
+        postCode: BR2 9TF
+        longitude: -2.600290
+        latitude: 51.430352
+
+App\Entity\AssetMember:
+    assetmember{saturna} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{saturna_aoa, saturna_im}:
+        asset: "@assetsaturna"
+        document: "@doc<current()>"
+    assetdoc{saturna_logo}:
+        asset: "@assetsaturna"
+        document: "@doc<current()>"
+    assetdoc{saturna_calc}:
+        asset: "@assetsaturna"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{saturna} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 4.98
+        grossProjectReturn: 26.64
+        isFeatured: true
+
+App\Entity\OfferingDocuments:
+    offeringdoc{saturna_calc}:
+        offering: "@offeringsaturna"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{saturna_aoa} (extends doc_aoa):
+    doc{saturna_im} (extends doc_im):
+    doc{saturna_logo} (extends doc_logo):
+        description: "Quayside apartment showcase"
+        filename: "quaysidestock.jpg"
+    doc{saturna_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{saturna} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

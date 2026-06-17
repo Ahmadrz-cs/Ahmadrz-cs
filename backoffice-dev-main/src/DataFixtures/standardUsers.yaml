@@ -1,0 +1,199 @@
+include:
+    - templates/baseUsers.yaml
+    - templates/baseDocument.yaml
+
+# dynamic parameters require Alice V3 (currently broken)
+parameters:
+    walletUser_ben: "user_m_01HW3FB1XG2KGBYMCKKV3Z1F7V"
+    wallet_ben: "wlt_m_01HW3FBRBZF8ZMEF8WHPRA21NZ"
+    walletUser_jim: "user_m_01HW3FDNVC6EG3QWBESED863WC"
+    wallet_jim: "wlt_m_01HW3FF80J5F76J2SS02DQMS7H"
+    walletUser_holly: "user_m_01HW3FKFC90176MJWG07KNDXEG"
+    wallet_holly: "wlt_m_01HW3FKZR6PBD5PX8818D5GP04"
+    walletUser_freya: "user_m_01HW3FTVM61RG7BXD03R9BK40C"
+    wallet_freya: "wlt_m_01HW3FVCWQE69TDTED8MXZZPJ1"
+    walletUser_sally: "user_m_01HW3EZ05T54PYM5E5RBDJJVHA"
+    wallet_sally: "wlt_m_01HW3EZZB7JG7ZZ96VAKCSFMAQ"
+
+App\Entity\User:
+    user{ben} (extends user_male):
+        mangoPayUserId: "user_m_01HW3FB1XG2KGBYMCKKV3Z1F7V"
+        mangoPayWalletId: "wlt_m_01HW3FBRBZF8ZMEF8WHPRA21NZ"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        # Note that on Mangopay, the users were enrolled with SCA around Mid-June 2025
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{jim} (extends user_male):
+        mangoPayUserId: "user_m_01HW3FDNVC6EG3QWBESED863WC"
+        mangoPayWalletId: "wlt_m_01HW3FF80J5F76J2SS02DQMS7H"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{holly} (extends user_female):
+        mangoPayUserId: "user_m_01HW3FKFC90176MJWG07KNDXEG"
+        mangoPayWalletId: "wlt_m_01HW3FKZR6PBD5PX8818D5GP04"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{freya} (extends user_female):
+        mangoPayUserId: "user_m_01HW3FTVM61RG7BXD03R9BK40C"
+        mangoPayWalletId: "wlt_m_01HW3FVCWQE69TDTED8MXZZPJ1"
+        isVIP: 1
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        phone2: "0257887555123"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{sally} (extends user_female):
+        username: "salesforce.sync@test.yielderverse.co.uk"
+        mangoPayUserId: "user_m_01HW3EZ05T54PYM5E5RBDJJVHA"
+        mangoPayWalletId: "wlt_m_01HW3EZZB7JG7ZZ96VAKCSFMAQ"
+        firstname: "Sally"
+        lastname: "Forsyth"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{anne} (extends user_female):
+        mangoPayUserId: "user_m_01HW3G4VDF6KE99EZNDQ6FV5BJ"
+        mangoPayWalletId: "wlt_m_01HW3G5FMS1H4AGGARZ6ETTXQD"
+        firstname: "Anne"
+        lastname: "Neuer"
+        middlename: "Low Wallet Balance"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{regcomplete} (extends user_random):
+        kycProfile: null
+    user{isblocked} (extends user_random):
+        enabled: false
+        kycProfile: "@kycProfile<current()>"
+
+App\Entity\Investor:
+    userinvestor{ben, holly, jim, sally, anne, regcomplete, isblocked} (extends investors_base):
+    userinvestor{freya, regcomplete} (extends investors_base):
+        wordsOfOwn: "Top yielder application comments"
+
+App\Entity\Status:
+    userstatus{ben, holly, jim, freya, anne} (extends userstatus_base):
+    userstatus{sally} (extends userstatus_base):
+        isRegCompleted: false
+        isApproved: false
+        lifecycleStatus: "email_verified"
+    userstatus{regcomplete} (extends userstatus_base):
+        approvedOn: null
+        isApproved: false
+        lifecycleStatus: "registration_complete"
+    userstatus{isblocked} (extends userstatus_base):
+        isBlocked: true
+        lifecycleStatus: "blocked"
+
+App\Entity\UserSecurity:
+    # Disable email totp for ben as it is the most commonly used one
+    usersecurity{ben} (extends usersecurity_base):
+        mfaEmail: false
+    usersecurity{holly, jim, freya, sally, anne, regcomplete, isblocked} (extends usersecurity_base):
+
+App\Entity\Address:
+    useraddress{ben, holly, jim, freya, sally, anne}:
+        user: "@user<current()>"
+        address1: "<numberBetween(1,128)> <streetName()>"
+        city: "<city()>"
+        postCode: "<postcode()>"
+        country: "GB"
+
+App\Entity\UserDocument:
+    userdoc{ben, jim, holly, freya, sally, anne}:
+        user: "@user<current()>"
+        document: "@doc_poi<current()>"
+    userdoc_{poa, poc}:
+        user: "@userben"
+        document: "@doc_<current()>"
+
+App\Entity\Document:
+    doc_poi{ben, jim, holly, freya, sally, anne} (extends doc_poi):
+    doc_poa (extends doc_pdf):
+        tag: "proof_of_address"
+    doc_poc (extends doc_pdf):
+        tag: "proof_of_company"
+
+App\Entity\UserCustomFields:
+    usercustomfield{sally}:
+        user: "@user<current()>"
+        fieldKey: "salesforce_id"
+        fieldValue: "003g500000EhLxCAAV"
+    usercustomfield{jim}:
+        user: "@user<current()>"
+        fieldKey: "fatca"
+        fieldValue: "1"
+
+App\Entity\ContegoScore:
+    contegoscore{ben, jim, holly, freya, sally, anne} (extends contegoscore_base):
+
+App\Entity\ContegoLog:
+    contegolog{ben} (extends contegolog_base):
+
+App\Entity\KycProfile:
+    kycProfile{ben, holly, jim, freya, sally, anne} (extends kycProfile_verified):
+    kycProfile{isblocked} (extends kycProfile_failed):
+
+App\Entity\KycReport:
+    kycReportMangopayFail{ben} (extends kycReport_mangopay):
+        __construct:
+            - "@user<current()>"
+            - "mangopay"
+            - "90975081"
+            - "Identity proof"
+            - "LIGHT"
+            - "0"
+            - false
+            - "<dateTimeBetween('-4 weeks', '-3 weeks')>"
+            - "natural user"
+    kycReportMangopay{ben} (extends kycReport_mangopay):
+    kycReportContego{ben} (extends kycReport_contego):
+    kycReportContego2{ben} (extends kycReport_contego):
+
+App\Entity\KycReview:
+    kycReviewOnboardingFail{ben} (extends kycReview_onboarding):
+        decision: false
+        notes: "Example failed kyc review decision"
+    kycReviewOnboarding{ben, anne} (extends kycReview_onboarding):
+    kycReviewOnboarding{freya} (extends kycReview_onboarding):
+    kycReviewVip{freya} (extends kycReview_vip):
+    kycReviewRecurringOpen{jim} (extends kycReview_recurring):
+        status: <(App\Entity\Enum\KycReviewStatus::Open)>
+        decision: null
+        completedAt: null
+    kycReviewAdhocOpen{freya} (extends kycReview_adhoc):
+        status: <(App\Entity\Enum\KycReviewStatus::Open)>
+        decision: null
+        completedAt: null
+
+App\Entity\OnboardingProfile:
+    onboardingProfile{ben, holly, sally, anne} (extends onboardingProfile_complete):
+    onboardingProfile{jim} (extends onboardingProfile_complete):
+        category: "sophisticated"
+    onboardingProfile{freya} (extends onboardingProfile_complete):
+        category: "hnw"
+
+App\Entity\UserStatusLog:
+    userstatuslog_active_{ben, holly, jim, freya, sally, anne, regcomplete, isblocked} (extends userstatuslog_active):
+        occuredAt: "@userstatus<current()>->emailValidatedOn"
+    userstatuslog_closed_{isblocked} (extends userstatuslog_closed):
+        occuredAt: "<dateTimeBetween('-2 weeks', '-2 days')>"

@@ -1,0 +1,37 @@
+include:
+    - ../standardUsers.yaml
+    - investmentsRetailHolly.yaml
+    - ../templates/basePayout.yaml
+
+App\Entity\Payout:
+    payout_holly_lodge1{0..17} (extends payout_base):
+        investment: "@investmentholly_lodge1"
+        asset: "@assetlodge"
+        creditedUser: "@userholly"
+        shareholding: "@investmentholly_lodge1->share_amount"
+        payoutAmount: "<(6.02 * 410 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_holly_royalway1{0..4} (extends payout_base):
+        asset: "@assetroyalway"
+        creditedUser: "@userholly"
+        shareholding: "@investmentholly_royalway1->share_amount"
+        payoutAmount: "<(5.87 * 1200 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_holly_saturna{0..1} (extends payout_base):
+        asset: "@assetsaturna"
+        creditedUser: "@userholly"
+        shareholding: "@investmentholly_saturna1->share_amount"
+        payoutAmount: "<(4.98 * 600 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_holly_saturna{3..9} (extends payout_base):
+        asset: "@assetsaturna"
+        creditedUser: "@userholly"
+        shareholding: "@investmentholly_saturna1->share_amount"
+        payoutAmount: "<(4.98 * 600 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_holly_royalglade_dividend{1..12} (extends payout_base):
+        asset: "@assetroyalglade"
+        creditedUser: "@userholly"
+        shareholding: "4833"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        payoutAmount: "<(5.17 * 5461 / 1200)>"

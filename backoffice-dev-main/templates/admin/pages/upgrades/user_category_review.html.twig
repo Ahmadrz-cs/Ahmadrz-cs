@@ -1,0 +1,81 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_upgrade_mangopay_user_category' %}
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Upgrade Mangopay User Category' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% if issues is not empty %}
+		{% embed 'admin/components/_bordered_section.html.twig' with {
+			"sectionId": 'upgrade-issues',
+			"sectionTitle": 'Upgrade Issues',
+		} %}
+			{% block sectionContent %}
+				{{ include('admin/components/_kv_table.html.twig', {
+					tableId: "bank-account-info",
+					title: "Bank Account Info",
+					headers: {
+						k: "User Identifier",
+						v: "Issue Encountered",
+					},
+					valueDefaultStyle: "tw-font-mono",
+					kv: issues
+				}) }}
+			{% endblock %}
+		{% endembed %}
+	{% endif %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'upgrade-status',
+        "sectionTitle": 'Upgrade Status',
+    } %}
+		{% block sectionContent %}
+		{% embed 'admin/components/_alert.html.twig' with {
+			variant: "info",
+		} %}
+			{% block message %}Search for users whose <code class="fw-bold">walletUserVersion</code> is still on "Original". Note that users without MangopayUserId cannot be upgraded{% endblock message %}
+		{% endembed %}
+		<div class="row g-3">
+			{{ include('admin/components/stat.html.twig', {
+                key: 'Total Users with Mangopay User Ids',
+                value: sitrep|reduce((carry, v) => carry + v),
+            }) }}
+			{{ include('admin/components/stat.html.twig', {
+                key: 'Original Users',
+                value: sitrep.0|default(0),
+            }) }}
+			{{ include('admin/components/stat.html.twig', {
+                key: 'UserCategory Upgraded Users',
+                value: sitrep.1|default(0),
+            }) }}
+		</div>
+		{% endblock %}
+	{% endembed %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'upgrade-config',
+        "sectionTitle": 'Configure & Apply Upgrades',
+    } %}
+		{% block sectionContent %}
+		{{ include('admin/components/_alert.html.twig', {
+			variant: "info",
+			message: "Choose a user as the starting point and how many users to upgrade at once",
+		}) }}
+		{{ form_start(form, {attr:{class:"d-flex flex-column gap-3"}}) }}
+		<section class="row">
+			<div class="col-sm-6 col-md-4">{{ form_row(form.id) }}</div>
+			<div class="col-sm-6 col-md-4">{{ form_row(form.amount) }}</div>
+		</section>
+		{{ form_rest(form) }}
+		<div>
+			<button type="submit" id="submit" class="btn btn-primary">Apply Upgrades to Selection</button>
+		</div>
+		{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

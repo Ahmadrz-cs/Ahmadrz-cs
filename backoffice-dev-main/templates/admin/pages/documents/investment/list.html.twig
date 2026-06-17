@@ -1,0 +1,59 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Documents' %}
+{% set mainHeading = 'Investment Documents List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS', app.user) %}
+    <a href="{{ path('admin_share_certificate_upload') }}" class="btn btn-dark">Share Certificate Upload Centre</a>
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_investmentdocument_index', { documentTag: 'share_certificate' }) }}" class="btn btn-light">Share Certificates</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.documentTag) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.investmentId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped" id="investmentlist_doc">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Investment</th>
+            <th>File name</th>
+            <th>File description</th>
+            <th>Tag</th>
+            <th>Has Url</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for investmentdocument in objects %}
+        <tr>
+            <td><a href="{{ path('admin_investmentdocument_edit', { id: investmentdocument.id }) }}">{{
+                    investmentdocument.id }}</a></td>
+            <td>{{ investmentdocument.investment }}</td>
+            <td><a href="{{ path('admin_investmentdocument_edit', { id: investmentdocument.id }) }}">{{
+                    investmentdocument.document.filename }}</a></td>
+            <td>{{ investmentdocument.document.description }}</td>
+            <td>{{ investmentdocument.document.tag }}</td>
+            <td>
+                {% set has_url = investmentdocument.document.documentUrl ? 'Set' : 'Missing' %}
+                {{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[has_url],
+                    value: has_url
+                }) }}
+            </td>
+            <td>{% include 'admin/pages/documents/investment/_actions.html.twig' %}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

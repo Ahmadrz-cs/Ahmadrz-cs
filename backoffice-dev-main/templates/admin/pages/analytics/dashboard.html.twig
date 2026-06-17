@@ -1,0 +1,263 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_analytics_dashboard' %}
+{% set areaHeading = 'Analytics' %}
+{% set mainHeading = 'Dashboard' %}
+
+{% block page_content %}
+
+<section class="row">
+
+    <div class="col-12 mb-4">
+        <a class="btn btn-secondary" href="{{ path('admin_analytics_investments') }}">Investments Visualisation</a>
+        <a class="btn btn-secondary" href="{{ path('admin_analytics_referrals') }}">Referrals Visualisation</a>
+    </div>
+    <h3 class="col-12 mb-4">Overview</h3>
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Resource Counts</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Resource</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resource, count in resourceCounts %}
+                <tr>
+                    <td>{{ resource|capitalize }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Yearly AUM by Investments</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Investment Count</th>
+                    <th>Investment Total</th>
+                    <th>YoY Change</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in aum %}
+                <tr>
+                    <td>{{ entry.year }}</td>
+                    <td>{{ entry.count }}</td>
+                    <td>£{{ entry.total|number_format(2, '.', ',') }}</td>
+                    <td>{{ entry.yoy|number_format(2) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    <article class="col-xl-6">
+        <h4 class="mb-2">First Party Offering Yields</h4>
+        <section class="row my-3">
+            <div class="col-md-6">
+                <h5 class="fw-bold mb-2">Overall Yield</h5>
+                <p class="mb-0">{{ normalisedYields.overallYield|number_format(3) }}%</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold mb-2">Total Offered</h5>
+                <p class="mb-0">£{{ normalisedYields.totalOffered|number_format(0) }}</p>
+            </div>
+        </section>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Offering Name</th>
+                    <th>Funding Goal</th>
+                    <th>Rental Yield</th>
+                    <th>Weighted Yield</th>
+                    <th>Overall Yield Contribution</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offering in offerings %}
+                <tr>
+                    <td>{{ offering.name }}</td>
+                    <td>£{{ offering.fundingGoal|number_format(0) }}</td>
+                    <td>{{ offering.netRentProjected|number_format(2) }}%</td>
+                    <td>{{ (normalisedYields.normalisedYields)[offering.id]|number_format(3) }}%</td>
+                    <td>{{ ((100 * (normalisedYields.normalisedYields)[offering.id]) / normalisedYields.overallYield)|number_format(2) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+
+<section class="row">
+    <h3 class="col-12 mb-4">Monthly Breakdowns</h3>
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Monthly User registrations</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>User Registrations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in userRegistrationsMonth %}
+                <tr>
+                    <td>{{ entry.year }}</td>
+                    <td>{{ entry.month }}</td>
+                    <td>{{ entry.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Monthly Relistings Count</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Relisting Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for listing in relistingOverTimeMonth %}
+                <tr>
+                    <td>{{ listing.month }}</td>
+                    <td>{{ listing.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+
+<section class="row">
+    <h3 class="col-12 mb-4">Yearly Breakdowns</h3>
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Yearly User registrations</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Month-Year</th>
+                    <th>User Registrations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in userRegistrationsYear %}
+                <tr>
+                    <td>{{ entry.year }}</td>
+                    <td>{{ entry.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    {# <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Yearly Investment Count</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Investment Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invOverTimeYear %}
+                <tr>
+                    <td>{{ inv.date }}</td>
+                    <td>{{ inv.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article> #}
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Yearly Relistings Count</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Relisting Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for listing in relistingOverTimeYear %}
+                <tr>
+                    <td>{{ listing.year }}</td>
+                    <td>{{ listing.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+
+<section class="row">
+    <h3 class="col-12 mb-4">User Breakdowns</h3>
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Unique Investor Count</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Unique Investors</th>
+                    <th>Settlement Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for investor in uniqueInvestors %}
+                <tr>
+                    <td>{{ investor.count }}</td>
+                    <td>{{ investor.year }}-{{ investor.month }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Active Investors</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Users who logged in</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in activeUsers %}
+                <tr>
+                    <td>{{ (item.year ~ '-' ~ item.month)|date("Y-M") }}</td>
+                    <td>{{ item.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    {# <article class="col-xl-4 col-sm-6">
+        <h4 class="mb-2">Users Onboarded & Have Invested</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Invested Users</th>
+                    <th>Non-Invested Users</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in onboardedInvested %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.count }}-number of users</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article> #}
+
+
+{% endblock page_content %}

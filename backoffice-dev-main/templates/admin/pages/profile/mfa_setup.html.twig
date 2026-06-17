@@ -1,0 +1,43 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_profile_mfa_manage' %}
+{% set areaHeading = 'Profile' %}
+{% set mainHeading = '2FA Setup' %}
+
+{% block page_content %}
+
+	<div class="row mb-1">
+		<div class="col-md-12">
+			<h3>Step 1: Scan QRCode with your Authenticator app</h3>
+			<img src="{{ qr_code_data_uri(mfamessage) }}"/>
+		</div>
+		<div class="col-md-12">
+			<h4>Alternatively: Manually enter the key into your Authenticator app</h4>
+			<p>
+				<small>The account name is to help you identify what app the code is for</small>
+			</p>
+			<p>Issuer:
+				<b id="mfa-issuer">Yielders</b>
+			</p>
+			<p>Account Name:
+				<b id="mfa-account">{{ app.user.username }}@backoffice</b>
+			</p>
+			<p>Your Key:
+				<b id="mfa-key">{{ mfaKey }}</b>
+			</p>
+		</div>
+		<div class="col-md-12">
+			<a href="{{ path('admin_profile_mfa_setup_totp') }}" class="btn btn-light mb-1">Generate new code</a>
+		</div>
+		<div class="col-md-12">
+			<h3>Step 2: Confirm 2FA setup with your authenticator app</h3>
+			<p>Enter a code, wait for the next code (up to 30 seconds), enter next code</p>
+			{{ form_start(form, {'action': path('admin_profile_mfa_setup_totp') }) }}
+			{{ form_row( form.code1 ) }}
+			{{ form_row( form.code2 ) }}
+			{{ form_widget( form.submit, { 'attr': {'class': 'btn-success'} } ) }}
+			{{ form_end(form) }}
+		</div>
+	</div>
+
+{% endblock page_content %}

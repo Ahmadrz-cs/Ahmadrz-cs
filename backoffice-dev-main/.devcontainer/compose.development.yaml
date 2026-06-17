@@ -1,0 +1,58 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Update 'VARIANT' to pick a version of PHP version: 8, 8.1, 8.0, 7, 7.4
+        # PHP_VERSION is defined in .env and defaults to latest PHP 8.x version
+        # Append -bookworm or -bullseye to pin to an OS version.
+        # bookworm == Debian 12
+        # trixie == Debian 13
+        VARIANT: "${PHP_VERSION:-8}-trixie"
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+    networks:
+      - net-database
+      - net-common
+    volumes:
+      - ..:/workspace:cached
+      - ./php/conf.d/development.ini:/usr/local/etc/php/conf.d/development.ini
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - net-database
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+  redis-insight:
+    image: redislabs/redisinsight:${REDIS_INSIGHT_VERSION:-latest}
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    networks:
+      - net-common
+  frankenphp-consume:
+    build:
+      context: .
+      dockerfile: frankenphp/Dockerfile
+      args:
+        PHP_VERSION: "${PHP_VERSION:-8}"
+    restart: unless-stopped
+    networks:
+      - net-database
+      - net-common
+    volumes:
+      - ..:/app # mount project files
+      - ./frankenphp/Caddyfile:/etc/caddy/Caddyfile # customised Caddyfile to change document root to web/ instead of public/
+      - ./php/conf.d/development.ini:/usr/local/etc/php/conf.d/development.ini # custom PHP config
+      - caddy_data:/data
+      - caddy_config:/config
+    # command: ["php", "bin/console", "messenger:consume", "async", "-vv", "--time-limit=3600", "--memory-limit=128M", "--limit=10"]
+    # command: ["sh", "-c", "php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=256M --limit=${WORKER_LIMIT}"]
+    command: php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=256M --limit=10
+
+networks:
+  net-database:
+  net-common:

@@ -1,0 +1,146 @@
+include:
+    - templates/baseQuestion.yaml
+
+App\Entity\Question:
+    question_set1_q1 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::ContractualNature)>
+        content: "How best is the Investment transaction described between yourself and Yielders"
+    question_set1_q2 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::FinancialLoss)>
+        content: "How best would you describe the risk associated with the investment"
+    question_set1_q3 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::IssuerFailureLoss)>
+        content: "How best would you describe the Risks associated with the investment if Yielders ceases to operate"
+    question_set1_q4 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::FscsProtection)>
+        content: "With respect to the protection of the Financial Ombudsman Service and the Financial Services Compensation Scheme (FSCS), the Yielders investment is best described as"
+    question_set1_q5 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::Illiquidity)>
+        content: "If you want to exit the investment before the end of the investment term, which of the following best describes your options, the Yielders investment is best described as"
+    question_set1_q6 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::IssuerFailureAdmin)>
+        content: "If Yielders had to close, which of the following best describes the effect it would have on my investment"
+    question_set1_q7 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::IssuerRole)>
+        content: "How best would you describe the role of Yielders in the investment process on the platform"
+    question_set1_q8 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::Diversification)>
+        content: "How best would you describe your investment strategy to minimise risk of loss"
+    question_set1_q9 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::ShareDividend)>
+        content: "How best would you describe the likelihood of receiving a regular monthly dividend"
+    question_set1_q10 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::ShareDilution)>
+        content: "How best would you describe what would happen if the SPV in which I have invested needs to raise additional cash from the investors"
+
+App\Entity\QuestionChoice:
+    choice1_{set1_q1} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I am investing in a Special Purpose Vehicle (SPV) that owns real estate"
+        correct: true
+    choice2_{set1_q1} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I am investing directly in Yielders who will invest the money on my behalf"
+    choice3_{set1_q1} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I am lending money to the SPV who must pay me back on completion of the investment term"
+
+    choice1_{set1_q2} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Investors do not lose money on Real estate ventures"
+    choice2_{set1_q2} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "All of the money I have invested could be lost"
+        correct: true
+    choice3_{set1_q2} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "All of the money I have invested is protected by a capital guarantee"
+    
+    choice1_{set1_q3} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "All of my investment will be lost as the SPV is directly linked to the survival of Yielders"
+    choice2_{set1_q3} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The investment is protected by the Financial Services Compensation Scheme"
+    choice3_{set1_q3} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I will still hold shares in the SPV and can work with fellow shareholders to try to recover my investment"
+        correct: true
+    
+    choice1_{set1_q4} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Partially covered by the FSCS (depending on the reason for the failure)"
+    choice2_{set1_q4} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Neither The Financial Ombudsman nor the FSCS will protect against poor investment performance"
+        correct: true
+    choice3_{set1_q4} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders is fully covered by the Financial Services Compensation Scheme"
+
+    choice1_{set1_q5} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can relist my shares on the platform and wait for someone to buy them from me"
+        correct: true
+    choice2_{set1_q5} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can ask Yielders to repay my investment so that I can exit the scheme"
+    choice3_{set1_q5} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can advertise my shares at a discount and attract a sale more quickly"
+    
+    choice1_{set1_q6} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "It is highly unlikely that Crowd funding platforms can fail in such a way that recovering invested cash in costly/impossible"
+    choice2_{set1_q6} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders would immediately be able to terminate all the investments and return the investors cash"
+    choice3_{set1_q6} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "An administrator will oversee a wind-down process which includes an orderly process to manage my investment to closure"
+        correct: true
+    
+    choice1_{set1_q7} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders only moves the investment funds into the SPVs and then lets Managing Agents and Tenants be responsible for the outcomes"
+    choice2_{set1_q7} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders provides advice to investors on the best properties to invest in"
+    choice3_{set1_q7} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders creates and manages the SPVs that own the properties and is responsible to ensure good governance and optimised outcomes"
+        correct: true
+    
+    choice1_{set1_q8} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I should invest all of my available net assets in the Yielders investment as there is very little risk associated with this type of investment"
+    choice2_{set1_q8} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I should invest no more than 10% of my net assets in high risk investments like those offered by Yielders and I should diversify my investment by spreading this over multiple SPVs"
+        correct: true
+    choice3_{set1_q8} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can invest more than 10% of my net assets in high risk investments like those offered by Yielders as long as I diversify my investment by spreading this over multiple SPVs"
+    
+    choice1_{set1_q9} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Monthly dividends must be paid out as the return is guaranteed"
+    choice2_{set1_q9} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Monthly dividends will always be paid out as all possible eventualities have already been predicted and taken into account"
+    choice3_{set1_q9} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Monthly dividends will only be paid depending on the ability of the SPV to ensure that it will be profitable at the end of the financial year"
+        correct: true
+    
+    choice1_{set1_q10} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders may determine that further cash should be raised from the investors in the SPV and those who do not participate in this new round of funding may get diluted"
+        correct: true
+    choice2_{set1_q10} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The SPV will never need any additional cash as all eventualities have been fully costed by Yielders"
+    choice3_{set1_q10} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders will not allow the SPV to raise any further cash and allow the SPV to fail and enter administration"
+        

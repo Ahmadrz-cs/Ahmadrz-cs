@@ -1,0 +1,6 @@
+# Properties include
+# - Asset
+# - Offering
+
+include:
+    - volume/properties.yaml

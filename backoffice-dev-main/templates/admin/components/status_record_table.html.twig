@@ -1,0 +1,41 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "status-record-section",
+    "sectionTitle": "Status Record",
+} %}
+    {% block sectionContent %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        message: "Current Status is highlighted",
+    }) }}
+    <div class="table-responsive">
+        <table class="table" id="status-record">
+            <thead>
+                <tr>
+                    <th>Status Name</th>
+                    <th>Status Applied On</th>
+                    <th>Is Status Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for place in places|default([]) %}
+                <tr class="{% if (object.lifecycleStatus == place)|default(false) %}text-bg-primary active{% endif %}">
+                    {% set placeName = place|replace({'_':' '})|title|replace({' ':''}) %}
+                    {% set placeDateField = placeName ~ 'On' %}
+                    {% set placeActiveField = 'Is' ~ placeName %}
+
+                    <td>{{ place|replace({'_':' '})|title }}</td>
+                    <td>{{ attribute(object.status, placeDateField)|default() is not empty
+                            ? attribute(object.status, placeDateField)|date()
+                            : '-' }}
+                    </td>
+                    <td>{{ attribute(object.status, placeActiveField)|default(false)
+                            ? '1'
+                            : '0' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}

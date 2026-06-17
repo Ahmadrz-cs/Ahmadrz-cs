@@ -1,0 +1,174 @@
+{% extends 'admin/pages/monthend/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    <div class="row g-3">
+
+        {% if launchTodo.walletsSet is defined %}
+            
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "wallet-warning",
+                "sectionTitle": "Missing Wallets",
+                "sectionStyle": "border rounded-3 p-4 border-warning",
+                "linkActions": [
+                    {
+                        "text": "Configure Wallets",
+                        "route": "admin_product_edit_wallets",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "This asset is missing the wallets required for full functionality.",
+                }) }}
+                <p class="mb-0">The checklist can still be used manually, but the progress tracking where available may not work properly</p>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        <div class="col-12">
+            {{ include('admin/pages/monthend/dashboard/_checklist.html.twig') }}
+        </div>
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-asset",
+                "sectionTitle": "About Asset",
+                "linkActions": [
+                    {
+                        "text": "View Asset Product",
+                        "route": "admin_product_dashboard",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'SPV Company Number',
+                        value: asset.companyNumber,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Valuation',
+                        value: '£' ~ asset.fundingGoal|number_format(2, '.', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Net Projected Income',
+                        value: asset.netProjectedIncome|format_currency('GBP'),
+                        className: 'col-sm-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Net Annual Yield',
+                        value: asset.netProjectedYield|format_number({max_fraction_digit: 3}, style: 'percent'),
+                        className: 'col-sm-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Current Shareholders',
+                        value: currentShareholders|length,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Active Shares in Circulation',
+                        value: currentShareholders|reduce((carry, v) => carry + v.shares)|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between g-3">
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Term Start',
+                            value: asset.termStart is empty ? "N/A" : asset.termStart|date("Y-m-d"),
+                        }) }}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Term End',
+                            value: asset.termEnd is empty ? "N/A" : asset.termEnd|date("Y-m-d"),
+                            className: 'text-end',
+                        }) }}
+                    </div>
+                    {% if asset.termStart is not empty and asset.investmentTerm is not empty %}
+                        {% set timeSinceLaunch = "now"|date("U") - asset.termStart|date("U") %}
+                        {% set timeStartToFinish = asset.termEnd|date("U") - asset.termStart|date("U") %}
+                        {% set timeElapsedPercent = min(100 * (timeSinceLaunch / timeStartToFinish), 100) %}
+                        {{ include('admin/components/_progress_bar.html.twig', {
+                            className: "rounded-2 mt-2",
+                            height: "1rem",
+                            progressBars: [
+                                {
+                                    label: "asset-maturity-progress",
+                                    value: timeElapsedPercent,
+                                    valueText: timeElapsedPercent|number_format(0, '.'),
+                                },
+                            ]
+                        }) }}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Term Remaining',
+                            value: asset.termRemaining ~ " months remaining",
+                            className: 'w-100',
+                        }) }}
+                    {% endif %}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "wallets",
+                "sectionTitle": "Wallets",
+                "linkActions": [
+                    {
+                        "text": "View Wallet Balances",
+                        "route": "admin_asset_wallets_manage",
+                        "params": {"asset": asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td>Hold</td>
+                                <td>{{ asset.mangoPayWalletId|default('Missing') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Settlement</td>
+                                <td>{{ asset.settlementWalletId|default('Missing') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Deposit</td>
+                                <td>{{ asset.depositWalletId|default('Missing') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Expenses</td>
+                                <td>{{ asset.expensesWalletId|default('Missing') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Tax</td>
+                                <td>{{ asset.taxWalletId|default('Missing') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Distribution</td>
+                                <td>{{ asset.distributionWalletId|default('Missing') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Treasury</td>
+                                <td>{{ asset.treasuryWalletId|default('Missing') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock dashboard_content %}

@@ -1,0 +1,50 @@
+{% set variant = variant|default("outline") %}
+{% set color = color|default("gray") %}
+{% set showIndicator = showIndicator ?? false %}
+{% set styles = "" %}
+{% set bgColor = "tw-bg-gray-50" %}
+{% set borderColor = "tw-border-gray-300" %}
+{% set iconColor = "tw-text-gray-400" %}
+
+{% if color == "gray" %}
+    {% set bgColor = "tw-bg-gray-50" %}
+    {% set borderColor = "tw-border-gray-300" %}
+    {% set iconColor = "tw-text-gray-400" %}
+{% elseif color == "red" %}
+    {% set bgColor = "tw-bg-red-50" %}
+    {% set borderColor = "tw-border-red-300" %}
+    {% set iconColor = "tw-text-red-400" %}
+{% elseif color == "amber" or color == "yellow" %}
+    {% set bgColor = "tw-bg-amber-50" %}
+    {% set borderColor = "tw-border-amber-400" %}
+    {% set iconColor = "tw-text-amber-500" %}
+{% elseif color == "green" %}
+    {% set bgColor = "tw-bg-green-50" %}
+    {% set borderColor = "tw-border-green-300" %}
+    {% set iconColor = "tw-text-green-400" %}
+{% elseif color == "blue" %}
+    {% set bgColor = "tw-bg-blue-50" %}
+    {% set borderColor = "tw-border-blue-300" %}
+    {% set iconColor = "tw-text-blue-400" %}
+{% elseif color == "blue" %}
+    {% set bgColor = "tw-bg-blue-50" %}
+    {% set borderColor = "tw-border-blue-300" %}
+    {% set iconColor = "tw-text-blue-400" %}
+{% elseif color == "fuchsia" %}
+    {% set bgColor = "tw-bg-fuchsia-50" %}
+    {% set borderColor = "tw-border-fuchsia-300" %}
+    {% set iconColor = "tw-text-fuchsia-400" %}
+{% endif %}
+
+{% if variant == "fill" %}
+    {% set styles = [bgColor]|join(' ') %}
+{% elseif variant == "outline" %}
+    {% set styles = [borderColor, 'tw-border', 'tw-border-solid']|join(' ') %}
+{% elseif variant == "fillOutline" %}
+    {% set styles = [bgColor, borderColor, 'tw-border', 'tw-border-solid']|join(' ') %}
+{% endif %}
+
+<span class="tw-inline-flex tw-gap-1 tw-items-center tw-rounded-md tw-px-2 tw-py-1 tw-text-xs tw-font-medium tw-text-gray-700 {{ styles }} {{ appendStyle|default() }}"
+    {% if fieldName ?? false %}data-field-name="{{ fieldName }}"{% endif %}
+>{%- if icon ?? false -%}<i class="me-1 fa-solid fa-fw {{ icon }} {{ iconColor }}"></i>{%- endif -%}
+{%- if showIndicator ?? false -%}{{ include('admin/components/_indicator.html.twig', {color: color, size: "sm"}) }}{%- endif -%}{{ text }}</span>

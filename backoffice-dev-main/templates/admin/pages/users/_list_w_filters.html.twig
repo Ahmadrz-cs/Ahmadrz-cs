@@ -1,0 +1,137 @@
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% embed 'admin/layouts/embeddable_filtered_list.html.twig' with options|default({}) %}
+    {% block createActions %}
+        {% for link in links|default([])|filter(v => is_granted(v.roleRequired|default('ROLE_ANALYST'), app.user)) %}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: link
+            }) }}
+        {% endfor %}
+    {% endblock %}
+    {% block filterPresets %}
+
+        {% if not (kycOnlyPresets ?? false) %}
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ 
+                    lifecycleStatus: ['email_not_verified', 'email_verified'] 
+                })
+            ) }}" class="btn btn-light">Not Fully Onboarded</a>
+            {# <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ 
+                    lifecycleStatus: ['approved'],
+                    hasInvestments: 0, 
+                })
+            ) }}" class="btn btn-light">Onboarded but not yet invested</a> #}
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ corporateInvestor: 1 })
+            ) }}" class="btn btn-light">Is Corporate Investor</a>
+        {% endif %}
+
+        {% if not (vipOnlyPresets ?? false) %}
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ 
+                    ob_step: 5,
+                    hasKycProfile: 1,
+                    hasVerifiedBy: 0,
+                    lifecycleStatus: [
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_EMAIL_VERIFIED'),
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_REGISTRATION_COMPLETE'),
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_APPROVED'),
+                    ]
+                })
+            ) }}" class="btn btn-light">Pending Manual KYC Review</a>
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ 
+                    ob_step: 5,
+                    hasKycProfile: 1,
+                    hasVerifiedBy: 1,
+                    verified: 0,
+                    lifecycleStatus: [
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_EMAIL_VERIFIED'),
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_REGISTRATION_COMPLETE'),
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_APPROVED'),
+                    ]
+                })
+            ) }}" class="btn btn-light">Failed KYC Review</a>
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ 
+                    ob_step: 5,
+                    hasKycProfile: 0,
+                    lifecycleStatus: [
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_EMAIL_VERIFIED'),
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_REGISTRATION_COMPLETE'),
+                        constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_APPROVED'),
+                    ]
+                })
+            ) }}" class="btn btn-light">Missing KYC Profile</a>
+        {% endif %}
+
+        {% if not (onboardingOnlyPresets ?? false) %}
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ isVIP: 1 })
+            ) }}" class="btn btn-light">Current Top Yielders</a>
+            <a href="{{ path(
+                app.request.attributes.get('_route'),
+                app.request.attributes.get('_route_params')|merge({ 
+                    isVIP: 0,
+                    'wordsOfOwn': 1,
+                })
+            ) }}" class="btn btn-light">Top Yielder Applications</a>
+        {% endif %}
+    {% endblock %}
+
+    {% block collapsibleFilters %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.username) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.email) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.name) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.phoneNumber) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.referralCode) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.isVIP) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.ob_step) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.wordsOfOwn) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.gender) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.corporateInvestor) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.companyName) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.mangoPayUserId) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.mangoPayWalletId) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasInvestments) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasManagedUsers) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasKycProfile) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasVerifiedBy) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.verified) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasOnboardingProfile) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasMangoPayUserId) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasMangoPayWalletId) }}</div>
+    {% endblock %}
+
+    {% block collapsibleFiltersExpandedChoice %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.status) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.lifecycleStatus) }}</div>
+    {% endblock %}
+
+    {% block collapsibleFiltersRange %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+    {% endblock %}
+
+    {% block table %}
+        {{ include('admin/components/users/_list_table.html.twig', {
+            showDirection: true,
+            objects: objects,
+            showFields: showFields|default([
+                'name',
+                'contactEmail',
+                'createdAt',
+                'status',
+            ])
+        }) }}
+    {% endblock %}
+{% endembed %}

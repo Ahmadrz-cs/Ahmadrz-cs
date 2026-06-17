@@ -1,0 +1,185 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Shareholdings' %}
+{% set mainHeading = 'Asset Shares in Circulation' %}
+
+{% set capitalDiffToColor = {
+    0: 'gray',
+    'profit': 'green',
+    'loss': 'red',
+} %}
+
+{% block page_content %}
+
+    <section class="row g-3">
+        <div class="col-md-6">
+            <article class="rounded-3 border p-4">
+                <h5 class="fw-bold">Shares in Circulation</h5>
+                <p>
+                    The table below shows <b>active</b> assets. This means there's at least 1 investment in the asset.
+                    For active assets on the platform, the following should be true:
+                </p>
+                <pre class="fw-bold">Total Shares for Asset == Shares In Circulation</pre>
+                <p>
+                    Any differences mean:
+                </p>
+                <ul class="mb-0">
+                    <li>
+                        <span class="badge text-bg-success">Normal</span>
+                        The asset is still prefunding
+                    </li>
+                    <li>
+                        <span class="badge text-bg-success">Normal</span>
+                        There are pending capital repayments (i.e. more in circulation than total)
+                    </li>
+                    <li>
+                        <span class="badge text-bg-warning">Warning</span>
+                        There are historical rounding errors (i.e. handful of shares missing)
+                    </li>
+                    <li>
+                        <span class="badge text-bg-warning">Warning</span>
+                        Shares are still being tracked offline and need to be added via the CMS
+                    </li>
+                </ul>
+            </article>
+        </div>
+        <div class="col-md-6">
+            <article class="rounded-3 border p-4">
+                <h5 class="fw-bold">External Commitments</h5>
+                <p>
+                    Historically, external commitments were used to represent prefunder's investments. The table below shows
+                    both the monetary amount and the exact equivalent in shares.
+                </p>
+                <p>
+                    External commitments should be 0 if everything is working properly and being tracked online. If it is
+                    non-zero, some investments are still being tracked offline and should be retroactively added via the
+                    CMS.
+                </p>
+                <p>
+                    <span class="badge text-bg-warning">Warning</span>
+                    If external commitments (shares) is not a whole number, it may indicate a serious problem that
+                    can impact the ability to close funding for the asset.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <div class="table-responsive">
+        <table class="table table-striped" id="share-circulation-list">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th class="text-end">Total Shares for Asset</th>
+                    <th class="text-end">Shares In Circulation</th>
+                    <th class="text-end">External Commitments (£)</th>
+                    <th class="text-end">External Commitments (Shares)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in shareholdings %}
+                <tr>
+                    <td><a href="{{ path('admin_asset_edit', { id: entry.assetId }) }}">#{{ entry.assetId }} // {{ entry.asset }}</a></td>
+                    <td class="text-end tw-tabular-nums text-nowrap">{{ assets[entry.assetId].amountOfShares|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sharesInCirculation|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums text-nowrap">{{ (externalCommits[entry.assetId].monetary|default(0))|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums text-nowrap">{{ (externalCommits[entry.assetId].shares|default(0))|number_format(2, '.', ',') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'trade-holdings',
+        "sectionTitle": 'Trade Holdings',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Active Assets',
+                value: tradeHoldings|filter(h => h.shares > 0)|length|number_format(0),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Active Asset Value',
+                value: (tradeHoldings|filter(h => h.shares > 0)|reduce((carry, h) => carry + h.value * -1, 0))|format_currency('GBP'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Cumulative Capital Gain-Loss',
+                value: (tradeHoldings|filter(h => h.shares <= 0)|reduce((carry, h) => carry + (h.value), 0))|format_currency('GBP'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Trades',
+                value: tradeHoldings|reduce((carry, h) => carry + h.trades, 0)|number_format(0),
+            }) }}
+        </div>
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "If there are more trades than orders, this is from multiple-trades being required to fulfill orders. Only market trading orders are counted. Initial (first-party) orders and other internal process orders are not counted.",
+        }) }}
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Asset Id</th>
+                        <th>Asset Name</th>
+                        <th class="text-end">Asset Guide Price</th>
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Orders</th>
+                        <th class="text-end">Sells</th>
+                        <th class="text-end">Buys</th>
+                        {# <th class="text-end">Average Share Price (4dp)</th> #}
+                        <th class="text-end">Asset Declared Shares</th>
+                        <th class="text-end">Legacy Shares Circulating</th>
+                        <th class="text-end">Trade Shares Circulating</th>
+                        <th class="text-end">Buy Value</th>
+                        <th class="text-end">Sell Value</th>
+                        <th class="text-end">Net Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in tradeHoldings %}
+                    
+                    
+                    {% set capitalDiffState = 0 %}
+                    {% if entry.shares > 0 %}
+                        {% set averageSharePrice = entry.value / entry.shares %}
+                    {% else %}
+                        {% if entry.value > 0 %}{% set capitalDiffState = 'profit' %}{% endif %}
+                        {% if entry.value < 0 %}{% set capitalDiffState = 'loss' %}{% endif %}
+                    {% endif %}
+                    
+                    <tr>
+                        <td><a href="{{ path('admin_product_shareholders', { id: entry.assetid }) }}">{{ entry.assetid }}</a></td>
+                        <td>{{ assets[entry.assetid].name }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ assets[entry.assetid].pricePerShare|format_currency('GBP') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.trades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.orders|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sell_orders|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buy_orders|number_format(0, '.', ',') }}</td>
+                        {# <td class="text-end tw-tabular-nums text-nowrap">£{{ averageSharePrice|default(0)|number_format(4, '.', ',') }}</td> #}
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ assets[entry.assetid].amountOfShares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{% if entry.assetid in shareholdings|keys %}
+                        {{ shareholdings[entry.assetid].sharesInCirculation|number_format(0, '.', ',') }}{% else %}0{% endif %}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: entry.shares == 0 ? 'gray' : 'blue',
+                            value: entry.shares|number_format(0, '.', ','),
+                            appendStyle: 'justify-content-end',
+                            indicatorPosition: 'right' }) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buy_value|format_currency('GBP') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sell_value|format_currency('GBP') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: capitalDiffToColor[capitalDiffState],
+                            value: (entry.shares > 0 ? entry.value|abs : entry.value)|format_currency('GBP'),
+                            appendStyle: 'justify-content-end',
+                            indicatorPosition: 'right' }) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

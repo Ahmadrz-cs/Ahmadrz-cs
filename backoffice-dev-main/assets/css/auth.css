@@ -1,0 +1,142 @@
+@font-face {
+	font-family: "DM Sans";
+	src: url("../fonts/DMSans-VariableFont_opsz,wght.woff2") format("woff2");
+	font-display: swap;
+}
+@font-face {
+	font-family: "DM Sans Italic";
+	src: url("../fonts/DMSans-Italic-VariableFont_opsz,wght.woff2") format("woff2");
+	font-display: swap;
+}
+
+:root {
+  --primary: #0C6953;
+  --secondary: #B3E67D;
+  --success: #28a745;
+  --info: #68DAC0;
+  --warning: #ffc107;
+  --danger: #c93939;
+  --light: #f7f7f7;
+  --dark: #e9ecef;
+  --font-family-sans-serif: "DM Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  font-size: 16px;
+}
+
+
+/* Overrides */
+
+.btn, .form-group label {
+  font-weight: 500;
+}
+
+/* Forms */
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  font-size: .85rem;
+}
+
+.form-control {
+  border: solid 2px #e8ebef;
+  padding: .75rem;
+  height: auto;
+}
+
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: var(--info);
+  outline: 0;
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(108, 188, 182, 0.25);
+          box-shadow: 0 0 0 0.2rem rgba(108, 188, 182, 0.25);
+}
+
+.input-group .btn {
+  border: solid 2px #e8ebef;
+  padding: .75rem .9rem;
+  height: auto;
+}
+
+.input-group .btn:focus {
+  color: #495057;
+  border-color: var(--info);
+  outline: 0;
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(108, 188, 182, 0.25);
+          box-shadow: 0 0 0 0.2rem rgba(108, 188, 182, 0.25);
+}
+
+/* Buttons */
+
+[type=button], [type=reset], [type=submit], button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary.focus {
+  color: #fff;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  filter: brightness(116%);
+}
+
+.btn-primary:focus, .btn-primary.focus {
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(97, 165, 161, 0.5);
+          box-shadow: 0 0 0 0.2rem rgba(97, 165, 161, 0.5);
+}
+
+.btn-primary.disabled, .btn-primary:disabled {
+  color: #fff;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active,
+.show > .btn-primary.dropdown-toggle {
+  color: #fff;
+  filter: saturate(-50%);
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(97, 165, 161, 0.5);
+          box-shadow: 0 0 0 0.2rem rgba(97, 165, 161, 0.5);
+}
+
+.btn-link {
+  color: rgba(0, 0, 0, 0.87);
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.btn-link:focus, .btn-link.focus {
+  text-decoration: underline;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.btn-link:disabled, .btn-link.disabled {
+  filter: saturate(-50%);
+  pointer-events: none;
+}

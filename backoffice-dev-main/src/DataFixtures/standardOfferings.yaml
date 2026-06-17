@@ -1,0 +1,46 @@
+include:
+    - templates/baseOffering.yaml
+    - templates/baseDocument.yaml
+
+App\Entity\Offering:
+    offering{1} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+    offering{2} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        isFeatured: 1
+    offering{3} (extends offering_base):
+        asset: '@asset<current()>'
+        name: '@asset<current()>->name'
+        pricePerShare: '@asset<current()>->pricePerShare'
+        lifecyclestatus: 'draft'
+    offering{4} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        offeringTerm: 3
+        pricePerShare: "@asset<current()>->pricePerShare"
+        __calls:
+            - setCreatedAt: ["<dateTimeBetween('-3 months', '-3 months')>"]
+    offering{5} (extends offering_base):
+        asset: '@asset1'
+        name: 'High share price offering 600k'
+        pricePerShare: '600000'
+        fundingGoal: '$pricePerShare'
+        lifecyclestatus: 'published'
+    offering{draft, submitted, rejected, approved, restricted, closed, settled, cancelled} (extends offering_base):
+        asset: "@asset1"
+        name: "@asset1->name"
+        pricePerShare: "@asset1->pricePerShare"
+        lifecyclestatus: "<current()>"
+
+App\Entity\OfferingDocuments:
+    offeringdoc{1..2}:
+        offering: "@offering<current()>"
+        document: "@odoc<current()>"
+
+App\Entity\Document:
+    odoc{1..2} (extends doc_calculations):
+        description: "Example offering document"

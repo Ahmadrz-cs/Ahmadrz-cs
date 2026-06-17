@@ -1,0 +1,57 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set areaHeading = 'Direct Debits' %}
+{% set mainHeading = 'All Direct Debits' %}
+{% set maturityLabel = 'legacy' %}
+
+{% block page_content %}
+
+	<div>
+		<a href="{{ path('direct_debit_payins') }}" class="btn btn-success">Due Direct Debits</a>
+		<a href="{{ path('direct_debit_payins_settled') }}" class="btn btn-success">Settled Direct Debits</a>
+	</div>
+	<div class="table-responsive">
+		<table class="table table-striped datatable " id="direct-debit-list">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>User</th>
+					<th>Active</th>
+					<th>MangoPay Status</th>
+					<th>MangoPay Result Code</th>
+					<th>Amount (£)</th>
+					<th>Last Settlement Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for directDebit in directDebits %}
+					{% set directDebitMandateId = directDebit.mangopayMandateId %}
+					<tr>
+						<td>{{ directDebit.id }}</td>
+						<td>{{ directDebit.user }}</td>
+						{% if directDebit.directDebitActive == true  %}
+							<td>
+								<span class="badge text-bg-success">Active</span>
+							</td>
+						{% else %}
+							<td>
+								<span class="badge text-bg-warning">Paused</span>
+							</td>
+						{% endif %}
+						<td>{{ attribute(status, directDebitMandateId) }}</td>
+						<td>{{ attribute(statusCode, directDebitMandateId) }}</td>
+						<td>{{ directDebit.amount|divide_money }}</td>
+						{% if directDebit.lastSettlementDate is not null  %}
+							<td>{{ directDebit.lastSettlementDate|date('d-m-Y') }}</td>
+						{% else %}
+							<td>
+								-
+							</td>
+						{% endif %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+{% endblock page_content %}

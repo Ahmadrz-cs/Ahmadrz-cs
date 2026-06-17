@@ -1,0 +1,79 @@
+{% set totalConfigured = transferOrder.transfers|reduce((carry, v) => carry + v.amount)|round(2) %}
+{% set remainingToConfigure = transferOrder.targetTotal|default(0) - totalConfigured %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "transfers-summary",
+    "sectionTitle": "Transfers Summary",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% if remainingToConfigure > 0 %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            title: "Configuration Incomplete",
+            message: "There is still gross income left to process. Continue configuring more transfers or increase the amounts in existing transfers.",
+        }) }}
+    {% elseif remainingToConfigure < 0 %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Insufficient Balance",
+            message: "There is not enough gross income to cover the configured transfers. Remove some transfers or reduce the amounts in existing transfers.",
+        }) }}
+    {% else %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "success",
+            title: "Configuration Complete",
+            message: "All gross income has been configured for processing. You should finish the setup and review the transfers configured.",
+        }) }}
+    {% endif %}
+
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Transfer from Wallet',
+            value: 'Deposit',
+            className: 'col-sm-6 col-md-3 col-xl-6'
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Completion Progress (%)',
+            value: (100 * totalConfigured / (transferOrder.targetTotal != 0 ? transferOrder.targetTotal : 1))|number_format(2, '.', ','),
+            className: 'col-sm-6 col-md-3 col-xl-6'
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Total Configured (£)',
+            value: totalConfigured|number_format(2, '.', ','),
+            className: 'col-sm-6 col-md-3 col-xl-6'
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Total to Process (£)',
+            value: transferOrder.targetTotal|default(0)|number_format(2, '.', ','),
+            className: 'col-sm-6 col-md-3 col-xl-6'
+        }) }}
+    </div>
+    <div class="table-responsive">
+        <table class="table" id="transfers-list">
+            <thead>
+                <tr>
+                    {# <th>Transfer From</th> #}
+                    <th>Transfer To</th>
+                    <th>Description</th>
+                    <th class="text-end">Amount (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transferRequest in transfers|default(transferOrder.transfers) %}
+                    <tr data-object-id="{{ transferRequest.id }}">
+                        {# <td data-field="debitWalletId">{{ walletIdMap[transferRequest.debitWalletId]|default('Invalid')|capitalize }}
+                            <br>({{ transferRequest.debitWalletId }})</td> #}
+                        <td data-field="creditWalletId">{{ walletIdMap[transferRequest.creditWalletId]|default('Invalid')|capitalize }}
+                            {# <br>({{ transferRequest.creditWalletId }}) #}
+                            </td>
+                        <td data-field="description">{{ transferRequest.description }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}

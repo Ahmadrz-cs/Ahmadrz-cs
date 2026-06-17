@@ -1,0 +1,170 @@
+# Fairly standard retail asset
+
+include:
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_spa_demo3_1: 496
+
+App\Entity\TradeOrder:
+    # Leamington Spa
+    buy_order_spa_{demo3_1} (extends trade_order_invest):
+        asset: "@assetspa"
+        user: "@userdemo3"
+        numberOfShares: 8701
+        pricePerShare: "@assetspa->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -26 months', 'last thursday of -26 months')>"
+        createdBy: "$user"
+    buy_order_spa_{demo3_2} (extends trade_order_invest):
+        asset: "@assetspa"
+        user: "@userdemo3"
+        numberOfShares: 6913
+        pricePerShare: "@assetspa->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -25 months', 'last thursday of -25 months')>"
+        createdBy: "$user"
+    buy_order_spa_{demo4_1} (extends trade_order_invest):
+        asset: "@assetspa"
+        user: "@userdemo4"
+        numberOfShares: 84386
+        pricePerShare: "@assetspa->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -20 months', 'last thursday of -20 months')>"
+        createdBy: "$user"
+    # Nottingham
+    buy_order_notts_{demo3_1, demo3_2} (extends trade_order_invest):
+        asset: "@assetnotts"
+        user: "@userdemo3"
+        numberOfShares: 3125
+        pricePerShare: "@assetnotts->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -18 months', 'last thursday of -18 months')>"
+        createdBy: "$user"
+    buy_order_notts_{demo4_1} (extends trade_order_invest):
+        asset: "@assetnotts"
+        user: "@userdemo4"
+        numberOfShares: 74218
+        pricePerShare: "@assetnotts->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -18 months', 'last thursday of -18 months')>"
+        createdBy: "$user"
+    buy_order_notts_{demo4_2} (extends trade_order_invest):
+        asset: "@assetnotts"
+        user: "@userdemo4"
+        numberOfShares: 19532
+        pricePerShare: "@assetnotts->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -13 months', 'last thursday of -13 months')>"
+        createdBy: "$user"
+    # Freight Building
+    buy_order_freight_{demo3_1} (extends trade_order_invest):
+        asset: "@assetfreight"
+        user: "@userdemo3"
+        numberOfShares: 3619
+        pricePerShare: "@assetfreight->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -19 months', 'last thursday of -19 months')>"
+        createdBy: "$user"
+    buy_order_freight_{demo4_1} (extends trade_order_invest):
+        asset: "@assetfreight"
+        user: "@userdemo4"
+        numberOfShares: 37580
+        pricePerShare: "@assetfreight->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -19 months', 'last thursday of -19 months')>"
+        createdBy: "$user"
+    buy_order_freight_{demo2_1} (extends trade_order_invest):
+        asset: "@assetfreight"
+        user: "@userdemo2"
+        numberOfShares: 5608
+        pricePerShare: "@assetfreight->pricePerShare"
+        createdAt: "<(new DateTime('first day of this month'))>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    # Leamington Spa
+    buy_order_status_active_spa_{demo3_1, demo3_2, demo4_1}:
+        tradeOrder: "@buy_order_spa_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_spa_<current()>->createdAt"
+    buy_order_status_completed_spa_{demo3_1, demo3_2, demo4_1}:
+        tradeOrder: "@buy_order_spa_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_spa_<current()>->createdAt"
+    # Nottingham
+    buy_order_status_active_notts_{demo3_1, demo3_2, demo4_1, demo4_2}:
+        tradeOrder: "@buy_order_notts_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_notts_<current()>->createdAt"
+    buy_order_status_completed_notts_{demo3_1, demo3_2, demo4_1, demo4_2}:
+        tradeOrder: "@buy_order_notts_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_notts_<current()>->createdAt"
+    # Freight Building
+    buy_order_status_active_freight_{demo3_1, demo4_1, demo2_1}:
+        tradeOrder: "@buy_order_freight_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_freight_<current()>->createdAt"
+    buy_order_status_completed_freight_{demo3_1, demo4_1, demo2_1}:
+        tradeOrder: "@buy_order_freight_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_freight_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    # Leamington Spa
+    share_trade_spa_{demo3_1, demo3_2, demo4_1}:
+        buyOrder: "@buy_order_spa_<current()>"
+        sellOrder: "@sell_order_initial_spa"
+        numberOfShares: "@buy_order_spa_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_spa_<current()>->pricePerShare"
+        createdAt: "@buy_order_spa_<current()>->createdAt"
+    # Nottingham
+    share_trade_notts_{demo3_1, demo3_2, demo4_1, demo4_2}:
+        buyOrder: "@buy_order_notts_<current()>"
+        sellOrder: "@sell_order_initial_notts"
+        numberOfShares: "@buy_order_notts_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_notts_<current()>->pricePerShare"
+        createdAt: "@buy_order_notts_<current()>->createdAt"
+    # Freight Building
+    share_trade_freight_{demo3_1, demo4_1, demo2_1}:
+        buyOrder: "@buy_order_freight_<current()>"
+        sellOrder: "@sell_order_initial_freight"
+        numberOfShares: "@buy_order_freight_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_freight_<current()>->pricePerShare"
+        createdAt: "@buy_order_freight_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    # Leamington Spa
+    trade_status_unsettled_spa_{demo3_1, demo3_2, demo4_1}:
+        shareTrade: "@share_trade_spa_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_spa_<current()>->createdAt"
+    trade_status_settled_spa_{demo3_1}:
+        shareTrade: "@share_trade_spa_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -25 months 14:24:15'))>"
+    trade_status_settled_spa_{demo3_2}:
+        shareTrade: "@share_trade_spa_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first thursday of -24 months 10:11:19'))>"
+    trade_status_settled_spa_{demo4_1}:
+        shareTrade: "@share_trade_spa_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first thursday of -19 months 14:14:24'))>"
+    # Nottingham
+    trade_status_unsettled_notts_{demo3_1, demo3_2, demo4_1, demo4_2}:
+        shareTrade: "@share_trade_notts_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_notts_<current()>->createdAt"
+    trade_status_settled_notts_{demo3_1, demo3_2, demo4_1}:
+        shareTrade: "@share_trade_notts_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -17 months 19:00:55'))>"
+    trade_status_settled_notts_{demo4_2}:
+        shareTrade: "@share_trade_notts_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -12 months 18:00:14'))>"
+    # Freight Building
+    trade_status_unsettled_freight_{demo3_1, demo4_1, demo2_1}:
+        shareTrade: "@share_trade_freight_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_freight_<current()>->createdAt"
+    trade_status_settled_freight_{demo3_1, demo4_1, demo2_1}:
+        shareTrade: "@share_trade_freight_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -18 months 19:00:55'))>"

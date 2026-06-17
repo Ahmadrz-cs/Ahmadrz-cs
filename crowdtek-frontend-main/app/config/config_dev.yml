@@ -1,0 +1,29 @@
+imports:
+    - { resource: config.yml }
+
+framework:
+    router:
+        resource: "%kernel.project_dir%/app/config/routing_dev.yml"
+        strict_requirements: true
+    profiler: { only_exceptions: false }
+
+web_profiler:
+    toolbar: true
+    intercept_redirects: false
+
+monolog:
+    channels: ['crowdtek', 'deprecation']
+    handlers:
+        deprecation:
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/deprecation.log"
+            level: info
+            channels: [deprecation]
+        main:
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: "%env(LOG_LEVEL_APP)%"
+            channels: ["!event", "!deprecation"]
+            formatter: crowdtek_log_formatter

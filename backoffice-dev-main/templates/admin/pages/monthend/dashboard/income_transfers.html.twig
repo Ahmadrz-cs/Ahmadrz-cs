@@ -1,0 +1,111 @@
+{% extends 'admin/pages/monthend/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    <div class="row g-3">
+
+        {% if currentIncomeTransfer is not empty %}
+
+        {% set transfersCompletedList = currentIncomeTransfer.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE')) %}
+        {% set originalTotal = currentIncomeTransfer.transfers|reduce((carry, v) => carry + v.amount) %}
+        {% set completedTotal = transfersCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "current-monthend",
+                "sectionTitle": "Current Monthend",
+                "linkActions": [
+                    {
+                        "text": "View Current Monthend",
+                        "route": "admin_monthend_income_transfer_manage",
+                        "params": {"id": currentIncomeTransfer.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Current Monthend',
+                        value: currentIncomeTransfer.scheduledFor|date('Y-m-d'),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: currentIncomeTransfer.status|capitalize|replace({'_':'-'}),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Transfers Completed',
+                        value: transfersCompletedList|length
+                            ~ '/' ~ currentIncomeTransfer.transfers|length
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Transferred (£)',
+                        value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "transfer-orders",
+                "sectionTitle": "All Income Transfers",
+                "linkActions": [
+                    {
+                        "text": "Create Income Transfer",
+                        "route": "admin_monthend_income_transfer_create",
+                        "params": {assetId: asset.id},
+                        "style": "btn-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row">
+                    <div class="col-sm-6">{{ pagerfanta(transferOrders, 'twitter_bootstrap4') }}</div>
+                    <section class="col-sm-6 mb-3 d-flex justify-content-end">
+                        <span class="border rounded-2 d-inline-block p-2 me-1" id="list-meta-results">{{ transferOrders.count()|number_format(0, '.', ',') }} Results</span>
+                        <span class="border rounded-2 d-inline-block p-2" id="list-meta-page">{{ transferOrders.getNbPages()|number_format(0, '.', ',') }} Pages</span>
+                    </section> 
+                </div>
+                <div class="table-responsive">
+                    <table class="table" id="transfer-order-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Id</th>
+                                <th>Description</th>
+                                <th>Scheduled For</th>
+                                <th>Transfers</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transferOrder in transferOrders|default([]) %}
+                                <tr>
+                                    <td>
+                                        <a class="btn btn-outline-primary"
+                                            href="{{ path('admin_monthend_income_transfer_manage', { id: transferOrder.id }) }}">
+                                            {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View
+                                            {% endif -%}
+                                        </a>
+                                    </td>
+                                    <td>{{ transferOrder.id }}</td>
+                                    <td>{{ transferOrder.description }}</td>
+                                    <td>{{ transferOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                                    <td>{{ transferOrder.transfers|length }}</td>
+                                    <td>{{ transferOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock dashboard_content %}

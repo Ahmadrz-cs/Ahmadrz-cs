@@ -1,0 +1,59 @@
+App\Entity\Asset:
+    asset_base (template):
+        name: "<cityPrefix()> <firstName()> - <city()>"
+        briefDescription: "<realText()>"
+        detailedDesc: "$briefDescription"
+        displayName: "@self->name"
+        contactPoint: "@userA1"
+        createdBy: "@userA1"
+        createdById: 1
+        pricePerShare: "<randomFloat(2, 1, 5)>"
+        amountOfShares: "<regexify('[1-9]{2}000')>"
+        investmentTerm: 60
+        minimumInvestment: '1' # £1 for easy of testing
+        adminFee: 50
+        setupFee: 0
+        managementFee: 10
+        profitShare: 15
+        mangoPayUserId: "user_m_01HW3CCXCYF1W0QNYE3KXVNRRQ"
+        # Note that all the wallet ids are set in Mangopay sandbox with suitable descriptions
+        holdWalletId: "wlt_m_01HW3DD8S6MFPYGVC0FPBHXAF2" # aka mangoPayWalletId (could also use 21955794)
+        settlementWalletId: "wlt_m_01HW3DETE9YHAGN7GEGAH1PF65" # aka additional_wallet
+        depositWalletId: "wlt_m_01HW3DH1PXVVGSP9634636PR48"
+        expensesWalletId: "wlt_m_01HW3DHG5E7750DXHJZK6JHMRA"
+        taxWalletId: "wlt_m_01HW3DJDVMWE4RBH8J1Z5359PK"
+        distributionWalletId: "wlt_m_01HW3DK5RNVTHJAFMQX34Q1WZD"
+        treasuryWalletId: "wlt_m_01HW3DKQ6D3Y5Z2AM717NBZD6V"
+        assetType: "Residential"
+        lifecyclestatus: "published"
+        visibility: 0 # "<numberBetween(0,2)>"
+        stampDutyUser: "stampduty@yielders.co.uk"
+        orgEmail: "team@yielders.co.uk"
+        fundingGoal: "<($pricePerShare * $amountOfShares)>"
+        companyNumber (unique): "<numerify('SPVT00###')>"
+        netProjectedYield: '0.04' # 4% default yield
+        netProjectedIncome: "<($pricePerShare * $amountOfShares * $netProjectedYield)>"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+
+App\Entity\AssetAddress:
+    assetaddress_base (template):
+        asset: "@asset<current()>"
+        address1: "<numberBetween(1,128)> <streetName()>"
+        address2: "<streetName()>"
+        city: "<city()>"
+        region: "England"
+        postCode: "<postcode()>"
+        country: "GB"
+        longitude: "<longitude(-3, 1)>"
+        latitude: "<latitude(50, 55)>"
+
+App\Entity\AssetMember:
+    assetmember_base (template):
+        user: "@userA1"
+        asset: "@asset<current()>"
+        membertype: "Author"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_base (template):
+        asset: "@asset<current()>"
+        status: <(App\Entity\Enum\AssetStatus::Draft)>

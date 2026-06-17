@@ -1,0 +1,240 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+imports:
+    - { resource: ../version.yaml }
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    mailer_from_name: Yielders
+    mailer_from_email: noreply@yielders.co.uk
+    admin_email_address: adminteam@yielders.co.uk
+    crowdtek_mangopay_remote_test_enable: false
+    salesforce_remote_tests: false
+    oauth2.scopes:
+        - "asset:read"
+        - "asset:write"
+        - "investment:read"
+        - "investment:write"
+        - "offering:read"
+        - "offering:write"
+        - "payout:read"
+        - "payout:write"
+        - "user:read"
+        - "user:write"
+    locale: en
+    date_format: d/m/Y
+    default_ccy: GBP
+    api_version_name: v1
+    network_name: yielders
+    api_network_path: "%api_version_name%/%network_name%"
+    network_admin_name: yielders-admin
+    api_network_admin_path: "%api_version_name%/%network_admin_name%"
+    api_network_public_path: "%api_version_name%/%network_name%/public"
+    # mangopay.prod_url: "https://api.mangopay.com"
+    # We use mTLS as of 2026-06, which has a different endpoint
+    mangopay.prod_url: "https://api-mtls.mangopay.com"
+    mangopay.default_environment: "sandbox"
+    session.prefix: sf_s_b_
+    session.ttl: 86400
+    session.max_idle_time: 3600
+    session.handler_id: "%env(VALKEY_DSN)%?prefix=%session.prefix%&ttl=%session.ttl%"
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $frontendUrl: "%env(APP_FRONTEND_URL)%"
+            $engineeringAddress: "%env(MAILER_ENGINEERING_ADDRESS)%"
+            $teamAddress: "%env(MAILER_TEAM_ADDRESS)%"
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: "../src/"
+        exclude:
+            - "../src/DataFixtures/"
+            - "../src/DependencyInjection/"
+            - "../src/Entity/"
+            - "../src/Migrations/"
+            - "../src/Kernel.php"
+            - "../src/SQLReports/"
+            - "../src/Test/"
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    App\Controller\ApiV1\PublicController:
+        arguments:
+            $defaultCcy: "%default_ccy%"
+            $apiEmailCheck: "%env(EMAIL_CHECK_KEY)%"
+
+    # Interface defaults go here
+    # https://symfony.com/doc/current/service_container/autowiring.html#working-with-interfaces
+    SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface $verifyEmailUtil: '@App\Security\VerifyEmailUtil'
+    Psr\Log\LoggerInterface $logger: "@monolog.logger.crowdtek"
+    Psr\Log\LoggerInterface: "@monolog.logger.crowdtek"
+    Symfony\Component\Messenger\Transport\TransportInterface $async: "@messenger.transport.async"
+
+    # Manual service wiring
+    App\Security\VerifyEmailUtil:
+        arguments:
+            $uriSigner: "@symfonycasts.verify_email.uri_signer"
+            $queryUtility: "@symfonycasts.verify_email.query_utility"
+            $tokenGenerator: "@symfonycasts.verify_email.token_generator"
+            $lifetime: 3600
+
+    App\Controller\Admin\ApiClientController:
+        arguments:
+            $oAuth2Scopes: "%oauth2.scopes%"
+    App\Controller\Admin\MailchimpController:
+        arguments:
+            $transactionalSenderEmail: "%mailer_from_email%"
+    App\Controller\Admin\ProfileController:
+        arguments:
+            $kmsKeyId: "%env(KMS_KEY_ID)%"
+    App\Controller\Admin\UserPermissionController:
+        arguments:
+            $roleHierarchyList: "%security.role_hierarchy.roles%"
+
+    App\EventSubscriber\PublicDocumentSubscriber:
+        arguments:
+            $cdnDomainName: "%env(S3_CDN_PUBLIC)%"
+        tags:
+            - { name: jms_serializer.event_subscriber }
+
+    Bramus\Monolog\Formatter\ColoredLineFormatter:
+
+    App\Dto\AssetAssembler:
+    App\Dto\InvestmentAssembler:
+    App\Dto\OfferingAssembler:
+    App\Entity\Lifecycle\AssetLifecycle:
+        arguments:
+            $workflow: "@state_machine.asset"
+    App\Entity\Lifecycle\InvestmentLifecycle:
+        arguments:
+            $workflow: "@state_machine.investment"
+    App\Entity\Lifecycle\OfferingLifecycle:
+        arguments:
+            $workflow: "@state_machine.offering"
+
+    App\Dto\DocumentAssembler:
+    App\EventListener\DoctrineListener:
+        arguments: ["%kernel.environment%"]
+        tags:
+            - { name: doctrine.event_listener, event: preUpdate, method: preUpdate }
+            - { name: doctrine.event_listener, event: prePersist, method: prePersist }
+    App\Service\Manager\DocumentManager:
+        arguments:
+            $cdnDomainName: "%env(S3_CDN_PUBLIC)%"
+    App\Service\Contego\ApiClient:
+        arguments:
+            $client: '@App\Service\Contego\ContegoClient'
+            $orgId: "%env(CONTEGO_ORGANISATION_UID)%"
+            $signature: "%env(CONTEGO_MD5)%"
+    App\Service\Contego\ContegoClient:
+        factory:
+            - 'App\Service\Contego\ContegoClientFactory'
+            - "createApiClient"
+        arguments:
+            $baseUri: "%env(CONTEGO_URL)%"
+            $config: []
+    App\Service\ContegoService:
+        arguments:
+            $contego_organisation_uid: "%env(CONTEGO_ORGANISATION_UID)%"
+            $contego_person_uid: "%env(CONTEGO_PERSON_UID)%"
+            $contego_company_uid: "%env(CONTEGO_COMPANY_UID)%"
+            $contego_md5: "%env(CONTEGO_MD5)%"
+            $contego_url: "%env(CONTEGO_URL)%"
+            $contego_transaction_ref: "%env(CONTEGO_TRANSACTION_REF)%"
+    App\Service\DocumentService:
+        arguments:
+            $publicFileSystem: "@oneup_flysystem.fs.public_filesystem"
+            $privateFileSystem: "@oneup_flysystem.fs.private_filesystem"
+    App\Service\MailerService:
+        arguments:
+            $mailFromEmail: "%mailer_from_email%"
+            $mailFromName: "%mailer_from_name%"
+            $adminEmailAddr: "%admin_email_address%"
+            $useNewTemplate: "%env(bool:MAILER_TEMPLATE_NEW)%"
+    App\Service\MangoPay:
+        arguments:
+            $clientId: "%env(MANGOPAY_ID)%"
+            $clientPassword: "%env(MANGOPAY_PASSWORD)%"
+            $tempDir: "%env(resolve:MANGOPAY_TEMP_DIR)%"
+            $mangopayProdUrl: "%mangopay.prod_url%"
+            $mtlsCertB64: "%env(MANGOPAY_MTLS_CERT)%"
+            $mtlsKeyB64: "%env(MANGOPAY_MTLS_KEY)%"
+            $mangopayEnvironment: "%env(default:mangopay.default_environment:MANGOPAY_ENVIRONMENT)%"
+    App\Service\MangopayReportDownloadService:
+        arguments:
+            $allowedHosts: "%env(json:MANGOPAY_REPORT_ORIGIN_HOSTS)%"
+    App\Service\SalesforceService:
+        arguments:
+            $salesforce_id: "%env(SALESFORCE_ID)%"
+            $salesforce_secret: "%env(SALESFORCE_SECRET)%"
+            $salesforce_refresh_token: "%env(SALESFORCE_REFRESH_TOKEN)%"
+    
+    App\Security\SessionIdleHandler:
+        arguments:
+            $maxIdleTime: "%session.max_idle_time%"
+        tags:
+        - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    MailchimpTransactional\ApiClient:
+        factory:
+            - 'App\Service\Mailchimp\MailchimpClientFactory'
+            - "createApiClient"
+        arguments:
+            $apiKey: "%env(MAILCHIMP_API_KEY)%"
+
+    MangoPay\MangoPayApi:
+        factory:
+            - 'App\Service\Mangopay\MangopayClientFactory'
+            - "createApiClient"
+        arguments:
+            $clientId: "%env(MANGOPAY_ID)%"
+            $clientPassword: "%env(MANGOPAY_PASSWORD)%"
+            $temporaryFolder: "%env(resolve:MANGOPAY_TEMP_DIR)%"
+            $mangopayProdUrl: "%mangopay.prod_url%"
+            $mtlsCertB64: "%env(MANGOPAY_MTLS_CERT)%"
+            $mtlsKeyB64: "%env(MANGOPAY_MTLS_KEY)%"
+            $mangopayEnvironment: "%env(default:mangopay.default_environment:MANGOPAY_ENVIRONMENT)%"
+
+    App\Dto\UserAssembler:
+    App\EventListener\AuthorizationCodeListener:
+        tags:
+            - {
+                  name: kernel.event_listener,
+                  event: "league.oauth2_server.event.authorization_request_resolve",
+                  method: onAuthorizationRequestResolve,
+              }
+    App\EventListener\UserResolveListener:
+        arguments:
+            $userProvider: "@security.user_providers"
+            $userPasswordHasher: "@security.password_hasher"
+        tags:
+            - { name: kernel.event_listener, event: league.oauth2_server.event.user_resolve, method: onUserResolve }
+    App\EventListener\UserSecuritySubscriber:
+        arguments:
+            $kmsKeyId: "%env(KMS_KEY_ID)%"
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+    App\EventSubscriber\KycReportSubscriber:
+        arguments:
+            $autoNotifyIdVerification: "%env(bool:AUTO_NOTIFY_ID_VERIFICATION)%"
+    App\Entity\Lifecycle\UserLifecycle:
+        arguments:
+            $workflow: "@state_machine.user"
+    App\Service\Manager\UserManager:
+        arguments:
+            $lifecycle: '@App\Entity\Lifecycle\UserLifecycle'
+
+    # other services
+    crowdtek_log_formatter:
+        alias: Bramus\Monolog\Formatter\ColoredLineFormatter
+        public: true
+        #arguments:
+        #    format: "%%datetime%% | %%extra.ip%% | %%channel%%.%%level_name%%: %%message%% %%context%%\n"
+    

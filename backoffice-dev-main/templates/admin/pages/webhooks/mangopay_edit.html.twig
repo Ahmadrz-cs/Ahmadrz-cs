@@ -1,0 +1,49 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_webhooks_mangopay_index' %}
+{% set areaHeading = 'Platform Configuration' %}
+{% set mainHeading = 'View and Edit Mangopay Webhooks' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'edit-hook-form',
+        "sectionTitle": 'Edit Mangopay Hook',
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Hook Id',
+                    value: hook.Id,
+                    className: 'col-sm-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Creation Date',
+                    value: hook.CreationDate|date('Y-m-d H:i:s'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: hook.Status,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Validity',
+                    value: hook.Validity,
+                }) }}
+            </div>
+            {{ form_start(form) }}
+            <div class="row">
+                <div class="col-md-6">{{ form_row(form.EventType) }}</div>
+                <div class="col-md-6">{{ form_row(form.Status) }}</div>
+                <div class="col-12">{{ form_row(form.Url) }}</div>
+                <div class="col-12">{{ form_row(form.Tag) }}</div>
+            </div>
+            <div class="">
+                <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+                <a class="btn btn-outline-secondary" href="{{ path('admin_webhooks_mangopay_index') }}">Discard Changes</a>
+            </div>
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

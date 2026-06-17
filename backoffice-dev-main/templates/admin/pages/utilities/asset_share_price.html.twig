@@ -1,0 +1,93 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Product Hub' %}
+{% set mainHeading = 'Asset Share Price Suggester' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "asset-parameters",
+        "sectionTitle": "Asset Parameters",
+        "linkActions": []
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<section class="row">
+				<div class="col-12">{{ form_row(form.fundingGoal) }}</div>
+				<div class="col-sm-6">{{ form_row(form.sharePriceFloor) }}</div>
+				<div class="col-sm-6">{{ form_row(form.sharePriceCap) }}</div>
+			</section>
+			{{ form_rest(form) }}
+			<section class="">
+				<button class="btn btn-primary" id="submit" type="submit">Generate Suggestions</button>
+			</section>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+	{% if results %}
+		{% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "share-price-suggestions",
+            "sectionTitle": "Share Price Suggestions",
+            "linkActions": []
+        } %}
+			{% block sectionContent %}
+				{% if results.suggestions is not empty and max(results.suggestions) == 100 %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "warning",
+                        message: "Note that if the only suggestions given at any search range is £1.00 or less, your funding goal is a prime number!",
+                    }) }}
+				{% endif %}
+				{% if results.suggestions is empty %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "warning",
+                        message: "No suggested share prices could be found. Try expanding the search range",
+                    }) }}
+				{% endif %}
+				<div class="row g-3">
+					{{ include('admin/components/stat.html.twig', {
+                        key: 'Search Range',
+                        value: '£' ~ (results.searchPriceMin / 100)|number_format(2, '.', ',') ~ ' - £' ~ (results.searchPriceMax / 100)|number_format(2, '.', ',')
+                    }) }}
+					{{ include('admin/components/stat.html.twig', {
+                        key: 'Suitable Prices Found',
+                        value: results.suggestions|length
+                    }) }}
+					{% if results.suggestions %}
+						{{ include('admin/components/stat.html.twig', {
+                            key: 'Lowest Suitable Price',
+                            value: '£' ~ (min(results.suggestions) / 100)|number_format(2, '.', ',')
+                        }) }}
+						{{ include('admin/components/stat.html.twig', {
+                            key: 'Highest Suitable Price',
+                            value: '£' ~ (max(results.suggestions) / 100)|number_format(2, '.', ',')
+                        }) }}
+					{% endif %}
+				</div>
+                <div class="table-responsive">
+                    <table class="table table-striped datatable" id="share-price-suggestions">
+                        <thead>
+                            <tr>
+                                <th class="text-end">Share Price (£)</th>
+                                <th class="text-end">Shares to Issue</th>
+                                <th class="text-end">Minimum Commit (£)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for price in results.suggestions %}
+                                <tr>
+                                    <td class="text-end tw-tabular-nums">{{ (price / 100)|number_format(2, '.', ',') }}</td>
+                                    <td class="text-end tw-tabular-nums">{{ results.fundingGoal / price }}</td>
+                                    <td class="text-end tw-tabular-nums">{{ (((10000 / price)|round(0, 'ceil')) * price / 100)|number_format(2, '.', ',') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+			{% endblock %}
+		{% endembed %}
+	{% endif %}
+
+{% endblock page_content %}

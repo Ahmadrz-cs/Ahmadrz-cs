@@ -1,0 +1,11 @@
+{
+    "userId": 1,
+    "date": "2021-03-01T16:15:09+0100",
+    "assetId": 1,
+    "maxAmountPerAsset": 50000,
+    "investmentCriteria": {
+        "minNetAnnualYield": 5.5,
+        "minNumInvestments": 2,
+        "investmentMonthsRemaining": 24
+    }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" viewBox="0 0 70 70">
+    <defs>
+        <style>
+            .cls-1{fill:#0C6953}.cls-2{clip-path:url(#clip-path)}.cls-3{fill:none}
+        </style>
+        <clipPath id="clip-path">
+            <circle id="Oval" cx="35" cy="35" r="35" class="cls-1"/>
+        </clipPath>
+    </defs>
+    <g id="Mask_Group_12" class="cls-2" data-name="Mask Group 12">
+        <g id="payment-24px">
+            <path id="Path_174" d="M0 0h70v70H0z" class="cls-3" data-name="Path 174"/>
+            <path id="Path_175" d="M58.333 11.667H11.667a5.788 5.788 0 0 0-5.8 5.833l-.029 35a5.813 5.813 0 0 0 5.833 5.833h46.662a5.813 5.813 0 0 0 5.834-5.833v-35a5.813 5.813 0 0 0-5.834-5.833zm0 40.833H11.667V35h46.666zm0-29.167H11.667V17.5h46.666z" class="cls-1" data-name="Path 175"/>
+        </g>
+    </g>
+</svg>

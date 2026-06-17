@@ -1,0 +1,54 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_index' %}
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Create New Bank Account Registration' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": 'registration-config-form',
+                "sectionTitle": 'Registration Configuration',
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<div class="row">
+				<div class="col-12">{{ form_row(form.user, {attr: {'class': 'searchable'}}) }}</div>
+				<div class="col-md-6">{{ form_row(form.accountType) }}</div>
+				<div class="col-md-6">{{ form_row(form.accountHolderType) }}</div>
+				<div class="col-md-6">{{ form_row(form.accountNumber) }}</div>
+				<div class="col-md-6">{{ form_row(form.bankIdentifierCode) }}</div>
+				<div class="col-md-6">{{ form_row(form.country) }}</div>
+				<div class="col-md-6">{{ form_row(form.currency) }}</div>
+				<div class="col-md-6">{{ form_row(form.displayName) }}</div>
+				<div class="col-md-6">{{ form_row(form.providerId) }}</div>
+				<div class="col-12">{{ form_row(form.description) }}</div>
+			</div>
+			<div class="row g-3 mt-5">
+				<div class="col-12 d-flex flex-column gap-3">
+                	<div class="fw-bold fs-4">Custom Account Holder Information</div>
+					{{ include('admin/components/_alert.html.twig', {
+						variant: "notice",
+						message: "Skip this section if the account holder is the same as the user.",
+					}) }}
+				</div>
+				<div class="col-12">{{ form_row(form.accountHolderName) }}</div>
+				<div class="col-12">{{ form_row(form.accountHolderLastName) }}</div>
+				<div class="row">
+					{% for addressField in form.children.accountHolderAddress %}
+						<div class="col-md-6">{{ form_row(addressField) }}</div>
+					{% endfor %}
+				</div>
+			</div>
+			<div class="mt-3">
+				<button class="btn btn-success" id="submit" type="submit">Create Bank Account Registration</button>
+				<a class="btn btn-outline-secondary" href="{{ path('admin_bank_account_index') }}">Abandon</a>
+			</div>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

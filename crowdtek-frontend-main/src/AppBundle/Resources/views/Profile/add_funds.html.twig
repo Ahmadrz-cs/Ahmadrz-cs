@@ -1,0 +1,607 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{# {% extends "@AppBundle/base-lite.html.twig" %} #}
+{% block title %}My Wallet
+{% endblock %}
+{% block body %}
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<!-- profile detail -->
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{% include('@AppBundle/Common/profilenav.html.twig')%}
+					</div>
+					<div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<!-- add new fund -->
+							<div class="tab-pane fade show active">
+								<div class="row">
+
+									<!-- status -->
+									<div class="col-lg-12">
+										{# <div class="profile-banner portfolio-head wallet-profile">
+
+											<div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+												<div class="row">
+													<div class="col-md-6 u-name">
+														<h3>Hi
+															{{ userInfo.given_name }}
+														</h3>
+													</div>
+													<div class="col-md-6 p-wal">
+														<ul class="list-inline mb-0">
+															<li>
+																<p class="h3 mb-0">£
+																	<span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+																</p>in my wallet
+															</li>
+															{% if wallet.id|default() %}
+																<li class="">
+																	<a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+																	<a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+																</li>
+															{% endif %}
+														</ul>
+													</div>
+												</div>
+
+
+											</div>
+
+										</div> #}
+									</div>
+
+									<!-- add dettails -->
+									<div class="col-lg-12">
+										<div class="transaction-history-block t-history">
+											<div class="com-block">
+												<section class="row" id="profile">
+													<div class="col-12">
+														<h3 class="mb-2">Add funds by card payin</h3>
+														<div class="mb-2 p-2 border">
+															<div class="mb-1">Alternative payin methods:</div>
+															<a href="{{ path('add_funds_bankwire') }}" class="btn btn-secondary">Pay by Bankwire</a>
+														</div>
+													</div>
+													{# <div class="custom-control custom-radio custom-control-inline">
+														<input type="radio" name="rdo" id="optcard" checked="checked" onclick="paymenttype(); checkAmountValid();" class="custom-control-input"/>
+														<label class="custom-control-label" for="optcard">Pay by Debit Visa / Mastercard</label>
+													</div>
+													<div class="custom-control custom-radio custom-control-inline">
+														<input type="radio" name="rdo" id="optbank" onclick="paymenttype(); checkAmountValid();" class="custom-control-input"/>
+														<label class="custom-control-label" for="optbank">Pay by Bankwire</label>
+													</div> #}
+													{{ form_start(form, {'attr': { 'name':'add_funds_form', onsubmit:'formatExpiryDate(event);' }}) }}
+													{{ form_errors(form) }}
+
+													<!-- pay by card -->
+													<div class="col-lg-12" id="paycard">
+														<div class="alert bg-light p-2 border" id="feeMessage">
+															<i class="fas fa-info-circle"></i> A card transaction fee of 1% will be added to the amount. For more information on our fees, <a href="http://help.yielders.co.uk/en/articles/3436312-our-fees" target="_blank" class="font-medium">visit our help center</a>
+														</div>
+														<div class="row">
+															<div class="form-group col-lg-7 amount-form" style="color: #020002">
+																{{ form_label(form.amount, null, {label_attr:{id:"lblamount"}}) }}
+																{{ form_widget(form.amount, {attr:{class:"form-control font-weight-bold bg bg-secondary border border-medium rounded", step:0.01, onchange:"return checkAmountValid();",onblur:"extractNumber(this,3,true);", onkeypress:"return blockNonNumbers(this, event, true, true);"}}) }}
+																<p class="help-block text-md mt-1">
+																	The maximum amount that can be added via per Visa/Mastercard transaction is <span class="font-medium">£1500</span>
+																</p>
+															</div>
+															<div id="feeCalculationBox" class="col-lg-5 order-lg-2 align-self-end">
+																<ul class="list-group mb-2">
+																	<li class="list-group-item d-flex justify-content-between lh-condensed">
+																	<div>
+																		<h6 class="my-0">Amount</h6>
+																	</div>
+																	<span id="amount-field" class="text-muted"></span>
+																	</li>
+																	<li class="list-group-item d-flex justify-content-between lh-condensed">
+																	<div>
+																		<h6 class="my-0">Transaction Fee</h6>
+																	</div>
+																	<span id="transaction-fee" class="text-muted"></span>
+																	</li>
+																	<li class="list-group-item d-flex justify-content-between">
+																	<span>Total</span>
+																	<strong id="total-amount"></strong>
+																	</li>
+																</ul>
+															</div>
+														</div>
+														<div class="row">
+															<div class="col-lg-7 order-lg-1 amount-row">
+																<div class="form-group col-lg-12 amount-form">
+																	{{ form_label(form.cardNumber, null, {label_attr:{id:"lblcardNumber"}})
+																																																																		}}
+																	{{ form_widget(form.cardNumber, {attr:{class:"form-control", onchange:"return amtvali();", onblur:"extractNumber(this,3,false);", onkeypress:"return blockNonNumbers(this, event, false, false);", maxlength:"16", min:"16"}})																																																	}}
+																</div>
+															</div>
+															<div class="col-lg-5 order-lg-2 amount-row">
+																<div class="form-group col-lg-12">
+																	{{ form_label(form.cardCvx, null, {label_attr:{id:"lblcardCvx"}}) }}
+																	{{ form_widget(form.cardCvx, {attr:{class:"form-control", onchange:"return amtvali();", onblur:"extractNumber(this,3,false);", onkeypress:"return blockNonNumbers(this, event, false, false);", maxlength:"3", min:"3"}}) }}
+																</div>
+															</div>
+														</div>
+														<div class="form-group mb-2">
+															<label id="lblcardCvx" for="expiryDatePicker_month" class="required">Card Expiration Date</label>
+															<br>
+															{{ form_widget(form.expiryDatePicker.day, {attr:{class:'hidden'}}) }}
+															<div class="row">
+																<div class="col-lg-7 order-lg-1 amount-row">
+																	<div class="form-group col-lg-12 amount-form">
+																		{{ form_widget(form.expiryDatePicker.month, {attr:{class:"form-control select", onchange:"return amtvali();"}}) }}
+																	</div>
+																</div>
+																<div class="col-lg-5 order-lg-2 amount-row">
+																	<div class="form-group col-lg-12">
+																		{{ form_widget(form.expiryDatePicker.year, {attr:{class:"form-control select", onchange:"return amtvali();"}})																																																								}}
+																	</div>
+																</div>
+															</div>
+														</div>
+														<div>
+															{{ form_widget(form.addFunds, {attr:{class:"btn btn-primary rounded-pill px-2", onclick:"return amtvali();"}}) }}
+														</div>
+													</div>
+
+													<!-- pay by bank -->
+													<div class="col-lg-12 hide" id="paybankwire">
+														<div class="btn_1" style="float:left; padding-top:0; margin:0;">
+															<button id="add-funds-bankwire" type="button" class="def-btn blue" onclick="payWithBankWire()">Add Funds</button>
+														</div>
+
+														<div id="payviabankwire" class="hide">
+															<div class="form-group mb-6">
+																<label>Bankwire Reference</label>
+																<input type="text" id="txtwire" class="form-control font-weight-bold bg bg-secondary border border-medium rounded" name="txtwire" value="ff1ff4aeee3" placeholder="ff1ff4aeee3" readonly="readonly"/>
+															</div>
+
+															<div class="form-group">
+																<label>Type</label>
+																<input type="text" id="txttype" class="form-control" name="txttype" value="PAYIN" placeholder="PAYIN" readonly="readonly"/>
+															</div>
+															<div class="form-group mb-6">
+																<label>Owner</label>
+																<input type="text" id="txtowner" class="form-control" name="txtowner" value="Mangopay SA" placeholder="Mangopay SA" readonly="readonly"/>
+															</div>
+															<h6 class="mb-3">UK Transfers</h6>
+															<div class="form-group">
+																<label>Sort Code</label>
+																<input type="text" id="txtsort" class="form-control" name="txtsort" value="20-00-00" placeholder="20-00-00" readonly="readonly"/>
+															</div>
+															<div class="form-group mb-6">
+																<label>Account</label>
+																<input type="text" id="txtac" class="form-control" name="txtac" value="63956474" placeholder="63956474" readonly="readonly"/>
+															</div>
+															<h6 class="mb-3">International Transfers</h6>
+															<div class="form-group">
+																<label>IBAN</label>
+																<input type="text" id="txtiban" class="form-control" name="txtiban" value="GB09 BARC 2000 0063 9564 74" placeholder="GB09 BARC 2000 0063 9564 74" readonly="readonly"/>
+															</div>
+															<div class="form-group">
+																<label>BIC</label>
+																<input type="text" id="txtbic" class="form-control" name="txtbic" value="CELLLULL" placeholder="CELLLULL" readonly="readonly"/>
+															</div>
+
+															<div class="btn_1" style="float:left; padding-top:0; margin:0;">
+																<a class="def-btn blue" href="{{ path('product_properties_current') }}">OK</a>
+															</div>
+
+														</div>
+
+													</div>
+
+													{{ form_end(form) }}
+
+													</div>
+
+												</section>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<style>
+			.color-box {
+                margin: 15px 0px 0px 0px
+            }
+
+			.amount-form {
+    			margin-bottom: 15px;
+			}
+
+			.note-box {
+                color: rgba(63, 110, 106, 0.9376);
+                background-color: #d6eceb;
+                padding: 8px 8px 3px 14px;
+            }
+
+			.note-box a:hover {
+                background-color: transparent;
+                text-decoration: underline;
+            }
+
+			.amount-row {
+				padding-left: 0px;
+
+			}
+
+		</style>
+
+	</main>
+
+
+{% endblock %}
+
+{% block pagejs %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"></script>
+
+<script type="text/javascript">
+	$(document).ready(function () {
+
+		setBrowserInfo();
+		calculateFee();
+		let screenWidth = $(window).width();
+		if (screenWidth > 1024)
+		{
+			if ($(".y-form").length)
+			{
+				$(".y-form select").chosen({ disable_search_threshold: 50 });
+			}
+		}
+		$('#form-add-fund').on('submit', function () {
+			$('#amount_error').text('');
+			var card_type = $('#card_type').val();
+			if (card_type === 'CB_VISA_MASTERCARD')
+			{
+				var amount = parseInt($('#amount').val());
+				if (amount > 5000)
+				{
+					$('#amount_error').text('If Payment Type is Visa/Master Card, Amount must be less than 5000.');
+					return false;
+				}
+			}
+			return true;
+		});
+
+		$('#bank_account_type').on('change', function (e) {
+			e.preventDefault();
+			var type = $(this).val();
+			if (type === 'GB')
+			{
+				$('#gb_type').show();
+				$('#sort_code').prop('required', true);
+				$('#account_number').prop('required', true);
+
+				$('#iban_type').hide();
+				$('#iban').prop('required', false);
+				$('#bic').prop('required', false);
+
+			} else
+			{
+				$('#gb_type').hide();
+				$('#sort_code').prop('required', false);
+				$('#account_number').prop('required', false);
+
+				$('#iban_type').show();
+				$('#iban').prop('required', true);
+				$('#bic').prop('required', true);
+			}
+
+			return true;
+		});
+	});
+
+	function paymenttype() {
+
+            if ($('#optcard').is(":checked")) {
+				$('#feeMessage').show();
+                $('#paycard').removeClass('hide');
+                $('#paycard_notice').removeClass('hide');
+                $('#paybankwire').addClass('hide');
+                $('#paywire_notice').addClass('hide');
+				$('#minBwPayinNotice').addClass('hide');
+                $('#amount').attr('readonly', false);
+				$('#feeCalculationBox').show();
+				calculateFee();
+            }
+            if ($('#optbank').is(":checked")) {
+				$('#feeMessage').hide();
+                $('#paybankwire').removeClass('hide');
+                $('#paycard').addClass('hide');
+				$('#paywire_notice').removeClass('hide');
+				$('#minBwPayinNotice').removeClass('hide');
+                $('#paycard_notice').addClass('hide');
+				$('#feeCalculationBox').hide();
+                //if ($('#add-funds-bankwire').hasClass('hide')) {
+                    
+                //}
+            }
+        }
+
+	var input = document.querySelector('#amount');
+
+	function setAjaxAmount() {
+		// alert("setAjaxAmount called");
+		// console.log("setAjaxAmount called w/ amount: " + input.value);
+		// form validation that recalls the page showing with supplied inputs.
+
+		$.ajax({
+			url: '/onboarding/setAmount',
+			type: "POST",
+			dataType: "json",
+			data: {
+				"amount": input.value
+			},
+			async: false,
+			success: function (data) {
+				console.log("setAjaxAmount success -> " + input + "|| data = " + data);
+			}
+		});
+		return false;
+
+	}
+
+	window.onload = function () {
+		document.getElementById("addFunds").onclick = function fun() { // alert(input.value);
+			if (amtvali())
+			{
+				setAjaxAmount();
+			}
+
+		}
+	}
+	function checkAmountValid() {
+		var amount = parseFloat(document.getElementById("amount").value);
+
+		if (amount < 1 || amount > 1500 || isNaN(amount)) {
+			$('#amount').addClass('input_error_highlight');
+			return false;
+		} 
+		// else if (document.getElementById('optcard').checked && amount > 1500) {
+		// 	$('#amount').addClass('input_error_highlight');
+		// 	return false;
+		// } else if (document.getElementById('optbank').checked && amount < 100) {
+		// 	$('#amount').addClass('input_error_highlight');
+		// 	return false;
+		// } 
+		else {
+			$('#amount').removeClass('input_error_highlight');
+			return true;
+		}
+	}
+
+	function amtvali() {
+		var chkstpfnd = 1;
+
+		if (!checkAmountValid())
+		{
+			chkstpfnd = 0;
+		}
+
+		if (document.getElementById("cardNumber").value.length < 16 || document.getElementById("cardNumber").value.length > 16)
+		{
+			$('#cardNumber').addClass('invalid_email');
+			chkstpfnd = 0;
+		} else
+		{
+			$('#cardNumber').removeClass('invalid_email');
+		}
+		if (document.getElementById("cardCvx").value.length < 3 || document.getElementById("cardCvx").value.length > 3)
+		{
+			$('#cardCvx').addClass('invalid_email');
+			chkstpfnd = 0;
+		} else
+		{
+			$('#cardCvx').removeClass('invalid_email');
+		}
+		if (document.getElementById("expiryDatePicker_month").value == "")
+		{
+			$('#expiryDatePicker_month').addClass('invalid_email');
+			chkstpfnd = 0;
+		} else
+		{
+			$('#expiryDatePicker_month').removeClass('invalid_email');
+		}
+		if (document.getElementById("expiryDatePicker_year").value == "")
+		{
+			$('#expiryDatePicker_year').addClass('invalid_email');
+			chkstpfnd = 0;
+		} else
+		{
+			$('#expiryDatePicker_year').removeClass('invalid_email');
+		}
+		if (chkstpfnd == 0)
+		{
+			return false;
+		} else
+		{
+			return true;
+		}
+	}
+
+	function extractNumber(obj, decimalPlaces, allowNegative) {
+		var temp = obj.value;
+
+		// avoid changing things if already formatted correctly
+		var reg0Str = '[0-9]*';
+		if (decimalPlaces > 0)
+		{
+			reg0Str += '\\.?[0-9]{0,' + decimalPlaces + '}';
+		} else if (decimalPlaces < 0)
+		{
+			reg0Str += '\\.?[0-9]*';
+		}
+		reg0Str = allowNegative ? '^-?' + reg0Str : '^' + reg0Str;
+		reg0Str = reg0Str + '$';
+		var reg0 = new RegExp(reg0Str);
+		if (reg0.test(temp))
+			return true;
+
+
+
+		// first replace all non numbers
+		var reg1Str = '[^0-9' + (
+			decimalPlaces != 0 ? '.' : ''
+		) + (allowNegative ? '-' : '') + ']';
+		var reg1 = new RegExp(reg1Str, 'g');
+		temp = temp.replace(reg1, '');
+
+		if (allowNegative)
+		{ // replace extra negative
+			var hasNegative = temp.length > 0 && temp.charAt(0) == '-';
+			var reg2 = /-/g;
+			temp = temp.replace(reg2, '');
+			if (hasNegative)
+				temp = '-' + temp;
+
+
+
+		}
+
+		if (decimalPlaces != 0)
+		{
+			var reg3 = /\./g;
+			var reg3Array = reg3.exec(temp);
+			if (reg3Array != null)
+			{
+				// keep only first occurrence of .
+				// and the number of places specified by decimalPlaces or the entire string if decimalPlaces < 0
+				var reg3Right = temp.substring(reg3Array.index + reg3Array[0].length);
+				reg3Right = reg3Right.replace(reg3, '');
+				reg3Right = decimalPlaces > 0 ? reg3Right.substring(0, decimalPlaces) : reg3Right;
+				temp = temp.substring(0, reg3Array.index) + '.' + reg3Right;
+			}
+		}
+
+		obj.value = temp;
+	}
+
+	function blockNonNumbers(obj, e, allowDecimal, allowNegative) {
+		var key;
+		var isCtrl = false;
+		var keychar;
+		var reg;
+
+		if (window.event)
+		{
+			key = e.keyCode;
+			isCtrl = window.event.ctrlKey
+		} else if (e.which)
+		{
+			key = e.which;
+			isCtrl = e.ctrlKey;
+		}
+
+		if (isNaN(key))
+			return true;
+
+
+
+		keychar = String.fromCharCode(key);
+
+		// check for backspace or delete, or if Ctrl was pressed
+		if (key == 8 || isCtrl)
+		{
+			return true;
+		}
+
+		reg = /\d/;
+		var isFirstN = allowNegative ? keychar == '-' && obj.value.indexOf('-') == -1 : false;
+		var isFirstD = allowDecimal ? keychar == '.' && obj.value.indexOf('.') == -1 : false;
+
+		return isFirstN || isFirstD || reg.test(keychar);
+	}
+
+	function formatExpiryDate(e) {
+		e.preventDefault();
+		var formatted_month = ("0" + $("#expiryDatePicker_month").val()).slice(-2);
+		var formatted_year = $("#expiryDatePicker_year").val().substr(2, 2);
+		var formatted_expiry_date = String(formatted_month) + String(formatted_year);
+		// console.log(formatted_expiry_date);
+		document.getElementById("cardExpirationDate").value = formatted_expiry_date;
+		if (amtvali())
+		{
+			document.getElementsByName("add_funds_form")[0].submit();
+		}
+	}
+
+	function calculateFee() {
+
+		// if ($('#optcard').is(":checked")) {
+		// 	var value = parseFloat(input.value);
+		// 	var fee = (Math.round(value * 100 / 100) / 100);
+		// 	var total = value + fee;
+		// } else {
+		// 	return;
+		// }
+		var value = parseFloat(input.value);
+		var fee = (Math.round(value * 100 / 100) / 100);
+		var total = value + fee;
+
+		if (Number.isNaN(value)) {
+			document.querySelector('#amount-field').innerHTML = ''
+			document.querySelector('#transaction-fee').innerHTML = ''
+			document.querySelector('#total-amount').innerHTML = ''
+		}
+		else {
+			document.querySelector('#amount-field').innerHTML = '£' + value.toFixed(2);
+			document.querySelector('#transaction-fee').innerHTML = '£' + fee.toFixed(2);
+			document.querySelector('#total-amount').innerHTML = '£' + (Math.round(total * 100) / 100).toFixed(2);
+		}
+
+	}
+
+	function setBrowserInfo() {
+		$.ajax({
+			url: '{{ (path('browser_info_set')) }}',
+			type: "POST",
+			dataType: "json",
+			data: {
+				"screenWidth": $(window).width(),
+				"screenHeight": $(window).height(),
+				"colorDepth": window.screen.colorDepth,
+				"timeZoneOffset": new Date().getTimezoneOffset(),
+				"javaEnabled": window.navigator.javaEnabled(),
+				"javascriptEnabled": true
+			},
+			async: true,
+		});
+		return false;
+	}
+
+	
+	input.addEventListener("input", function () {
+		calculateFee();
+	}, false);
+
+</script>
+
+
+{% endblock %}

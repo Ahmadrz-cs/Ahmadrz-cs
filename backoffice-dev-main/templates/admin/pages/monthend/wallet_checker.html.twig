@@ -1,0 +1,162 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Wallet Checker' %}
+
+{% set transfersList = transferOrder.transfers %}
+{% set transfersCompletedList = transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE')) %}
+{% set originalTotal = transfersList|reduce((carry, v) => carry + v.amount) %}
+{% set completedTotal = transfersCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "api-warning",
+        "sectionTitle": "Mangopay API Limits",
+        "sectionStyle": "border rounded-3 p-4 border-warning",
+        "linkActions": [
+            {
+                "text": "Check Mangopay API Rate Limits",
+                "route": "admin_service_status",
+                "params": {},
+                "style": "btn-primary",
+                "newTab": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+        } %}
+            {% block message %}
+                <div>This wallet checker can make many requests to the Mangopay API. <b>Avoid reloading this page too much</b> if there is pressure on the Mangopay API rate limits.</div>
+            {% endblock message %}
+        {% endembed %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'MangoPay API calls made',
+                value: walletBalances|length,
+                className: 'col-md-6'
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "wallet-balances",
+        "sectionTitle": "Wallet Balances",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Remaining to Transfer (£)',
+                value: (originalTotal - completedTotal)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Wallets to Debit',
+                value: amountPerWallet.debit|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Wallets to Credit',
+                value: amountPerWallet.credit|length,
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped" id="debit-wallet-amount-list">
+                <thead>
+                    <tr>
+                        <th>Direction</th>
+                        <th>Wallet Id</th>
+                        <th>Wallet Description</th>
+                        <th class="text-end">Wallet Balance (£)</th>
+                        <th class="text-end">Still to Transfer (£)</th>
+                        <th>Notices</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for walletId, amount in amountPerWallet.debit|default([]) %}
+                        <tr data-wallet-id="{{ walletId }}">
+                            <td><span class="badge text-bg-danger">Debit</span></td>
+                            <td data-field="walletId">{{ walletId }}</td>
+                            <td data-field="description">{{ walletBalances[walletId].description }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="balance">{{ walletBalances[walletId].balance|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ amount|number_format(2, '.', ',') }}</td>
+                            <td data-field="notices">
+                                {% if amount|round(2) > walletBalances[walletId].balance|round(2) %}
+                                    <span class="badge text-bg-warning">Insufficient Balance</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for walletId, amount in amountPerWallet.credit|default([]) %}
+                        <tr data-wallet-id="{{ walletId }}">
+                            <td><span class="badge text-bg-success">Credit</span></td>
+                            <td data-field="walletId">{{ walletId }}</td>
+                            <td data-field="description">{{ walletBalances[walletId].description }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="balance">{{ walletBalances[walletId].balance|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ amount|number_format(2, '.', ',') }}</td>
+                            <td data-field="notices">-</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfers",
+        "sectionTitle": "Transfers",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfers Completed',
+                value: transfersCompletedList|length
+                    ~ '/' ~ transferOrder.transfers|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Transferred (£)',
+                value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+            }) }}
+            {% set lastTransfer = transfersCompletedList|sort((a, b) => a.updatedAt <=>
+            b.updatedAt)|last %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Most Recently Completed',
+                value: lastTransfer is empty ? "-" : lastTransfer.updatedAt|date('Y-m-d H:i:s (P)'),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped datatable" id="transfers-list">
+                <thead>
+                    <tr>
+                        <th>Transfer From</th>
+                        <th>Transfer To</th>
+                        <th>Description</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferRequest in transferOrder.transfers|default([]) %}
+                        <tr data-object-id="{{ transferRequest.id }}">
+                            <td data-field="debitWalletId">{{ transferRequest.debitWalletId }}</td>
+                            <td data-field="creditWalletId">{{ transferRequest.creditWalletId }}</td>
+                            <td data-field="description">{{ transferRequest.description }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                            <td>{{ transferRequest.status|capitalize }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

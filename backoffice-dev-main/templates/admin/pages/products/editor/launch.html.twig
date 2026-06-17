@@ -1,0 +1,158 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_product_dashboard' %}
+{% set backToRouteParams = {'id': asset.id} %}
+{% set areaHeading = 'Asset Products' %}
+{% set mainHeading = 'Asset Product Launch Centre' %}
+
+{% block page_content %}
+
+    <div class="row g-3">
+
+        {% if not launchReady %}
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "launch-readiness",
+                "sectionTitle": "Not Ready For Launch",
+                "sectionStyle": "border rounded-3 p-4 border-warning",
+                "linkActions": [
+                    {
+                        "text": "Setup Product",
+                        "route": "admin_product_edit_about",
+                        "params": {
+                            id: asset.id,
+                            setup: 1,
+                        },
+                        "style": "btn-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "Complete the setup to get this product ready for launch",
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+        {% endif %}
+
+        <div class="col-md-6 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "prefunding-mode",
+                "sectionTitle": "Prefunding Mode",
+                "linkActions": [
+                    {
+                        "text": "Configure Launch to Prefunding",
+                        "route": "admin_product_edit_launch_prefunding",
+                        "params": {id: asset.id},
+                        "style": "btn-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Open up the product to top yielders for prefunding",
+                }) }}
+                <section>
+                    <h5 class="fw-bold">When to choose this mode:</h5>
+                    <ul>
+                        <li>Need to raise funds to acquire the property</li>
+                    </ul>
+                </section>
+                <section>
+                    <h5 class="fw-bold ">What happens on launch?</h5>
+                    <ul>
+                        <li>The product will be switched to <b>prefunding mode</b></li>
+                        <li>The product will only appear in the <b>top yielders (VIPs)</b> product listings. Although, this is still visible to regular investors, they cannot invest in it</li>
+                        <li>The secondary market will be disabled for this product</li>
+                        <li>The initial (first party) trade order (as configured) will be created</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-md-6 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "retail-mode",
+                "sectionTitle": "Retail Mode",
+                "linkActions": [
+                    {
+                        "text": "Configure Launch to Retail",
+                        "route": "admin_product_edit_launch_retail",
+                        "params": {id: asset.id},
+                        "style": "btn-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Open up the product to all investors",
+                }) }}
+                <section>
+                    <h5 class="fw-bold">When to choose this mode:</h5>
+                    <ul>
+                        <li>The property has already been acquired</li>
+                        <li>The property is tenanted and is about to or has already received rental income</li>
+                    </ul>
+                </section>
+                <section>
+                    <h5 class="fw-bold ">What happens on launch?</h5>
+                    <ul>
+                        <li>The product will be switched to <b>retail mode</b></li>
+                        <li>The product will appear in the <b>main</b> product listings
+                        <li>The product is open to <b>all investors</b> to buy</li>
+                        <li>The secondary market will be disabled for this product</li>
+                        <li>The initial (first party) trade order (as configured) will be created. If switching from prefunding to retail, a new retail specific trade order is created based on the prefunder liquidation amount.</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {# {% else %}
+
+        <div class="col-md-6 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "switch-to-retail",
+                "sectionTitle": "Switch to Retail",
+                "linkActions": [
+                    {
+                        "text": "Switch to Retail",
+                        "route": "admin_product_edit_launch_retail",
+                        "params": {id: asset.id},
+                        "style": "btn-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Open up the product to all investors",
+                }) }}
+                <section>
+                    <h5 class="fw-bold">When to switch:</h5>
+                    <ul>
+                        <li>The product is still in prefunding mode or you want to fix a product already in retail mode</li>
+                        <li>The property has been acquired</li>
+                        <li>The property is tenanted and is about to or has already received rental income</li>
+                    </ul>
+                </section>
+                <section>
+                    <h5 class="fw-bold ">What happens on switchover?</h5>
+                    <ul>
+                        <li>The product will be switched to retail</li>
+                        <li>The product will be made visible to everyone</li>
+                        <li>The minimum commit will be set to <b>around £100</b></li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div> #}
+
+    </div>
+    
+{% endblock page_content %}

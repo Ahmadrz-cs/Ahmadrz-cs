@@ -1,0 +1,73 @@
+# This is Sagittarius Eystar
+# Unique trait - No investors, missing investor memorandum doc
+# Avoid linking this asset to an investment fixture
+# Although you can use it for whatever you want once the fixture is loaded
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{eystar} (extends asset_base):
+        name: Sagittarius Eystar - Horizon
+        alternateName: Empty Test Asset - No Investments
+        briefDescription: The view into void. Left empty for posterity
+        pricePerShare: 4.55
+        amountOfShares: 7060
+        companyNumber: SPVAF00AS1
+        investmentTerm: 36
+        depositWalletId: null
+        expensesWalletId: null
+        taxWalletId: null
+        distributionWalletId: null
+        treasuryWalletId: null
+        netProjectedYield: '0.042'
+        netProjectedIncome: '1349'
+        minimumInvestment: '25'
+
+App\Entity\AssetAddress:
+    assetaddress{eystar} (extends assetaddress_base):
+        address1: Sagittarius Eystar - Horizon
+        address2: 1-5 eystar Down
+        city: Horizon
+        postCode: HZ5 4SA
+        longitude: 0.0
+        latitude: 52.4171
+
+App\Entity\AssetMember:
+    assetmember{eystar} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{eystar_aoa}:
+        asset: "@asseteystar"
+        document: "@doc<current()>"
+    assetdoc{eystar_logo}:
+        asset: "@asseteystar"
+        document: "@doc<current()>"
+    assetdoc{eystar_calc}:
+        asset: "@asseteystar"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{eystar} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 4.2
+        grossProjectReturn: 12.6
+        offeringTerm: 3
+        lifecyclestatus: "approved"
+
+App\Entity\OfferingDocuments:
+    offeringdoc{eystar_calc}:
+        offering: "@offeringeystar"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{eystar_aoa} (extends doc_aoa):
+    doc{eystar_logo} (extends doc_logo):
+        description: "Suburban bungalow"
+        filename: "brightonstock.jpg"
+    doc{eystar_calc} (extends doc_calculations):

@@ -1,0 +1,16 @@
+include:
+    - ../standardUsers.yaml
+
+App\Entity\Communication:
+    communication{ben_successful_settlement_mail_delivery}:
+        recipient: "@userben"
+        subject: "Investment Settled"
+        content: "owner of (103) shares in Partingdale House - Reading."
+        status: 1
+    communication{ben_unsuccessful_settlement_mail_delivery}:
+        recipient: "@userben"
+        subject: "Investment Settled"
+        content: "owner of (207) shares in Partingdale House - Reading."
+        status: 0
+
+

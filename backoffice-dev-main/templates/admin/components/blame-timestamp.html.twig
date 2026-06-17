@@ -1,0 +1,4 @@
+<div class="{{ className|default('d-flex flex-column gap-2 text-end tw-text-sm') }}">
+    <div id="timestamp">Last updated: {{ object.updatedAt|date('Y-m-d H:i:s') }} {% if object.updatedBy is defined %}({{ object.updatedBy|default("")}}){% endif %}</div>
+    <div id="blame">Created: {{ object.createdAt|date('Y-m-d H:i:s') }} {% if object.createdBy is defined %}({{ object.createdBy|default("")}}){% endif %}</div>
+</div>

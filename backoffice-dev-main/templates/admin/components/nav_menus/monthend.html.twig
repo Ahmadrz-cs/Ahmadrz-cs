@@ -1,0 +1,52 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: 'admin_monthend_index',
+                text: 'Dashboard',
+            },
+            {
+                route: 'admin_monthend_assets',
+                text: 'Assets',
+            },
+            {
+                route: 'admin_monthend_income_disaggregation_index',
+                text: 'Income Disaggregations',
+            },
+            {
+                route: 'admin_monthend_overview_dividends',
+                text: 'Dividends',
+            },
+            {
+                route: 'admin_monthend_overview_settlements',
+                text: 'Settlements',
+            },
+            {
+                route: 'admin_monthend_overview_repayments',
+                text: 'Repayments',
+            },
+            {
+                route: 'admin_monthend_share_transfers_list',
+                text: 'Share Transfers',
+            },
+            {
+                route: 'admin_monthend_overview_divestments',
+                text: 'Divestments',
+            },
+            {
+                route: 'admin_monthend_fee_collection_index',
+                text: 'Fee Collections',
+            },
+            {
+                route: 'admin_monthend_review',
+                text: 'Review Activity',
+            },
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_horizontal_nav') ~'.html.twig', {
+    navId: 'monthendNav',
+    toggleText: 'Monthend',
+    links: menuLinks,
+}) }}

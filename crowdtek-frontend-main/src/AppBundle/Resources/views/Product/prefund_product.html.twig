@@ -1,0 +1,139 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Prefunding{% endblock %}
+
+{% block body %}
+<header class="hero-banner properties-inner banner-medium bg-fixed bg-overlay">
+	<div class="container pt-6 pt-md-8 position-relative layer-z-1">
+		<div class="hero-banner-content pr-2 py-4 text-center">
+			<div class="row">
+				<div class="col-lg-9 mx-auto">
+					<h2 class="h1 hero-banner-hd text-light mb-3">
+						Prefunding
+					</h2>
+				</div>
+			</div>
+		</div>
+	</div>
+</header>
+
+{% set minCommit = selectedOrder.minimumShares|default(0) * selectedOrder.pricePerShare %}
+{% set maxCommit = selectedOrder.maximumShares|default(selectedOrder.sharesAvailable) * selectedOrder.pricePerShare %}
+
+<main class="container my-4" id="prefund-opportunity">
+	<div class="row justify-content-center text-center border-bottom pb-3" id="opportunity-info"
+		data-shares="{{ selectedOrder.sharesAvailable|default(0) }}"
+		data-share-price="{{ selectedOrder.pricePerShare|default(0.00) }}"
+		data-min-commit="{{ minCommit|default(0.00) }}"
+		data-max-commit="{{ maxCommit|default(0.00) }}"
+		data-min-retention="{{ minRetention|default(0) }}"
+		data-max-retention="{{ maxRetention|default(25) }}">
+		<div class="col-12 col-sm-4">
+			<p class="small text-uppercase font-medium mb-1">Asset Name</p>
+			<p class="h4" id="asset-name">{{ asset.name|default('N/A') }}</p>
+		</div>
+		<div class="col-6 col-sm-4 mt-2 mt-sm-0">
+			<p class="small text-uppercase font-medium mb-1">Shares Available</p>
+			<p class="h4"><span id="shares-available">{{ selectedOrder.sharesAvailable|default(0)|number_format(0, '', ',') }}
+					Shares</span></p>
+		</div>
+		<div class="col-6 col-sm-4 mt-2 mt-sm-0">
+			<p class="small text-uppercase font-medium mb-1">Share Price</p>
+			<p class="h4">£<span id="price-per-share">{{ selectedOrder.pricePerShare|default(0.00)|number_format(2, '.', ',') }}</span></p>
+		</div>
+	</div>
+
+	{{ form_start(form, {'attr': {'class': 'row my-3', 'onkeydown': "return event.key != 'Enter';"}}) }}
+	<div class="col-12 col-lg-10 offset-lg-1 mb-3 text-center">
+		<p class="alert bg-light border">Investors can retain a portion of their original prefunding total as a long term investment.
+		<br>
+		<a class="font-medium" target="_blank"
+			href="https://help.yielders.co.uk/en/articles/5210027-prefunding-guide">Read the guide to prefunding</a></p>
+	</div>
+	<section class="col-md-6 col-lg-5 offset-lg-1 text-center mt-4 mt-md-0" id="total-shares-input">
+		<div class="form-group">
+			{{ form_row(form.numberOfShares) }}
+		</div>
+		<div class="form-group">
+			<label for="prefunding-total-value">Value of Shares</label>
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text px-2">£</span>
+				</div>
+				<input class="form-control rounded-right" id="prefunding-total-value" name="prefunding-total-value"
+					type="number" value="{{ minCommit|default(0.00) }}" step="0.01" required=""
+					data-input-type="monetary">
+			</div>
+		</div>
+		<div class="alert alert-info border small">
+			<p class="mb-0">Minimum investment: {{ minCommit|format_currency('GBP') }} ({{ selectedOrder.minimumShares|default(0) }} shares)</p>
+			<p class="mb-0">Maximum investment: {{ maxCommit|format_currency('GBP') }} ({{ selectedOrder.maximumShares|default(selectedOrder.sharesAvailable) }} shares)</p>
+		</div>
+	</section>
+
+	<section class="col-md-6 col-lg-5 text-center mt-4 mt-md-0" id="keep-shares-input">
+		<div class="form-group">
+			{{ form_row(form.sharesToKeep) }}
+		</div>
+		<div class="form-group">
+			<label for="prefunding-total-value">Value of Shares to Retain</label>
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text px-2">£</span>
+				</div>
+				<input class="form-control rounded-right" id="prefunding-keep-value" name="prefunding-keep-value"
+					type="number" value="0.00" step="0.01" required="" data-input-type="monetary">
+			</div>
+		</div>
+		<div class="alert alert-info border small">
+			<p class="mb-0">Minimum retention: {{ minRetention|default(0) }}% or exactly 0 shares</p>
+			<p class="mb-0">Maximum retention: {{ maxRetention|default(25) }}%</p>
+		</div>
+	</section>
+
+	<section class="col-12 col-lg-8 offset-lg-2">
+		<table class="table text-center table-sm mt-2">
+			<thead class="small">
+				<tr>
+					<th></th>
+					<th>Number of Shares</th>
+					<th>Value of Shares (£)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr id="summary-total">
+					<td class="font-medium">Total</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr id="summary-prefunding">
+					<td class="font-medium">Prefunding Amount</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr id="summary-keep">
+					<td class="font-medium">Retention Amount</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+			</tbody>
+		</table>
+		{{ form_rest(form) }}
+		<p class="text-right mt-3">By clicking the 'Invest Now' button below to invest, you agree to the <a class="text-underline"
+				href="{{ path('terms_conditions') }}">terms and conditions</a> and <a class="text-underline"
+				href="{{ path('privacy_policy') }}">privacy policy</a></p>
+		<div class="d-flex justify-content-end gap-3">
+			<a href="{{ path('product_properties_detail',{'id':asset.id}) }}" class="btn btn-light rounded-pill px-1 px-sm-2 mr-2">Cancel</a>
+			<button type="submit" id="submit" class="btn-primary rounded-pill btn px-3">Invest Now</button>
+		</div>
+	</section>
+	{{ form_end(form) }}
+
+</main>
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript" src="{{ asset('bundles/app/js/prefunding.js') }}"></script>
+{% endblock %}

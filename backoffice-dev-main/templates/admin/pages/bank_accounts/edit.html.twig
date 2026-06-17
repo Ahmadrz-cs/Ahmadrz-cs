@@ -1,0 +1,106 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_manage' %}
+{% set backToRouteParams = {id: bankAccount.id} %}
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Bank Account Registration' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'registration-config-form',
+        "sectionTitle": 'Registration Configuration',
+    } %}
+        {% block sectionContent %}
+        {% if not workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Approve').value) %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "Only the description is editable when not in \"Pending\" state",
+            }) }}
+        {% endif %}
+        {{ form_start(form) }}
+        <div class="row">
+            <div class="col-12">{{ form_row(form.user, {attr: {'class': 'searchable'}}) }}</div>
+            <div class="col-md-6">{{ form_row(form.accountType) }}</div>
+            <div class="col-md-6">{{ form_row(form.accountHolderType) }}</div>
+            <div class="col-md-6">{{ form_row(form.accountNumber) }}</div>
+            <div class="col-md-6">{{ form_row(form.bankIdentifierCode) }}</div>
+            <div class="col-md-6">{{ form_row(form.country) }}</div>
+            <div class="col-md-6">{{ form_row(form.currency) }}</div>
+            <div class="col-md-6">{{ form_row(form.displayName) }}</div>
+            <div class="col-md-6">{{ form_row(form.providerId) }}</div>
+            <div class="col-12">{{ form_row(form.description) }}</div>
+            <div class="col-12">
+            {{ form_row(form.metadata) }}
+            <div class="d-flex flex-column gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm align-self-start" type="button" onclick="prettyPrint()">Check and Format JSON</button>
+                <pre class="bg-warning-subtle rounded px-3 py-2 mb-0 d-none" id="details-syntax-errors"></pre>
+            </div>
+        </div>
+        </div>
+        <div class="row g-3 mt-5">
+            <div class="col-12 d-flex flex-column gap-3">
+                <div class="fw-bold fs-4">Custom Account Holder Information</div>
+                {% if bankAccount.accountHolderName is not empty or bankAccount.accountHolderAddress is not empty %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "A custom account holder has been configured. You can remove this if the account should be registered under the user specified above.",
+                }) }}
+                <div>
+                    <a class="btn btn-outline-danger"
+                        href="{{ path('admin_bank_account_clear_custom', {
+                            id: bankAccount.id
+                        }) }}">Remove Custom Account Holder</a>
+                </div>
+                {% else %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "notice",
+                        message: "Configure a custom account holder, e.g. when you're setting up a business-payee account. Skip this section if the account holder is the same as the user.",
+                    }) }}
+                {% endif %}
+            </div>
+            <div class="col-12">{{ form_row(form.accountHolderName) }}</div>
+            <div class="col-12">{{ form_row(form.accountHolderLastName) }}</div>
+            <div class="row">
+                {% for addressField in form.children.accountHolderAddress %}
+                    <div class="col-md-6">{{ form_row(addressField) }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="">
+            <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_bank_account_manage', {id: bankAccount.id}) }}">Discard Changes</a>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script type="text/javascript">
+		function prettyPrint() {
+			var textAreaContent = document.getElementById("{{ form.metadata.vars.id }}").value;
+            if (textAreaContent.length > 0) {
+                try {
+                    var parsedTextAreaContent = JSON.parse(textAreaContent);
+                    var formattedJson = JSON.stringify(parsedTextAreaContent, undefined, 4);
+                    document.getElementById("{{ form.metadata.vars.id }}").value = formattedJson;
+                    document.getElementById("details-syntax-errors").textContent = "JSON is valid";
+                    document.getElementById("details-syntax-errors").classList.remove('d-none');
+                } catch (error) {
+                    console.log(error);
+                    document.getElementById("details-syntax-errors").textContent = error.message;
+                    document.getElementById("details-syntax-errors").classList.remove('d-none');
+                }
+            } else {
+                document.getElementById("details-syntax-errors").classList.add('d-none');
+            }
+		}
+		document.onload = prettyPrint();
+	</script>
+{% endblock javascripts %}

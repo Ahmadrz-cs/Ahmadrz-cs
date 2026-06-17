@@ -1,0 +1,125 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_repayment_manage' %}
+{% set backToRouteParams = {'id': paymentOrder.id} %}
+{% set areaHeading = 'Monthend - Generate ' ~ paymentOrder.paymentType ~'s' %}
+{% set mainHeading = paymentOrder.asset.name %}
+{% set htmlTitle = 'Generate Repayments' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set prefundingShares = prefunderSellOrders|reduce((carry, v) => carry + v.numberOfShares) %}
+{% set sharesSettled = monthendTrades|reduce((carry, v) => carry + v.numberOfShares)|default(0) %}
+{% set surplusSharesSold = sharesInCirculation - paymentOrder.asset.amountOfShares %}
+
+{% block page_content %}
+
+    {% if paymentOrder.payments is not empty %}
+    
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "overwrite-warning",
+            "sectionTitle": "Overwriting Existing Payments",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+        } %}
+            {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "There are already payments in this order. Generating new payments will overwrite the existing ones!",
+            }) }}
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "guidelines",
+        "sectionTitle": "Guidelines",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}                        
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shares Issued',
+                value: paymentOrder.asset.amountOfShares|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Active Shares in Circulation',
+                value: sharesInCirculation|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Shares To Repay',
+                value: prefundingShares|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Prefunders',
+                value: repaymentSummary|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Surplus Shares Sold',
+                value: surplusSharesSold|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shares Recently Settled',
+                value: sharesSettled|number_format(0, '', ','),
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% if surplusSharesSold > 0 and surplusSharesSold != sharesSettled %}
+    
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Verify Shares to Repay",
+            message: '"Surplus shares sold" and "shares recently settled" do not match. This can happen if you are repaying shares from investments settled before this current monthend. In which case, you should sum the number shares of all applicable investments and ensure that they add up to the "surplus shares sold".',
+        }) }}
+
+    {% endif %}
+
+    {% if surplusSharesSold <= 0 %}
+    
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "No Repayment Possible",
+            message: "There are no shares in this asset available to repay",
+        }) }}
+
+    {% endif %}
+
+    {{ form_start(form) }}
+    <div class="row ">
+        <div class="col-sm-6">{{ form_row(form.shares) }}</div>
+    </div>
+    <div class="">
+        <button class="btn btn-success" id="submit" type="submit">Generate Payments</button>
+        <a class="btn btn-outline-secondary"
+            href="{{ path('admin_monthend_repayment_manage', { id: paymentOrder.id }) }}">Cancel</a>
+    </div>
+    {{ form_end(form) }}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "prefunder-repayment-tracking",
+        "sectionTitle": "Prefunder Repayment Tracking",
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                title: "How Repayments work with the Share Trade System",
+                message: 'When prefunders invest, they can keep a certain number of shares and must put the rest up for sale. The shares put up for sale are tracked as a Prefunding-Sell type Trade Order.
+                
+                Repayment orders will proxy the retail investments to these Prefunding-Sell type Trade Orders via a Proxy-Buy type Trade Order.
+                
+                This proxying system is used to simplify the retail listing, as there is a single seller/listing rather than multiple. Therefore the system does not need to decide which of the multiple listings to buy from at investment time. Instead delaying that decision to post-settlement in these repayment orders.',
+            }) }}
+            {{ include('admin/components/trade_orders/_list_table.html.twig', {
+                tableId: "sell-orders-list",
+                title: "Sell Orders List",
+                showAsset: false,
+                objects: prefunderSellOrders|sort((a, b) => b.numberOfShares <=> a.numberOfShares),
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+    
+
+{% endblock page_content %}

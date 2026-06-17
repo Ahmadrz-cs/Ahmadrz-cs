@@ -1,0 +1,92 @@
+
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = backToRoute|default('admin_trade_order_index') %}
+{% set backToRouteParams = backToRouteParams|default({}) %}
+{% set areaHeading = 'Trade Orders' %}
+{% set mainHeading = 'View Trade Order #' ~ tradeOrder.id %}
+{% set maturityLabel = 'alpha' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'trade-order-overview',
+        "sectionTitle": 'About This Trade order',
+        "linkActions": [
+            {
+                "text": "Edit Trade Order",
+                "route": "admin_trade_order_edit",
+                "params": {id: tradeOrder.id},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+            {
+                "text": "Update Status",
+                "route": "admin_trade_order_status_log_create",
+                "params": {id: tradeOrder.id},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+            {
+                "text": "View Asset",
+                "route": "admin_product_trade_orders",
+                "params": {id: tradeOrder.asset.id},
+                "style": "btn-secondary",
+            },
+            {
+                "text": "View User",
+                "route": "admin_user_dashboard_trade_orders",
+                "params": {id: tradeOrder.user.id},
+                "style": "btn-secondary",
+            },
+            {
+                "text": "View Transaction",
+                "route": "admin_transactions_view",
+                "params": {id: tradeOrder.transaction.id ?? 1},
+                "style": "btn-secondary",
+                "render": tradeOrder.transaction is not null
+            },
+            {
+                "text": "View Prefunding Complement",
+                "route": "admin_trade_order_view",
+                "params": {id: tradeOrder.complementaryOrder.id ?? 1},
+                "style": "btn-dark",
+                "render": tradeOrder.complementaryOrder is not null
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/pages/trade_orders/_view_kv.html.twig', {
+                tradeOrder: tradeOrder
+            }) }}
+            {{ include('admin/components/_status_logs_table.html.twig', {
+                title: "Status Logs",
+                statusLogs: tradeOrder.statusLogs,
+                editRoute: 'admin_trade_order_status_log_edit',
+                statusToColor: {
+                    'draft': 'gray',
+                    'submitted': 'yellow',
+                    'active': 'blue',
+                    'completed': 'green',
+                    'suspended': 'yellow',
+                    'cancelled': 'red',
+                }
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'related-share-trades',
+        "sectionTitle": 'Related Share Trades',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/share_trades/_list_table.html.twig', {
+                tableId: "share-trades",
+                showDirection: true,
+                showAggregate: true,
+                objects: tradeOrder.shareTrades,
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

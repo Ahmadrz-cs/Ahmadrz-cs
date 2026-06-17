@@ -1,0 +1,72 @@
+.filter {
+    padding-top: 6px;
+    padding-bottom: 6px;
+
+    &-item {
+        border: none;
+        border-top: 1px solid $grey-dark;
+        border-bottom: 1px solid $grey-dark;
+        padding: 8px;
+        // @extend .broder-greymedium;
+        @extend .bg-transparent;
+    }
+}
+
+.form {
+    &-group {
+        label {
+            @extend .font-medium;
+            @extend .text-md;
+        }
+    }
+
+    &-control {
+        border: solid 2px #e8ebef;
+        padding: 12px;
+        height: auto;
+
+        &-icon {
+            background: url(../svg/lock-dark.svg) no-repeat 96% center;
+            padding-right: 40px;
+        }
+
+        .flag {
+            background: url(../svg/country-flag/ad.svg) no-repeat;
+            height: 14px;
+            width: 14px;
+        }
+    }
+}
+
+.custom-select-ui {
+    .dropdown {
+        &-toggle::after {
+            background: url(../svg/caret-down.svg) no-repeat center;
+            vertical-align: -2px;
+        }
+
+        &-menu {
+            height: 150px;
+            overflow-y: auto;
+        }
+
+        &-item {
+            cursor: pointer;
+        }
+    }
+}
+
+.flga-icon {
+    width: 18px;
+}
+
+.caret {
+    color: red;
+}
+
+
+.mini-checkbox {
+    .custom-control-label::after, .custom-control-label::before {
+        top:0;
+    }
+}

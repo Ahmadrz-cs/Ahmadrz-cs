@@ -1,0 +1,30 @@
+{% extends 'admin/pages/products/editor/_editor.html.twig' %}
+
+{% block editor_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "location",
+        "sectionTitle": "Property Location",
+        "sectionStyle": "pb-3",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form, {attr: {class: "d-flex flex-column gap-3"}}) }}
+        <div class="row ">
+            <div class="col-sm-6">{{ form_row(form.address1) }}</div>
+            <div class="col-sm-6">{{ form_row(form.address2) }}</div>
+            <div class="col-sm-6">{{ form_row(form.city) }}</div>
+            <div class="col-sm-6 col-xl-3">{{ form_row(form.postCode) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.country) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.latitude) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.longitude) }}</div>
+        </div>
+        
+        {{ include('admin/pages/products/editor/_editor_form_actions.html.twig', {
+            routeParams: {id: asset.id}
+        }) }}
+        
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

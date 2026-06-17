@@ -1,0 +1,56 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% block page_content %}
+    {{ include('admin/pages/assets/_list_w_filters.html.twig', {
+        options: {
+            showLinks: true,
+            showPresets: true,
+            showFilters: true,
+            links: [
+                {
+                    "text": "Create Income Transfer",
+                    "route": "admin_monthend_income_transfer_create",
+                    "params": {},
+                    "style": "btn-outline-success",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+                {
+                    "text": "Create Dividend",
+                    "route": "admin_monthend_dividend_create",
+                    "params": {},
+                    "style": "btn-outline-success",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+                {
+                    "text": "Create Income Disaggregation",
+                    "route": "admin_monthend_income_disaggregation_create",
+                    "params": {},
+                    "style": "btn-outline-success",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+                {
+                    "text": "Create Fee Collection",
+                    "route": "admin_monthend_fee_collection_create",
+                    "params": {},
+                    "style": "btn-outline-success",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+            ],
+            actions: [
+                {
+                    "text": "Review Monthend",
+                    "route": "admin_monthend_asset_dashboard",
+                    "params": {},
+                    "style": "btn-outline-primary text-nowrap",
+                },
+            ],
+            showFields: [
+                'status',
+                'buying',
+                'selling',
+                'taskTracker',
+            ],
+        },
+        
+    }) }}
+{% endblock page_content %}

@@ -1,0 +1,102 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "account-information",
+    "sectionTitle": "Subject Account Information",
+    "linkActions": [
+        {
+            "text": "View User",
+            "route": "admin_user_edit",
+            "params": {"id": user.id},
+            "style": "btn-outline-dark",
+            "newTab": true,
+        },
+    ]
+} %}
+    {% block sectionContent %}
+    {{ include('admin/components/_kv_table.html.twig', {
+        tableId: "commitment-rules",
+        valueDefaultStyle: "tw-font-mono",
+        keyColumnWidth: 50,
+        kv: {
+            "Id": user.id,
+            "Full name": user.fullName,
+            "Username": user.userIdentifier,
+            "Contact Email": user.email,
+            "User type": user.investor.corporateInvestor ? 'Organisation' : 'Individual',
+            "Legacy Self Certification": user.investor.cxbWorthInvestor ? 'High Net Worth ' : ''
+                ~ user.investor.cxbSophisticatedInvestor ? 'Sophisticated ' : ''
+                ~ user.investor.cxbRestrictedUser ? 'Restricted/Retail' : '',
+            "User Categorisation": user.onboardingProfile.category
+                ? user.onboardingProfile.category.value|capitalize
+                : 'N/A',
+            "Date of Birth": user.birthDate ? user.birthDate|date('Y-m-d') : 'N/A',
+            "Gender": user.gender|capitalize,
+            "Created At": user.createdAt ? user.createdAt|date('Y-m-d H:i:s') : 'N/A',
+            "Last Login": user.lastLogin ? user.lastLogin|date('Y-m-d H:i:s') : 'N/A',
+        }
+    }) }}
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "documents",
+    "sectionTitle": "Documents",
+} %}
+    {% block sectionContent %}
+
+    {% if user.documents|length == 0 %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "User has no documents and is not yet ready for a new KYC review.",
+        }) }}
+
+    {% endif %}
+
+    {{ include('admin/components/users/_doc_list.html.twig', {
+        userdocs: user.documents,
+    }) }}
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "kyc-profile",
+    "sectionTitle": "Current KYC Profile",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+    {{ include('admin/components/kyc/_kyc_profile.html.twig') }}
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "kyc-reports",
+    "sectionTitle": "KYC Reports",
+    "linkActions": [
+        {
+            "text": "Sync Mangopay KYC",
+            "route": "admin_kyc_report_sync_mangopay",
+            "params": {
+                id: user.id,
+                redirectRoute: app.request.attributes.get('_route'),
+                redirectId: kycReview is defined ? kycReview.id : user.id,
+            },
+            "style": "btn-outline-dark",
+            "roleRequired": "ROLE_OPERATIONS"
+        },
+    ]
+} %}
+    {% block sectionContent %}
+    {{ include('admin/components/kyc/_reports_list.html.twig', {reports: user.kycReports}) }}
+    {% endblock %}
+{% endembed %}
+
+{{ include('admin/components/status_record_table.html.twig', {
+    object: user,
+    places: [
+        'email_not_verified',
+        'email_verified',
+        'registration_complete',
+        'approved',
+        'blocked',
+    ]}) 
+}}

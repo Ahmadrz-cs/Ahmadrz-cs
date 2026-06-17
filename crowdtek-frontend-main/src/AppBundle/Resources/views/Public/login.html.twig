@@ -1,0 +1,53 @@
+{% extends "@AppBundle/base-lite.html.twig" %}
+
+{% block title %}Log in - Yielders{% endblock %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block body %}
+    <main role="main" class="container mb-8">
+        <nav class="row justify-content-between mt-2">
+            <div class="col">
+                <a href="{{ path('homepage') }}">
+                    <img class="logo-nav mb-2" src="{{ asset('bundles/app/images/onboarding/logo.png') }}" height="40" loading="lazy" alt="yielders logo">
+                </a>
+            </div>
+            <div class="col-auto">
+                <a href="{{ path('Onboarding')}}" class="btn btn-light rounded-pill text-sm-right py-1 px-2">Sign-up</a>
+            </div>
+        </nav>
+        <section class="row justify-content-center mt-2 mt-sm-6 pb-6">
+            <div class="col-md-10 col-lg-8 col-xl-6">
+                <h3>Log in</h3>
+                <form class="" role="form" id="form_sign_in" action="{{ path('login')}}" method="POST">
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label for="">Email Address</label>
+                            <input class="form-control" type="email" id="sign_in_type_email" name="sign_in_type[email]" required>
+                        </div>
+                        <div class="form-group col-12">
+                            <label for="">Password</label>
+                            <input class="form-control" type="password" id="sign_in_type_password" name="sign_in_type[password]" data-enpass.usermodified="yes" required>
+                            <i class="pw-eye pw-hide position-absolute" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <input id="form_sign_in" type="submit" class="btn btn-primary rounded-pill btn-lg btn-block" value="Login">
+                        </div>
+                        <div class="col-sm-6">
+                            <a href="{{ path('forgot_password') }}" class="d-block btn btn-link text-sm-right py-2 py-sm-1">Forgot password?</a>
+                        </div>
+                    </div>
+                    <input id="Text1" name="Text1" type="hidden" />
+                    <input id="hdlength" name="hdlength" type="hidden" />
+                </form>
+            </div>
+        </section>
+    </main>  
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('bundles/app/js/onboarding/Signin_load.js') }}"></script>
+{% endblock %}

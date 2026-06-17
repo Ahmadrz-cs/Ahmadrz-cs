@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24.042" height="24.042" viewBox="0 0 24.042 24.042">
+    <defs>
+        <style>
+            .cls-1{fill:none}.cls-2{fill:#2a524a}.cls-3{fill:#0C6953}
+        </style>
+    </defs>
+    <g id="Group_1459" data-name="Group 1459" transform="translate(-1207 -3367)">
+        <g id="emoji_people-24px_1_" data-name="emoji_people-24px (1)" transform="translate(1207 3367)">
+            <g id="Bounding_Box">
+                <path id="Rectangle_8" d="M0 0h24.042v24.042H0z" class="cls-1" data-name="Rectangle 8"/>
+            </g>
+            <g id="Flat" transform="translate(4.007 2.003)">
+                <g id="Group_285" data-name="Group 285">
+                    <circle id="Ellipse_1" cx="2.003" cy="2.003" r="2.003" class="cls-2" data-name="Ellipse 1" transform="translate(6.01)"/>
+                    <path id="Path_168" d="M18.577 9.454a3.107 3.107 0 0 0-2.364-1.112h-2.544a5.021 5.021 0 0 1-5-5.009h-2a7.036 7.036 0 0 0 5.009 6.722v13.313h2v-6.01h2v6.01h2V11.4l3.957 3.957 1.412-1.412z" class="cls-3" data-name="Path 168" transform="translate(-6.667 -3.333)"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

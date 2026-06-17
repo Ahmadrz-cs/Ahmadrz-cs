@@ -1,0 +1,70 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_onboarding_profile' %}
+{% set backToRouteParams = { id: user.id } %}
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = mainHeading|default('New Categorisation') %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'ops' %}
+
+{% block notices %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "notice",
+        message: "The 'None' category means the user does not fit into any of the 3 permitted categories, so they are deemed unsuitable for investing in our products.",
+    }) }}
+{% endblock %}
+
+{% block objectMeta %}
+    {{ include('admin/components/users/_basic_info.html.twig') }}
+{% endblock %}
+
+{% block formContents %}
+    <section class="row">
+        <div class="col-md-6">{{ form_row(form.category) }}</div>
+        <div class="col-md-6">{{ form_row(form.verified) }}</div>
+        <div class="col-12">
+            {{ form_row(form.details) }}
+            <div class="d-flex flex-column gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm align-self-start" type="button" onclick="prettyPrint()">Check and Format JSON</button>
+                <pre class="bg-warning-subtle rounded px-3 py-2 mb-0 d-none" id="details-syntax-errors"></pre>
+            </div>
+        </div>
+        <div class="col-12">{{ form_row(form.notes) }}</div>
+        {# <div class="col-md-6">
+            <label class="card card-body bg-light shadow-none border mb-3">
+                {{ form_widget(form.verified) }}
+                <span class="">{{ form_help(form.verified) }}</span>
+            </label>
+        </div> #}
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Create Categorisation</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_onboarding_profile', {id: user.id}) }}">Cancel</a>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script type="text/javascript">
+		function prettyPrint() {
+			var textAreaContent = document.getElementById("{{ form.details.vars.id }}").value;
+            if (textAreaContent.length > 0) {
+                try {
+                    var parsedTextAreaContent = JSON.parse(textAreaContent);
+                    var formattedJson = JSON.stringify(parsedTextAreaContent, undefined, 4);
+                    document.getElementById("{{ form.details.vars.id }}").value = formattedJson;
+                    document.getElementById("details-syntax-errors").textContent = "JSON is valid";
+                    document.getElementById("details-syntax-errors").classList.remove('d-none');
+                } catch (error) {
+                    console.log(error);
+                    document.getElementById("details-syntax-errors").textContent = error.message;
+                    document.getElementById("details-syntax-errors").classList.remove('d-none');
+                }
+            } else {
+                document.getElementById("details-syntax-errors").classList.add('d-none');
+            }
+		}
+		document.onload = prettyPrint();
+	</script>
+{% endblock javascripts %}

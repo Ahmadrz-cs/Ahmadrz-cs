@@ -1,0 +1,132 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Offerings' %}
+{% set mainHeading = 'Offerings List' %}
+{% set baseTemplate = 'cms' %}
+
+{% set visibility_map = {
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_AUTO')): "Auto",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_ADMIN')): "Admin Only",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_VIP')): "VIP",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_NORMAL')): "Normal",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_ALL')): "All",
+} %}
+{# {% set exportUri = path('admin_offering_list_export', app.request.query.all) %} #}
+
+{% block createActions %}
+{% if is_granted('CAN_CREATE_OFFERING', app.user) %}
+<a href="{{ path('admin_offering_add') }}" class="btn btn-success">Add Offering</a>
+{% endif %}
+<a href="{{ path('admin_offering_funding_progress') }}" class="btn btn-outline-secondary">View by Raised Amount</a>
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_offering_index', { isSecondaryMrkt: '' }) }}" class="btn btn-light">All</a>
+<a href="{{ path('admin_offering_index', { isSecondaryMrkt: 1, offeringType: 'prefunding' }) }}"
+    class="btn btn-light">Any Prefunding</a>
+<a href="{{ path('admin_offering_index', { isFeatured: 1 }) }}" class="btn btn-light">Any Featured</a>
+<a href="{{ path('admin_offering_index', { isSecondaryMrkt: 1, sell_investment: 0, lifecycleStatus: ['published'] }) }}"
+    class="btn btn-light">Published First Party</a>
+<a href="{{ path('admin_offering_index', { isSecondaryMrkt: 1, sell_investment: 1, lifecycleStatus: ['draft', 'submitted', 'approved'] }) }}"
+    class="btn btn-light">Relistings awaiting publication</a>
+<a href="{{ path('admin_offering_index', { isSecondaryMrkt: 1, sell_investment: 1, lifecycleStatus: ['published'] }) }}"
+    class="btn btn-light">Published Relistings</a>
+<a href="{{ path('admin_offering_index', { lifecycleStatus: ['cancelled', 'closed', 'rejected'] }) }}"
+    class="btn btn-light">Inactive</a>
+<a href="{{ path('admin_offering_index', { compare: true }) }}"
+    class="btn btn-light">Comparison Mode</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.name) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.offeringType) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.visibility) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.isFeatured) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.sell_investment) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdBy) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.isSecondaryMrkt) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.tradeOrder) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.lifecycleStatus} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+
+{% if app.request.query.all.compare ?? false %}
+    {{ include('admin/pages/maintenance/porting/_compare_offerings_list.html.twig', {
+        offerings: objects
+    }) }}
+{% else %}
+    
+<table class="table table-striped" id="offeringlist">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Created (d/m/Y)</th>
+            <th>Asset Share Price (£)</th>
+            <th>Raised/Target (£)</th>
+            <th>Investment ID</th>
+            <th>Visibility</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for offering in objects %}
+        {% if
+        form is not defined
+        or not isSecondaryMkt|default
+        or (form.vars.value.firstParty|default and not offering.sellInvestment.id|default)
+        or (form.vars.value.relisted|default and offering.sellInvestment.id|default)
+        %}
+        {% if form.vars.value.inactive|default
+        or (not form.vars.value.inactive|default and offering.lifecyclestatus|default not in inactiveStates|default([]))
+        %}
+        <tr>
+            <td>{{ offering.id }}</td>
+            <td>
+                {% if offering.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') %}
+                <span class="badge text-bg-dark me-1">Admin</span>
+                {% elseif offering.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') %}
+                <span class="badge text-bg-dark me-1">VIP</span>
+                {% endif %}
+                {% if offering.isFeatured %}
+                <span class="text-warning me-1"><i class="fa fa-star fa-fw me-2"></i></span>
+                {% endif %}
+                <a href="{{ path('admin_offering_edit', { id: offering.id }) }}">{{ offering.name }}</a>
+            </td>
+            <td>{{ offering.offeringType|capitalize }}</td>
+            <td>{{ offering.createdAt | date("d/m/Y", false) }}</td>
+            <td>{{ offering.asset.pricePerShare}}</td>
+            <td>{{ offering.RaisedAmount|number_format(2, '.', '')}} ({{ offering.RaisedPercent|number_format }}%) / {{
+                offering.FundingGoal }}</td>
+            <td>{% if offering.SellInvestment is not empty %}
+                <a href="{{ path('admin_investment_edit', { id: offering.SellInvestment.id }) }}">
+                    {{ offering.SellInvestment.id }}
+                </a>
+                <span class="d-none">{{ offering.SellInvestment.user.username }}</span>
+                {% endif %}
+            </td>
+            <td>{{ visibility_map[offering.visibility] }} ({{ offering.visibility }})</td>
+            <td>{% include 'admin/pages/offerings/_status.html.twig' %}</td>
+            <td>{% include 'admin/pages/offerings/_actions.html.twig' %}</td>
+        </tr>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+
+{% endblock %}

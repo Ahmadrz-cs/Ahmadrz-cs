@@ -1,0 +1,90 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Mangopay Reports' %}
+{% set mainHeading = 'Transaction Report Builder' %}
+{% set maturityLabel = 'beta' %}
+
+{% set statusToColor = {
+    'available': 'green',
+    'pending': 'yellow',
+    'draft': 'gray',
+    'cancelled': 'red',
+} %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'report-set-list',
+        "sectionTitle": 'All Report Builders',
+        "linkActions": [
+            {
+				"text": "Configure New Report Builder",
+				"route": "admin_reports_mangopay_set_create",
+				"params": {},
+				"style": "btn-dark",
+			},
+            {
+				"text": "View All Mangopay Reports",
+				"route": "admin_reports_mangopay_index",
+				"params": {},
+				"style": "btn-outline-secondary",
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The report builder allows you to choose an asset wallet, define a custom time range, then automatically create a merged report with optional processing.",
+        }) }}
+
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {list: results}) }}
+
+        <div class="table-responsive">
+            <table class="table" id="transaction-builder-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Asset</th>
+                        <th>Description</th>
+                        <th>Period Start</th>
+                        <th>Period End</th>
+                        <th class="text-end">Reports</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reportSet in results %}
+                    <tr class="tw-text-sm" data-object-id="{{ reportSet.id }}">
+                        <td><a class="btn btn-outline-primary text-nowrap"
+                            href="{{ path('admin_reports_mangopay_set_view', { 
+                            id: reportSet.id }
+                        ) }}">View</a></td>
+                        <td>{{ reportSet.id }}</td>
+                        <td>{{ reportSet.reportSetType.value|capitalize }}</td>
+                        <td>{% if reportSet.asset is not null %}<a href="{{ path('admin_product_dashboard', { 
+                                id: reportSet.asset.id }
+                            ) }}">#{{ reportSet.asset.id }} // {{ reportSet.asset.name }} ({{ reportSet.asset.companyNumber }})</a>
+                            {% else %}'N/A'{% endif %}
+                        </td>
+                        <td>{{ reportSet.description }}</td>
+                        <td class="tw-tabular-nums">{{ reportSet.periodStart ? reportSet.periodStart|date('Y-m-d H:i') : 'N/A' }}</td>
+                        <td class="tw-tabular-nums">{{ reportSet.periodEnd ? reportSet.periodEnd|date('Y-m-d H:i') : 'N/A' }}</td>
+                        <td class="text-end tw-tabular-nums">{{ reportSet.reports|length }}</td>
+                        <td class="tw-tabular-nums">{{ reportSet.createdAt|date('Y-m-d H:i') }}</td>
+                        <td>
+                            <span class="d-flex gap-2 align-items-center">
+                                {{ include('admin/components/_indicator.html.twig', {color: statusToColor[reportSet.status.value]|default('gray') }) }}
+                                {{ reportSet.status.value|capitalize }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

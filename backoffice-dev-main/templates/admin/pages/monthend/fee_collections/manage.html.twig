@@ -1,0 +1,493 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_index' %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Fee Collection' %}
+
+{% set transfersList = transferOrder.transfers %}
+{% set transfersCompletedList = transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE')) %}
+{% set originalTotal = transfersList|reduce((carry, v) => carry + v.amount) %}
+{% set completedTotal = transfersCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+
+    {{ include('admin/pages/monthend/order_actions.html.twig', {
+        order: transferOrder,
+        originalTotal: originalTotal
+    }) }}
+    
+    {{ include('admin/pages/monthend/_validation_issues_warning.html.twig') }}
+
+    {% if transfersList is not empty
+        and workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE')) %}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+            title: "Check Wallet Balances",
+            elementId: "wallet-balance-prompt",
+        } %}
+            {% block message %}
+                <p>You should check that the asset wallets have enough funds to pay the relisting fee before approving the order.</p>
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": "Check Wallet Balances",
+                        "route": "admin_monthend_wallet_checker",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-dark",
+                    },
+                }) }}
+            {% endblock message %}
+        {% endembed %}
+
+    {% endif %}
+
+    {% if feeGuess is not empty and feeGuess != transferOrder.description %}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "notice",
+            title: "Edit Order Description",
+            elementId: "description-suggestion",
+        } %}
+            {% block message %}
+                <p>Based on the transfers in this order, you may want to update the order description to better describe what the fee collection order is for. Suggested description: "{{ feeGuess }}"</p>
+                <div class="d-flex flex-wrap gap-2">
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Apply Suggested Description",
+                            "route": "admin_monthend_fee_collection_generate_description",
+                            "params": {id: transferOrder.id},
+                            "style": "btn-dark",
+                        },
+                    }) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Edit Order",
+                            "route": "admin_monthend_fee_collection_edit",
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary",
+                            "roleRequired": "ROLE_OPERATIONS",
+                        },
+                    }) }}
+                </div>
+            {% endblock message %}
+        {% endembed %}
+
+    {% endif %}
+
+
+    {% if otherMonthendOrders is not empty %}
+    
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "existing-order-warning",
+            "sectionTitle": "Similar Fee Collection Already Exists",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+        } %}
+            {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "There is already a fee collection for this monthend period. You can ignore this warning if additional fee collections are intentional.",
+            }) }}
+            <div class="overflow-auto">
+                <table class="table" id="">
+                    <thead>
+                        <tr>
+                            <th>Actions</th>
+                            <th>Id</th>
+                            <th>Related Monthend</th>
+                            <th>Description</th>
+                            <th>Transfers</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transferOrder in otherMonthendOrders|default([]) %}
+                            <tr data-transfer-order-id="{{ transferOrder.id }}">
+                                <td>
+                                    <a class="btn btn-outline-primary"
+                                        href="{{ path('admin_monthend_fee_collection_manage', { id: transferOrder.id }) }}">
+                                        View
+                                    </a>
+                                </td>
+                                <td>{{ transferOrder.id }}</td>
+                                <td>{{ transferOrder.scheduledFor|date('Y-m', false) }}</td>
+                                <td>{{ transferOrder.description }}</td>
+                                <td>{{ transferOrder.transfers|length }}</td>
+                                <td>{{ transferOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+    <div class="row g-3">
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-transfer",
+                "sectionTitle": "About Transfer Order",
+                "linkActions": [
+                    {
+                        "text": "Edit Order",
+                        "route": "admin_monthend_fee_collection_edit",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-secondary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                    {
+                        "text": "Check Wallet Balances",
+                        "route": "admin_monthend_wallet_checker",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-dark",
+                    },
+                    {
+                        "text": "Configure Fee Wallets",
+                        "route": "admin_app_setting",
+                        "params": {},
+                        "style": "btn-outline-dark",
+                        "newTab": true,
+                        "roleRequired": "ROLE_TECH_OPS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Order Id',
+                        value: transferOrder.id,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Scheduled Monthend',
+                        value: transferOrder.scheduledFor|date('Y-m'),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Covering Period Between',
+                        value: transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                            ~ ' - ' 
+                            ~ transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                        className: 'col-12',
+                    }) }}
+                    {# {{ include('admin/components/stat.html.twig', {
+                        key: 'Fee Collection Wallet' ~ (isDedicatedFeeWallet ? '' : ' (Superadmin)'),
+                        value: feeWallet,
+                        className: 'col-md-6'
+                    }) }} #}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Description',
+                        value: transferOrder.description|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                </div>
+                {{ include('admin/components/monthend/_available_fee_wallets.html.twig', {
+                    feeWallets: feeWallets,
+                    transfers: transferOrder.transfers
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "order-status",
+                "sectionTitle": "Order Status",
+            } %}
+                {% block customLinkActions %}
+                    {{ include('admin/pages/transfer_order/_status_transitions.html.twig', {
+                        additionalParams: { redirectRoute: 'admin_monthend_fee_collection_manage' }
+                    }) }}
+                {% endblock customLinkActions %}
+
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: transferOrder.status|capitalize|replace({'_':'-'}),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Approved By',
+                        value: transferOrder.approvedBy|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                    {{ include('admin/components/blame-timestamp.html.twig', {
+                        object: transferOrder,
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        {# <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-asset",
+                "sectionTitle": "About Asset",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}
+                <div class="">
+                    <a class="btn btn-outline-dark"
+                        href="{{ path('admin_product_dashboard', {
+                            id: transferOrder.asset.id,
+                        }) }}">
+                        View Asset Product
+                    </a>
+                    <a class="btn btn-outline-dark"
+                        href="{{ path('admin_asset_wallets_manage', {
+                            asset: transferOrder.asset.id,
+                        }) }}">
+                        View Wallet Balances
+                    </a>
+                </div>
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'SPV Company Number',
+                        value: transferOrder.asset.companyNumber,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Valuation',
+                        value: '£' ~ transferOrder.asset.fundingGoal|number_format(2, '.', ','),
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div> #}
+        {# <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "transfer-guidelines",
+                "sectionTitle": "Transfer Guidelines",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {% if offering is not empty %}
+                        {% set monthlyDividend = (transferOrder.asset.fundingGoal / 1200) * offering.netRentProjected %}
+                        {% set corpTax = (monthlyDividend / 0.81) - monthlyDividend %}
+                        {% set safetyNetTarget = max(1000, monthlyDividend) %}
+                        {% set safetyNetLevel = min(100, (treasuryWalletBalance * 100) / safetyNetTarget) %}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Expected Dividend (' ~ offering.netRentProjected|number_format(2, '.', ',') ~ '%)',
+                            value: '£' ~ monthlyDividend|number_format(2, '.', ',')
+                                ~ '\n(~£' ~ (monthlyDividend * 12)|number_format(2, '.', ',') ~ '/year)',
+                            className: 'col-md-6'
+                        }) }}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Expected Corp Tax (19%)',
+                            value: '£' ~ corpTax|number_format(2, '.', ',') 
+                                ~ '\n(~£' ~ (corpTax * 12)|number_format(2, '.', ',') ~ '/year)',
+                            className: 'col-md-6'
+                        }) }}
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between g-3">
+                                {{ include('admin/components/stat.html.twig', {
+                                    key: 'Treasury Balance',
+                                    value: '£' ~ treasuryWalletBalance|number_format(2, '.', ','),
+                                }) }}
+                                {{ include('admin/components/stat.html.twig', {
+                                    key: 'Maintenance Buffer Target',
+                                    value: '£' ~ safetyNetTarget|number_format(2, '.', ','),
+                                    className: 'text-end',
+                                }) }}
+                            </div>
+                            {{ include('admin/components/_progress_bar.html.twig', {
+                                className: "rounded-2 mt-1",
+                                progressBars: [
+                                    {
+                                        label: "treasury-fill-level",
+                                        value: safetyNetLevel,
+                                    },
+                                ]
+                            }) }}
+                            <details class="bg-light rounded-2 p-3">
+                                <summary class="fw-bold">What is the maintenance buffer?</summary>
+                                <p class="mt-3">
+                                    The maintenance buffer is the minimum balance that should be in the SPV's treasury to cover exceptional expenses for itself.
+                                </p>
+                                <p>This buffer is gradually filled every month via a "maintenance accrual" transfer until the target is reached.
+                                The target is equivalent to whichever is higher from the following:</p>
+                                <ul class="mb-0">
+                                    <li>1 month's full dividend</li>
+                                    <li>£1000</li>
+                                </ul>
+                            </details>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div> #}
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "transfers",
+                "sectionTitle": "Transfers",
+                "linkActions": [
+                    {
+                        "text": "Setup Transfers",
+                        "route": "admin_monthend_fee_collection_setup",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-dark",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": transferOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Add Transfer",
+                        "route": "admin_monthend_fee_collection_search",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-dark",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": transferOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Clear All Transfers",
+                        "route": "admin_transfer_order_clear_transfers",
+                        "params": {
+                            id: transferOrder.id,
+                            redirectRoute: 'admin_monthend_fee_collection_manage',
+                        },
+                        "style": "btn-outline-danger",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": transferOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Export Transfers List",
+                        "route": "admin_transfer_order_transfers_export",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {# {{ include('admin/components/stat.html.twig', {
+                        key: 'Wallet Balance (£)',
+                        value: depositWalletBalance|number_format(2, '.', ',')
+                    }) }} #}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Transfers Completed',
+                        value: transfersCompletedList|length
+                            ~ '/' ~ transferOrder.transfers|length
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Transferred (£)',
+                        value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+                    }) }}
+                    {% set lastTransfer = transfersCompletedList|sort((a, b) => a.updatedAt <=>
+                    b.updatedAt)|last %}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Most Recently Completed',
+                        value: lastTransfer is empty ? "-" : lastTransfer.updatedAt|date('Y-m-d H:i:s (P)'),
+                    }) }}
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped datatable" id="transfers-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Asset</th>
+                                <th>Transfer From</th>
+                                <th>Transfer To</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount (£)</th>
+                                <th class="text-end">Proportion (%)</th>
+                                <th>Updated</th>
+                                <th>Status</th>
+                                <th>Transaction Reference</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transferRequest in transferOrder.transfers|default([]) %}
+                                <tr data-object-id="{{ transferRequest.id }}">
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% if is_granted('ROLE_FINANCIAL_OPS')
+                                                and workflow_can(transferRequest, constant('App\\Entity\\TransferRequest::TRANSITION_TRANSFER'))
+                                                and workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN'))
+                                            %}
+                                                {{ include('admin/components/button_link.html.twig', {
+                                                    linkProps: {
+                                                        "text": "Transfer Single",
+                                                        "route": 'admin_transfer_request_run',
+                                                        "params": {
+                                                                id: transferRequest.id,
+                                                                redirectRoute: 'admin_monthend_fee_collection_manage',
+                                                            },
+                                                        "style": "btn-primary text-nowrap",
+                                                    },
+                                                }) }}
+                                            {% endif %}
+                                            {% if is_granted('ROLE_OPERATIONS') %}
+                                                {{ include('admin/components/button_link.html.twig', {
+                                                    linkProps: {
+                                                        "text": "Edit",
+                                                        "route": 'admin_transfer_request_edit',
+                                                        "params": {
+                                                            id: transferRequest.id,
+                                                            restricted: 1,
+                                                        },
+                                                        "style": "btn-outline-primary text-nowrap",
+                                                    },
+                                                }) }}
+
+                                                {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE')) %}
+                                                    {{ include('admin/components/button_link.html.twig', {
+                                                        linkProps: {
+                                                            "text": "Delete",
+                                                            "route": 'admin_transfer_request_delete',
+                                                            "params": {
+                                                                id: transferRequest.id,
+                                                                redirectRoute: 'admin_monthend_fee_collection_manage',
+                                                            },
+                                                            "style": "btn-outline-danger text-nowrap",
+                                                            "dangerous": true,
+                                                        },
+                                                    }) }}
+                                                {% endif %}
+                                            {% endif %}
+
+                                            {% if transferRequest.transaction is not null %}
+                                                {{ include('admin/components/button_link.html.twig', {
+                                                    linkProps: {
+                                                        "text": "View Transaction",
+                                                        "route": 'admin_transactions_view',
+                                                        "params": {id: transferRequest.transaction.id},
+                                                        "style": "btn-outline-dark text-nowrap",
+                                                    },
+                                                }) }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td data-field="asset">
+                                        {% if transferRequest.asset is not null %}
+                                            <a href="{{ path('admin_product_dashboard', {
+                                                id: transferRequest.asset.id
+                                            }) }}">#{{ transferRequest.asset.id }} 
+                                            // {{ transferRequest.asset.name }}
+                                            ({{ transferRequest.asset.companyNumber }})</a>
+                                        {% else %}N/A{% endif %}
+                                    </td>
+                                    <td class="tw-text-sm tw-font-mono" data-field="debitWalletId">{{ transferRequest.debitWalletId }}</td>
+                                    <td class="tw-text-sm tw-font-mono" data-field="creditWalletId">{{ transferRequest.creditWalletId }}</td>
+                                    <td data-field="description">{{ transferRequest.description }}</td>
+                                    <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                                    <td class="text-end tw-tabular-nums">{{ (transferRequest.amount * 100 / max(originalTotal, 0.01))|number_format(3, '.', ',') }}</td>
+                                    <td>{{ transferRequest.updatedAt|date('Y-m-d H:i:s') }}</td>
+                                    <td>{{ transferRequest.status|capitalize }}{% if transferRequest.statusInfo %} ({{ transferRequest.statusInfo }}){% endif %}</td>
+                                    <td class="tw-text-sm tw-font-mono">{{ transferRequest.transaction.externalId|default('N/A') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock page_content %}

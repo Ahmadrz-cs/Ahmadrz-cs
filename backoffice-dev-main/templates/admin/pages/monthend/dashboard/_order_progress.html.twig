@@ -1,0 +1,42 @@
+{# 
+    Required variables:
+        - originalList = array of PaymentRequest or TransferRequest
+        - orderType = "payment" or "transfer"
+#}
+
+{% if "payment" == orderType %}
+    {% set completedList = originalList|filter(p => p.status == constant('App\\Entity\\PaymentRequest::STATE_PAID')) %}
+{% elseif "transfer" == orderType %}
+    {% set completedList = originalList|filter(t => t.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE')) %}
+{% elseif "shareTransfer" == orderType %}
+    {% set completedList = originalList|filter(t => t.status == constant('App\\Entity\\Enum\\OrderRequestStatus::Completed')) %}
+{% endif %}
+
+{% if "shareTransfer" == orderType %}
+    {% set originalTotal = originalList|reduce((carry, v) => carry + v.shares) %}
+    {% set progress = 100 * (originalList|length ? completedList|length / originalList|length : completedList|length) %}
+{% else %}
+    {% set originalTotal = originalList|reduce((carry, v) => carry + v.amount) %}
+    {% set completedTotal = completedList|reduce((carry, v) => carry + v.amount) %}
+    {% set progress = 100 * (originalTotal ? completedTotal / originalTotal : originalTotal) %}
+{% endif %}
+
+
+<div class="d-flex justify-content-between">
+    {% if "shareTransfer" == orderType %}
+        <span class="me-3" data-progress="value">{{ originalTotal|number_format(0, '.', ',') }} Shares</span>
+    {% else %}
+        <span class="me-3" data-progress="value">£{{completedTotal|number_format(2, '.', ',')}}/{{ originalTotal|number_format(2, '.', ',') }}</span>
+    {% endif %}
+    <span data-progress="count">{{ completedList|length }}/{{ originalList|length }}</span>
+</div>
+{{ include('admin/components/_progress_bar.html.twig', {
+    className: "rounded-2 mt-1",
+    height: "1rem",
+    progressBars: [
+        {
+            label: "asset-maturity-progress",
+            value: progress,
+        },
+    ]
+}) }}

@@ -1,0 +1,55 @@
+<div class="btn-group border">
+    {% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+    <a href="{{ path('admin_investment_edit', { id: investment.id }) }}" type="button" class="btn btn-light"><i
+                class="fa fa-pen"></i></a>
+    {% endif %}
+
+    {% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" data-display="static"><i class="fa fa-bars"></i>
+    </button>
+    <div class="dropdown-menu dropdown-menu-end p-2 tw-text-sm" style="right: 0; left: auto;">
+
+        {% if investment.lifecycleStatus =='open' %}
+            <a class="dropdown-item rounded" href="{{ path('admin_investment_approve', { id: investment.id} ) }}"><i class="fa fa-thumbs-up fa-fw me-2"></i>Approve Investment</a>
+            <a class="dropdown-item rounded" href="{{ path('admin_investment_reject', { id: investment.id} ) }}"><i class="fa fa-ban fa-fw me-2"></i> RejectInvestment</a>
+            <a class="dropdown-item rounded" href="{{ path('admin_investment_withdraw', { id: investment.id} ) }}"><i class="fa fa-remove fa-fw me-2"></i> WithdrawInvestment</a>
+            <li><hr class="dropdown-divider"></li>
+        {% endif %}
+
+        {% if investment.lifecycleStatus =='approved' %}
+            <a class="dropdown-item rounded" href="{{ path('admin_investment_reject', { id: investment.id} ) }}"><i class="fa fa-ban fa-fw me-2"></i> RejectInvestment</a>
+            <a class="dropdown-item rounded" href="{{ path('admin_investment_withdraw', { id: investment.id} ) }}"><i class="fa fa-remove fa-fw me-2"></i> WithdrawInvestment</a>
+            <li><hr class="dropdown-divider"></li>
+        {% endif %}
+
+        {% if investment.lifecycleStatus =='rejected' %}
+            <a class="dropdown-item rounded" href="{{ path('admin_investment_approve', { id: investment.id} ) }}"><i class="fa fa-thumbs-up fa-fw me-2"></i>Approve Investment</a>
+            <li><hr class="dropdown-divider"></li>
+        {% endif %}
+
+        <a class="dropdown-item rounded" href="{{ path('admin_investment_edit', { id: investment.id }) }}"><i class="fa fa-file-alt fa-fw me-2"></i> Update Investment</a>
+        <li><hr class="dropdown-divider"></li>
+
+        {% if investment.lifecycleStatus =='settled' %}
+        <a class="dropdown-item rounded" href="{{ path('admin_investment_add_payout', { id: investment.id }) }}"><i class="fa fa-money-bill fa-fw me-2"></i> Add Payout</a>
+        {% endif %}
+
+        {% if is_granted('CAN_UPDATE_DOC', app.user) %}
+        <a class="dropdown-item rounded" href="{{ path('admin_investment_add_document', { id: investment.id }) }}"><i class="fa fa-file fa-fw me-2"></i> Add Document</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if not is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+    <a class="dropdown-item rounded" href="{{ path('admin_investment_edit', { id: investment.id }) }}" type="button" class="btn btn-light"><i>View Investment</i></a>
+    {% endif %}
+
+    {% if not is_granted('CAN_UPDATE_OFFERING', app.user) %}
+    <a class="dropdown-item rounded" href="{{ path('admin_offering_edit', { id: investment.offering.id }) }}" type="button" class="btn btn-light"><iclass="fa fa-money-bill fa-fw me-2"></i></a>
+    {% endif %}
+    
+    {% if not is_granted('CAN_UPDATE_ASSET', app.user) %}
+    <a class="dropdown-item rounded" href="{{ path('admin_asset_edit', { id: investment.offering.asset.id }) }}" type="button" class="btn btn-light"><iclass="fa fa-building fa-fw me-2"></i></a>
+    {% endif %}
+
+</div>

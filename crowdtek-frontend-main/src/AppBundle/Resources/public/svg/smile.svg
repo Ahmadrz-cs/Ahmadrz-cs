@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" viewBox="0 0 70 70">
+    <defs>
+        <style>
+            .cls-1{fill:#0C6953}.cls-2{clip-path:url(#clip-path)}.cls-3{fill:none}
+        </style>
+        <clipPath id="clip-path">
+            <circle id="Oval" cx="35" cy="35" r="35" class="cls-1" transform="translate(168 3674)"/>
+        </clipPath>
+    </defs>
+    <g id="Mask_Group_9" class="cls-2" data-name="Mask Group 9" transform="translate(-168 -3674)">
+        <g id="sentiment_satisfied-24px" transform="translate(168 3674)">
+            <path id="Path_169" d="M0 0h70v70H0z" class="cls-3" data-name="Path 169"/>
+            <circle id="Ellipse_2" cx="4.375" cy="4.375" r="4.375" class="cls-1" data-name="Ellipse 2" transform="translate(40.833 23.333)"/>
+            <circle id="Ellipse_3" cx="4.375" cy="4.375" r="4.375" class="cls-1" data-name="Ellipse 3" transform="translate(20.417 23.333)"/>
+            <path id="Path_170" d="M34.971 5.833A29.167 29.167 0 1 0 64.167 35 29.152 29.152 0 0 0 34.971 5.833zm.029 52.5A23.333 23.333 0 1 1 58.333 35 23.327 23.327 0 0 1 35 58.333zm0-11.667a11.086 11.086 0 0 1-5.717-1.517c-.35.408-2.508 2.858-2.946 3.354a16.027 16.027 0 0 0 17.354-.029c-2.829-3.179-.029-.058-2.946-3.354A11.01 11.01 0 0 1 35 46.667z" class="cls-1" data-name="Path 170"/>
+        </g>
+    </g>
+</svg>

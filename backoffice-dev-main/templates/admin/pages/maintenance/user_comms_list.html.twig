@@ -1,0 +1,48 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set backToRoute = 'admin_maintenance_user_comms' %}
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'User Communications List' %}
+{% set maturityLabel = 'beta' %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_maintenance_user_comms_list', { subject: 'admin' }) }}" class="btn btn-light">Admin Subject</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.subject) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.status) }}</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped" id="usercommslist">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Recipient</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for comm in objects %}
+        <tr>
+            <td>{{ comm.id }}</a></td>
+            <td>
+                <a href="{{ path('admin_user_edit', { id: comm.recipient.id }) }}">{{ comm.recipient.fullname }}</a>
+            </td>
+            <td>{{ comm.subject }}</td>
+            <td>{{ comm.status }}</td>
+            <td>{{ comm.createdAt|date('Y-m-d') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

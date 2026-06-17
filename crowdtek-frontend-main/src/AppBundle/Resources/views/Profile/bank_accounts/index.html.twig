@@ -1,0 +1,145 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}My Profile
+{% endblock %}
+
+{% block body %}
+
+    <!-- main body -->
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4">
+                            <h4>Linked Bank Accounts</h4>
+                            {% if linkedAccounts|length < 3 %}
+                                <p>Adding a new bank account involves 3 steps:</p>
+                                <ol>
+                                    <li>Submit your bank account details and recent bank statement (from within the last 3 months)</li>
+                                    <li>Wait for a member of our team to review and approve your submission. You will be notified once your bank account has been approved. We may get in touch if more information is required.</li>
+                                    <li>Activate you bank account in your profile</li>
+                                </ol>
+                                {% if linkingRestrictions is empty %}
+								<div class="d-flex justify-content-start my-2" style="gap: 0.5rem;">
+                                    <a href="{{ path('bank_account_registrations_new') }}" class="btn btn-primary rounded-pill px-2">Add new Bank Account</a>
+                                    <a href="{{ path('withdraw_funds') }}" class="btn btn-light rounded-pill px-2">Withdraw Funds</a>
+                                </div>
+								{% endif %}
+								{% if constant('AppBundle\\Entity\\Enum\\RestrictionReason::ScaEnrollment') in linkingRestrictions %}
+									{{ include('@AppBundle/Common/_sca_enrollment_prompt.html.twig', {restrictedAction: "link a new bank account"}) }}
+								{% endif %}
+								{% if constant('AppBundle\\Entity\\Enum\\RestrictionReason::IdentityVerification') in linkingRestrictions %}
+									{{ include('@AppBundle/Common/_id_verification_prompt.html.twig') }}
+								{% endif %}
+                                
+                            {% else %}
+                                <div class="d-flex justify-content-start my-2" style="gap: 0.5rem;">
+                                    <a href="{{ path('withdraw_funds') }}" class="btn btn-light rounded-pill px-2">Withdraw Funds</a>
+                                </div>
+                            {% endif %}
+                            <div class="mt-3">
+                                <h5>Current Linked Bank Accounts</h5>
+                                <p>You can link up to 3 bank accounts. If you think any are missing or want to add more, please contact us at <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a></p>
+                                {% if linkedAccounts|filter(
+                                        ba => ba.status in [constant('AppBundle\\Entity\\Enum\\BankAccountStatus::Pending'), constant('AppBundle\\Entity\\Enum\\BankAccountStatus::Validated')] 
+                                        and ba.metadata.actionRequests is defined 
+                                        and 'proof_of_address' in ba.metadata.actionRequests
+                                    ) is not empty
+                                %}
+                                    {{ include('@AppBundle/Common/_prompt_poa_bank_account.html.twig') }}
+                                {% endif %}
+                                
+                                <table class="grid-table d-lg-table table table-hover border-bottom-0 table-custom text-md mt-3" id="linked-bank-accounts-list">
+                                    <thead class="bg-info p-3 font-medium">
+                                        <th class="border-0 table-custom-hd">Linking Date</th>
+                                        <th class="border-0 table-custom-hd">Type</th>
+                                        <th class="border-0 table-custom-hd">Country</th>
+                                        <th class="border-0 table-custom-hd">Display Name</th>
+                                        <th class="border-0 table-custom-hd">Status</th>
+                                        <th class="border-0 table-custom-hd">Actions</th>
+                                    </thead>
+                                    <tbody>
+                                        {% for ba in linkedAccounts|default([]) %}
+                                        <tr class="grid-table-2 align-end">
+                                            <td class="table-custom-data show-label grid-order-2 grid-text-left" data-label="Submitted">
+                                                <span class="table-custom-value">{{ ba.createdAt|date('d/m/Y') }}</span>
+                                            </td>
+                                            <td class="table-custom-data show-label grid-order-3 grid-text-left" data-label="Type">
+                                                <span class="table-custom-value">{{ ba.accountHolderType.value|capitalize }}</span>
+                                            </td>
+                                            <td class="table-custom-data show-label grid-order-4 grid-text-left" data-label="Country">
+                                                <span class="table-custom-value">{{ ba.country }}</span>
+                                            </td>
+                                            <td class="table-custom-data show-label grid-order-5 grid-text-left" data-label="Display Name">
+                                                <span class="table-custom-value">{{ ba.displayName|replace({'_': '••••'}) }}</span>
+                                            </td>
+                                            <td class="table-custom-data show-label grid-order-6 grid-text-left" data-label="Status">
+                                                <span class="table-custom-value">{{ ba.status.value|capitalize }}</span>
+                                            </td>
+                                            <td class="table-custom-data grid-order-7 grid-text-left" data-label="Status">
+                                                <span class="table-custom-value">
+                                                    <div class="d-flex" style="gap: 0.5rem;">
+                                                        <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_manage_single', { id: ba.uuid}) }} role="button">View</a>
+                                                        {% if ba.status == constant('AppBundle\\Entity\\Enum\\BankAccountStatus::Approved') %}
+                                                        <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_activate', { id: ba.uuid}) }} role="button">Activate</a>
+                                                        {% endif %}
+                                                    </div>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if hasUserInfo %}
+                                <div class="mt-3" id="current-address">
+                                    <h5>Current Registered Address</h5>
+                                    <p>
+                                        {% if userInfo.address.building %}{{ userInfo.address.building }} </br>{% endif %}
+                                        {% if userInfo.address.street_address %}{{ userInfo.address.street_address }} </br>{% endif %}
+                                        {% if userInfo.address.city %}{{ userInfo.address.city }} </br>{% endif %}
+                                        {% if userInfo.address.country %}{{ userInfo.address.country }} </br>{% endif %}
+                                        {% if userInfo.address.postal_code %}{{ userInfo.address.postal_code }} </br>{% endif %}
+                                    </p>
+                                    <p>If your bank statement has a different address to the one on your profile (shown above), you will need to provide a new proof of address via the link below. Your address will then be updated as part of your bank account linking request. Alternatively, you can contact us at <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a></p>
+                                    {{ include('@AppBundle/Common/_indicator_poa_recent.html.twig') }}
+                                    <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_edit_address') }} role="button">Update Address</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+{% endblock %}

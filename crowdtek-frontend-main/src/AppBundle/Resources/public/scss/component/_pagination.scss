@@ -1,0 +1,15 @@
+.pagination {
+    &-wrap {
+        .btn-sm {
+            line-height: 25px;
+        }
+    }
+
+    .page-item {
+        &.disabled {
+            img {
+                opacity: 0.4;
+            }
+        }
+    }
+}

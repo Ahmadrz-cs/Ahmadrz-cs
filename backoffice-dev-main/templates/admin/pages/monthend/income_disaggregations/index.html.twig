@@ -1,0 +1,63 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Income Disaggregations' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfer-orders",
+        "sectionTitle": "All Income Disaggregation Orders",
+        "linkActions": [
+            {
+				"text": "Create Income Disaggregation",
+				"route": "admin_monthend_income_disaggregation_create",
+				"params": {},
+				"style": "btn-success",
+				"roleRequired": "ROLE_OPERATIONS",
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: objects
+        }) }}
+        <div class="table-responsive">
+            <table class="table" id="transfer-order-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Description</th>
+                        <th>Related Monthend</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Transfers</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferOrder in objects|default([]) %}
+                        {% set totalValue = transferOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+                        <tr>
+                            <td>
+                                <a class="btn btn-outline-primary"
+                                    href="{{ path('admin_monthend_income_disaggregation_manage', { id: transferOrder.id }) }}">
+                                    {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View
+                                    {% endif -%}
+                                </a>
+                            </td>
+                            <td>{{ transferOrder.id }}</td>
+                            <td>{{ transferOrder.description }}</td>
+                            <td>{{ transferOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ totalValue|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums">{{ transferOrder.transfers|length }}</td>
+                            <td>{{ transferOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

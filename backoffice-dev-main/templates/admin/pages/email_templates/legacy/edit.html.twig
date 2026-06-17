@@ -1,0 +1,66 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_email_templates_legacy_list' %}
+{% set areaHeading = 'Plaform Configuration' %}
+{% set mainHeading = 'Legacy Email Templates' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "edit-email-template",
+        "sectionTitle": "View and Edit Email Template #" ~ emailTemplate.id,
+        "linkActions": [
+			{
+                "text": "Test Email Template",
+                "route": "admin_email_templates_legacy_test",
+                "params": { id: emailTemplate.id },
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_TECH_OPS",
+            },
+		]
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_alert.html.twig', {
+				variant: "warning",
+				message: "Avoid editing email templates unless you have a technical understanding of how they work.",
+			}) }}
+			{{ form_start(form, { attr: {class: "row g-3"} }) }}
+				<div class="col-md-6">
+					{{ form_row(form.slug) }}
+					<datalist id="{{ form.slug.vars.attr.list|default(form.slug.vars.name) }}">
+						{% for slugSuggestion in slugSuggestions %}
+                            <option value="{{ slugSuggestion }}">
+                        {% endfor %}
+					</datalist>
+				</div>
+				<div class="col-md-6">{{ form_row(form.name) }}</div>
+				<div class="col-12">{{ form_row(form.subject) }}</div>
+				<div class="col-12">
+					{{ form_row(form.body) }}
+					<trix-editor class="tw-text-sm mb-4" input="{{ form.body.vars.id }}"></trix-editor>
+				</div>
+				<div class="col-12">{{ form_row(form.params) }}</div>
+				<div class="col-md-6">{{ form_row(form.sendAdmin) }}</div>
+				<div class="col-md-6">{{ form_row(form.sendUser) }}</div>
+				<div class="col-12 pt-4 border-top">{{ form_row(form.confirmation) }}</div>
+				{{ form_row(form.submit, { attr: {class: "btn btn-primary"} }) }}
+			{{ form_rest(form) }}
+			{{ form_end(form) }}
+			{% include 'admin/components/blame-timestamp.html.twig' with {'object': emailTemplate} only %}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
+{% endblock stylesheets %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script type="text/javascript" src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
+{% endblock javascripts %}

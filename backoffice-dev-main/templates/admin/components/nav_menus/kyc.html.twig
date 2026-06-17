@@ -1,0 +1,36 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: "admin_kyc_index",
+                text: "Dashboard",
+                params: {},
+            },
+            {
+                route: "admin_kyc_onboarding",
+                text: "Onboarding",
+                params: {},
+            },
+            {
+                route: "admin_kyc_vip",
+                text: "Top Yielders",
+                params: {},
+            },
+            {
+                route: "admin_kyc_recurring",
+                text: "Recurring",
+                params: {},
+            },
+            {
+                route: "admin_kyc_review_index",
+                text: "Reviews",
+                params: {},
+            },
+        ]
+    }
+] %}
+
+{{ include('admin/components/_horizontal_nav.html.twig', {
+    navId: 'kycDashboardNav',
+    links: menuLinks,
+}) }}

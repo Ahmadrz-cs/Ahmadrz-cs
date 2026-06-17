@@ -1,0 +1,53 @@
+{% extends "@AppBundle/onboarding-base.html.twig" %}
+
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block body %}
+
+    <section class="wrap">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/errorflash.html.twig' %}
+            <div class="row">
+                <div class="col-md-offset-2 col-md-8">
+                    {% if authenticated %}
+                    <div class="verify_mail_box pdg_20">
+                        <img src="{{ asset('bundles/app/images/onboarding/icons/mail.jpg') }}" loading="lazy" alt="verify mail"/>
+                        <h3>Verify your email address</h3>
+                        <p>Please verify your email to proceed. If you haven't recieved an email from us, please click the Resend.
+                        </p>
+                    </div>
+
+                    <div class="btn_2">
+                        <a href="{{ path('resend_email_verification') }}">
+                            <button class="btn_grdnt">RESEND LINK</button>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        </div>
+    </section>
+
+{% endblock %}

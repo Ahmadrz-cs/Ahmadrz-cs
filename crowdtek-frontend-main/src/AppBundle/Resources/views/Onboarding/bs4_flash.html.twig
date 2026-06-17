@@ -1,0 +1,17 @@
+{% set messageStyles = {
+    'debug': 'light',
+    'info': 'light',
+    'secondary': 'secondary',
+    'notice': 'info',
+    'primary': 'primary',
+    'success': 'success',
+    'warning': 'warning',
+    'error': 'danger',
+    'danger': 'danger',
+} %}
+
+{% for label, messages in app.flashes %}
+	{% for message in messages %}
+		<div class="alert alert-{{ messageStyles[label]|default('light') }}" role="alert"">{{ message|raw }}</div>
+	{% endfor %}
+{% endfor %}

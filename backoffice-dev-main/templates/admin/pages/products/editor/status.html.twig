@@ -1,0 +1,226 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_product_dashboard' %}
+{% set backToRouteParams = {'id': asset.id} %}
+{% set areaHeading = 'Asset Products Editor' %}
+{% set mainHeading = asset.name %}
+
+{% block page_content %}
+
+    {{ include('admin/components/nav_menus/product_editor.html.twig') }}
+    
+    <div class="row g-3">
+        <div class="col-12">
+            <h3 class="fw-bold fs-4">Status</h3>
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: 'You can either use the quick toggles, or for more control, use the editor form at the bottom of this page.',
+            }) }}
+        </div>
+        {% if not alreadyLaunched %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "restricted-editing",
+                "sectionTitle": "Product Not Launched Yet",
+                "sectionStyle": "border rounded-3 p-4 border-warning",
+                "linkActions": [
+                    {
+                        "text": "Go to Launch Centre",
+                        "route": "admin_product_edit_launch",
+                        "params": { id: asset.id },
+                        "style": "btn-outline-success",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "You should avoid making changes here before the product has launched. Most of the settings have no effect until the product launches!",
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+        
+        {% endif %}
+
+        <div class="col-md-6 col-xl-3 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "buying-controls",
+                "sectionTitle": "Buying Market",
+                "linkActions": [
+                    {
+                        "text": asset.buyRestricted ? "Open Buying" : "Close Buying",
+                        "route": "admin_product_edit_toggle_buying",
+                        "params": { id: asset.id },
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Currently',
+                    value: asset.buyRestricted ? 'Closed' : 'Open',
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this setting:</h5>
+                    <ul>
+                        <li>This controls whether any investing is allowed for this asset.</li>
+                        <li>This will be automatically set to open during launches.</li>
+                        <li>This should normally remain open unless you wish to suspend investing in the asset for whatever reason, e.g. impacted dividends.</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-md-6 col-xl-3 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "selling-controls",
+                "sectionTitle": "Selling Market",
+                "linkActions": [
+                    {
+                        "text": asset.sellRestricted ? "Open Selling" : "Close Selling",
+                        "route": "admin_product_edit_toggle_selling",
+                        "params": { id: asset.id },
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Currently',
+                    value: asset.sellRestricted ? 'Closed' : 'Open',
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this setting:</h5>
+                    <ul>
+                        <li>This controls the status of the secondary market for this asset.</li>
+                        <li>This will be automatically set to closed during launches.</li>
+                        <li>This should normally remain closed until the first party listing has been fully sold.</li>
+                        <li>Once the first party listing has been fully sold, the secondary market should be opened.</li>
+                    </ul>
+                </section>
+                    {# {% embed 'admin/components/_alert.html.twig' with {
+                        variant: "warning",
+                        title: "Recommendation",
+                    } %}
+                        {% block message %}
+                            <p>If you toggle this, it is recommend that you also <span class="fw-bold">send a communication to investors</span> informing them of this change and why it has been made.</p>
+                            <p class="mb-0">Note that for data protection reasons, this must be done through an mailing list that recipients can unsubscribe from, e.g. on Mailchimp. The backoffice CMS cannot send these comms out.</p>
+                        {% endblock message %}
+                    {% endembed %} #}
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-md-6 col-xl-3 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "feature-product",
+                "sectionTitle": "Feature Product",
+                "linkActions": [
+                    {
+                        "text": asset.featured ? "Don't Feature Product" : "Feature Product",
+                        "route": "admin_product_edit_toggle_featured",
+                        "params": { id: asset.id },
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Currently',
+                    value: asset.featured ? 'Featured' : 'Not Featured',
+                    className: 'col-sm-6',
+                }) }}
+                <section>
+                    <h5 class="fw-bold fs-6">About this setting:</h5>
+                    <ul>
+                        <li>Featuring a product makes it appear on the homepage/frontpage</li>
+                        <li>This is generally recommended for newly launched products</li>
+                        <li>Products are <b>not</b> featured by default during launches</li>
+                        <li>This toggle changes the weighting from 0 (not featured) and 1 (default featured weighting).</li>
+                        <li>You can manually edit the feature weighting below to change the ordering (larger number first).</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% set commonVisibility = 'Everyone' %}
+        {% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') %}
+            {% set commonVisibility = 'Top Yielders Only' %}
+        {% endif %}
+        {% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') %}
+            {% set commonVisibility = 'Admin Only' %}
+        {% endif %}
+
+        <div class="col-md-6 col-xl-3 d-flex align-items-stretch">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "visibility",
+                "sectionTitle": "Visibility",
+                "linkActions": [
+                    {
+                        "text": "Admin Only" == commonVisibility ? "Show Product" : "Hide Product",
+                        "route": "admin_product_edit_toggle_visibility",
+                        "params": { id: asset.id },
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {% set mode = 'N/A' %}
+                {% if asset.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Acquiring %}
+                    {% set mode = enum('App\\Entity\\Enum\\ProductMode').Prefunding.value %}
+                {% elseif asset.currentStatus != enum('App\\Entity\\Enum\\AssetStatus').Draft %}
+                    {% set mode = enum('App\\Entity\\Enum\\ProductMode').Retail.value %}
+                {% endif %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Currently Visibile To',
+                        value: commonVisibility,
+                        className: 'col-sm-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Current Mode',
+                        value: mode|capitalize,
+                        className: 'col-sm-6',
+                    }) }}
+                </div>
+                <section>
+                    <h5 class="fw-bold">About this setting:</h5>
+                    <ul>
+                        <li>For temporarily hiding products after they have launched</li>
+                        <li>Hiding will make the product visible to admins only</li>
+                        <li>This toggle changes between Auto and Admin. For more control over the visibility, such as setting it to VIP only, use the form below.</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+    {% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "trading-controls",
+        "sectionTitle": "Trading Controls Editor",
+        "sectionStyle": "pb-3",
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form, {attr: {class: "d-flex flex-column gap-3"}}) }}
+            <div class="row">
+                <div class="col-sm-6">{{ form_row(form.featured) }}</div>
+                <div class="col-sm-6">{{ form_row(form.visibility) }}</div>
+                <div class="col-sm-6">{{ form_row(form.buyRestricted) }}</div>
+                <div class="col-sm-6">{{ form_row(form.sellRestricted) }}</div>
+            </div>
+            {{ include('admin/pages/products/editor/_editor_form_actions.html.twig', {
+                routeParams: {id: asset.id}
+            }) }}
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,87 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_income_transfer_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Income Transfer' %}
+{% set mainHeading = mainHeading|default('Add Transfer') %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    <div class="row g-3">
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "asset-information",
+                "sectionTitle": "Asset Information",
+                "linkActions": [
+                    {
+                        "text": "View Asset Wallet Balances (opens in new tab)",
+                        "route": "admin_asset_wallets_manage",
+                        "params": {asset: transferOrder.asset.id},
+                        "style": "btn-outline-dark",
+                        "newTab": true,
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset',
+                        value: '#%s // %s (%s)'|format(transferOrder.asset.id, transferOrder.asset.name, transferOrder.asset.companyNumber),
+                        className: 'col-12 col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Value',
+                        value: '£' ~ transferOrder.asset.fundingGoal|number_format(2, '.', ',')
+                        }) }}
+                    {% if offering is not empty %}
+                        {% set monthlyDividend = (transferOrder.asset.fundingGoal / 1200) * offering.netRentProjected %}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Asset Projected Yield (' ~ offering.netRentProjected|number_format(2, '.', ',') ~ '%)',
+                            value: '£' ~ (monthlyDividend * 12)|number_format(2, '.', ',')
+                            ~ ' (~£' ~ monthlyDividend|number_format(2, '.', ',') ~ '/month)',
+                            className: 'col-12 col-md-6'
+                        }) }}
+                        {% set corpTax = (monthlyDividend / 0.81) - monthlyDividend %}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Asset Projected Corp Tax (19%)',
+                            value: '£' ~ (corpTax * 12)|number_format(2, '.', ',')
+                            ~ ' (~£' ~ corpTax|number_format(2, '.', ',') ~ '/month)',
+                            className: 'col-12 col-md-6'
+                        }) }}
+                    {% endif %}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        {% if not workflow_can(transferOrder, 'approve') %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "Editing is restricted outside draft mode",
+            }) }}
+        {% endif %}
+        <div class="col-12">
+            {{ form_start(form) }}
+            <div class="row">
+                <div class="col-sm-6">{{ form_row(form.debitWalletId) }}</div>
+                <div class="col-sm-6">{{ form_row(form.creditWalletId) }}</div>
+                <div class="col-12">{{ form_row(form.amount) }}</div>
+                <div class="col-12">
+                    {{ form_row(form.description) }}
+                    <datalist id="{{ form.description.vars.attr.list|default(form.description.vars.name) }}">
+                        {% for descriptionOption in constant('App\\Service\\MonthEndService::DESCRIPTION_PRESETS') %}
+                            <option value="{{ descriptionOption }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+            </div>
+            <div class="">
+                <button class="btn btn-success" id="submit" type="submit">{% block saveActionText %}Add Transfer{% endblock %}</button>
+                <a class="btn btn-outline-secondary"
+                    href="{{ path('admin_monthend_income_transfer_manage', { id: transferOrder.id }) }}">{% block cancelActionText %}Cancel{% endblock %}</a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+{% endblock %}

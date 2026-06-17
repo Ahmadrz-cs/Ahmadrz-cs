@@ -1,0 +1,11 @@
+App\Entity\ShareTransferOrder:
+    shareTransferOrder_base (template):
+        # description: "<sentence()>"
+        scheduledFor: "<(new DateTime('first day of this month'))>"
+        periodStart: "<(new DateTime('first day of last month'))>"
+        periodEnd: "<(new DateTime('first day of this month'))>"
+        status: "draft"
+        createdBy: "@userA1"
+        createdAt: "@self->scheduledFor"
+
+# default to transfer from "actual" to "hold" asset wallets (rebalancing)

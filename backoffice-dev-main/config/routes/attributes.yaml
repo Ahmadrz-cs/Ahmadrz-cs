@@ -1,0 +1,37 @@
+app:
+    resource:
+        path: ../../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+admin:
+    resource:
+        path: ../../src/Controller/Admin
+        namespace: App\Controller\Admin
+    type: attribute
+    prefix: /admin
+    trailing_slash_on_root: false
+
+# API V1 prefixes are done in Controller
+# api:
+#     resource:
+#         path: ../../src/Controller/ApiV1/
+#         namespace: App\Controller\ApiV1
+#     type: attribute
+
+api2:
+    resource:
+        path: ../../src/Controller/ApiV2/
+        namespace: App\Controller\ApiV2
+    type: attribute
+    prefix: /v2/yielders
+
+api3:
+    resource: '../../src/Controller/ApiV3/'
+    type: attribute
+    prefix: /v3
+    format: json
+    
+kernel:
+    resource: App\Kernel
+    type: attribute

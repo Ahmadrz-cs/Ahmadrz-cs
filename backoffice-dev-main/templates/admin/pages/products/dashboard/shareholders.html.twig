@@ -1,0 +1,152 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "trade-shareholders",
+        "sectionTitle": "Trade Shareholders",
+        "linkActions": [
+            {
+                "text": "Download as CSV",
+                "route": "admin_product_shareholders",
+                "params": {"id": asset.id, export: true},
+                "style": "btn-outline-dark",
+                "iconStart": "fa-download",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Average buy price will go down if you buy at a lower price (obviously) OR sell at a higher price (the remaining shares will be on average cheaper)",
+        }) }}
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "summary-stats",
+            title: "Summary Stats",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Unique Shareholders (including initial)": tradeHoldings|filter(s => s.buyTrades > 0)|length,
+                "Current Shareholders": tradeHoldings|filter(s => s.shares > 0)|length,
+                "Shares Circulating": tradeHoldings|filter(s => s.shares > 0)|reduce((carry, v) => carry + v.shares, 0)|number_format(0, '.', ','),
+                "Value Circulating": tradeHoldings|filter(s => s.shares > 0)|reduce((carry, v) => carry + v.value, 0)|abs|format_currency('GBP'),
+            }
+        }) }}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped-columns datatable" id="trade-shareholdings-list">
+                <thead>
+                    <tr>
+                        <th colspan="2" class="text-center"></th>
+                        <th colspan="1" title="compare" class="text-center">Compare</th>
+                        <th colspan="5" title="current-net" class="text-center">Current/Net</th>
+                        <th colspan="4" title="bought" class="text-center">Bought</th>
+                        <th colspan="4" title="sold" class="text-center">Sold</th>
+                    </tr>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Username</th>
+                        <th class="text-end">Legacy Shares</th>
+
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Profit Per Share (4dp)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Value</th>
+                        <th class="text-end">Profit</th>
+
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Avg Price (4dp)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Value</th>
+
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Avg Price (4dp)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Value</th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in tradeHoldings|sort((a, b) => b.shares <=> a.shares) %}
+                    
+                    <tr>
+                        <td><a href="{{ path('admin_user_dashboard_portfolio', { id: entry.userid }) }}">{{ entry.userid }}</a></td>
+                        <td>{{ users[entry.userid].username }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ (shareholders[entry.userid].currentHolding|default(0)|number_format(0, '.', ','))  }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.trades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.spread|string|format_currency('GBP', {fraction_digit: 4}) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.shares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.currentValue|string|format_currency('GBP') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.profit|string|format_currency('GBP') }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyTrades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyMean|string|format_currency('GBP', {fraction_digit: 4}) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyShares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyValue|format_currency('GBP') }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellTrades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellMean|string|format_currency('GBP', {fraction_digit: 4}) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellShares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellValue|format_currency('GBP')  }}</td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "shareholders",
+        "sectionTitle": "Investment Based Shareholders",
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shares in Circulation',
+                value: shareholders|reduce((carry, v) => carry + v.currentHolding)|number_format(0),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'All Shareholders',
+                value: shareholders|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Shareholders',
+                value: shareholders|filter(s => s.currentHolding > 0)|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Former Shareholders',
+                value: shareholders|filter(s => s.currentHolding <= 0)|length,
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table datatable">
+                <thead>
+                    <tr>
+                        <th>Shareholder</th>
+                        <th>Current Shareholding</th>
+                        <th class="text-body-secondary">Original Shareholding</th>
+                        <th class="text-body-secondary">Divested Shareholding</th>
+                        <th class="text-body-secondary">Divestment Trades</th>
+                        <th class="text-body-secondary">Repaid Shareholding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in shareholders %}
+                    <tr>
+                        <td><a href="{{ path('admin_user_edit', { id: entry.userId }) }}">{{ entry.user }}</a></td>
+                        <td>{{ entry.currentHolding }}</td>
+                        <td class="text-body-secondary">{{ entry.originalHolding }}</td>
+                        <td class="text-body-secondary">{{ entry.divestedHolding }}</td>
+                        <td><a href="{{ path('admin_holding_trades', { 'assetId': entry.assetId, 'sellerId': entry.userId, }) }}">{{ entry.divestmentTrades }}</a></td>
+                        <td>{{ entry.capitalRepayments }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

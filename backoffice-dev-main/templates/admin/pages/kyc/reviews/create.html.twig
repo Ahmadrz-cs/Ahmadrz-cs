@@ -1,0 +1,73 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_review_index' %}
+{% set areaHeading = 'Recurring KYC' %}
+{% set mainHeading = 'Create KYC Review' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "configuration-presets",
+        "sectionTitle": "Configuration Presets",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "Use the presets below to quickly configure the relevant review actions. Note that you will still need to click on 'Create KYC Review'.",
+            }) }}
+            <div class="d-flex flex-wrap gap-2">
+            {% for preset in constant('App\\Service\\KycReviewService::KYC_REVIEW_PRESETS')|keys %}
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": preset|replace({'_': ' '})|capitalize,
+                        "route": app.request.attributes.get('_route'),
+                        "params": {preset: preset},
+                        "style": "btn-outline-dark",
+                    },
+                }) }}
+            {% endfor %}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-review-configuration",
+        "sectionTitle": "KYC Review Configuration",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form, {attr: {class:"d-flex flex-column gap-4"}}) }}
+                <div class="row">
+                    <div class="col-md-4">{{ form_row(form.reviewType) }}</div>
+                    <div class="col-md-4">{{ form_row(form.status) }}</div>
+                    <div class="col-12">{{ form_row(form.subject, {attr: {'class': 'searchable'}}) }}</div>
+                    <div class="col-12">{{ form_row(form.notes) }}</div>
+                </div>
+                <section class="d-flex flex-column gap-3">
+                    <h5 class="fw-bold fs-5 mb-0">Review Actions</h5>
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "info",
+                        message: "Select all the actions that you plan to do for this KYC review",
+                    }) }}
+                    <div class="d-grid lg:tw-grid-cols-2">
+                        {{ form_row(form.identityReview) }}
+                        {{ form_row(form.addressReview) }}
+                        {{ form_row(form.countryReview) }}
+                        {{ form_row(form.kycProviderReview) }}
+                        {{ form_row(form.dueDiligenceLevelReview) }}
+                        {# {{ form_row(form.kycSurveyReview) }} #}
+                        {{ form_row(form.transactionsReview) }}
+                    </div>
+                </section>
+                <div
+                    class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success text-nowrap" id="submit" type="submit">Create KYC Review</button>
+                    <a class="btn btn-outline-secondary text-nowrap" href="{{ path(backToRoute) }}">Abandon</a>
+                </div>
+            {{ form_rest(form) }}
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+{% endblock %}

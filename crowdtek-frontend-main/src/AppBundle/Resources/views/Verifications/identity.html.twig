@@ -1,0 +1,86 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2 text-center">
+                    <h3>Confirm your identity details</h3>
+                    <p>Please provide identity documentation that matches the information we have for you shown below.</p>
+                    <p>If any information is incorrect, please contact us via email <a class="btn-underline font-medium" href="mailto:team@yielders.co.uk">team@yielders.co.uk</a></p>
+
+                    {# {% if currentCategory %}
+                    <div class="border rounded p-2 text-left text-medium">
+                        Your current investor type: <span id="current-category">{{ currentCategory.name|humanize }}</span>
+                    </div>
+                    {% endif %} #}
+
+                    {{ form_start(form) }}
+                        <div class="border rounded p-3 mb-3 mt-2 text-left">
+                            <h4 class="mb-2">Current Details</h4>
+                            {{ form_row(form.givenNames) }}
+                            {{ form_row(form.lastName) }}
+                            {{ form_row(form.nationality) }}
+                            {{ form_row(form.dateOfBirth) }}
+                        </div>
+                        <div class="border rounded p-3 mb-3 mt-2 text-left" id="document-upload">
+                            <h4>Upload Document</h4>
+                            
+                            <p>Please note the following regarding acceptable identity documents:</p>
+                            <ul>
+                                <li>Please ensure that all text is clearly legible, the ID photo is clear, and the document is not expired or nearing expiration.</li>
+                                <li>Avoid covering any part of the document with your hands or any other objects and ensure the entire document is visible in the photo and not cropped on any sides or corners.</li>
+                                <li>We recommend providing a passport as this is universally accepted. Please ensure the photo is of the double-page spread.</li>
+                                <li>You may be required to try again later with a different photo or document if the one provided is unsuitable.</li>
+                                <li><a class="font-weight-bold" href="http://help.yielders.co.uk/en/articles/3436549-documents-required" target="_blank" rel="noopener noreferrer">Visit our help centre</a> for more information on document requirements.</li>
+                                {# <li>Get in touch with us if you want to confirm if your document is acceptable for the country of issue.</li> #}
+                            </ul>
+                            <div class="border rounded bg-light p-3 my-3">
+                                <p class="font-medium">Using a photo from an iPhone?</p>
+                                <p class="mb-0">Please note the default "High Efficiency" (HEIF) format is <u>not</u> supported. HEIF photos must be converted to JPEG or retaken with the "Most Compatible" (JPEG) option selected in iOS camera format settings.</p>
+                            </div>
+                            {{ form_row(form.identityDocument) }}
+                            <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Verify Later</a>
+                                <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Submit Document</button>
+                            </div> 
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block pagejs %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#identity_verification_identityDocument').on('change',function(e){
+                //get the file name
+                let filename = e.target.files[0].name;
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(filename);
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% if investmentdocument.id %}
+	{% set titleText = 'Edit Investment Document' %}
+{% else %}
+	{% set titleText = 'Add Investment Document' %}
+{% endif %}
+
+{% set backToRoute = 'admin_investmentdocument_index' %}
+{% set areaHeading = 'Documents' %}
+{% set mainHeading = titleText %}
+
+{% block page_content %}
+
+	<div class="d-flex flex-wrap gap-2">
+		<a href="{{ path('admin_investmentdocument_index') }}" class="btn btn-secondary">Cancel</a>
+		{% if investmentdocument.id > 0 %}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "Download",
+					"route": 'admin_document_download',
+					"params": {
+						'id': investmentdocument.document.id,
+						'type':'private',
+					},
+					"style": "btn-outline-dark text-nowrap",
+				},
+			}) }}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "View",
+					"route": 'admin_document_download',
+					"params": {
+						'id': investmentdocument.document.id,
+						'type':'private',
+						'preview': 1,
+					},
+					"style": "btn-outline-dark text-nowrap",
+					"newTab": true,
+				},
+			}) }}
+		{% endif %}
+	</div>
+
+	{{ form_start(form, {attr:{'ng-non-bindable': 'ng-non-bindable'}}) }}
+	{{ form_row(form.investment, {attr: {'class': 'searchable'}}) }}
+	{{ form_row(form.document) }}
+
+	{% include 'admin/components/blame-timestamp.html.twig' with {'object': investmentdocument} only %}
+	{{ form_widget(form.submit) }}
+	{{ form_end(form) }}
+
+{% endblock page_content %}

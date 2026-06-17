@@ -1,0 +1,55 @@
+include:
+    - ../auxiliaryProperties.yaml
+    - ../templates/baseTrade.yaml
+
+App\Entity\TradeOrder:
+    buy_order_buyback_{orchid} (extends trade_order_buyback):
+        asset: "@asset<current()>"
+        numberOfShares: "@asset<current()>->amountOfShares"
+        pricePerShare: "3.845625"
+        createdBy: "@userA1"
+        createdAt: "@assetstatuslog_closing_<current()>->occuredAt"
+    sell_order_exit_orchid_{ben} (extends trade_order_exit):
+        asset: "@assetorchid"
+        user: "@user<current()>"
+        numberOfShares: 15614
+        pricePerShare: "@buy_order_buyback_orchid->pricePerShare"
+        createdBy: "@userA1"
+        createdAt: "@assetstatuslog_closing_orchid->occuredAt"
+    sell_order_exit_orchid_{freya} (extends trade_order_exit):
+        asset: "@assetorchid"
+        user: "@user<current()>"
+        numberOfShares: 84386
+        pricePerShare: "@buy_order_buyback_orchid->pricePerShare"
+        createdBy: "@userA1"
+        createdAt: "@assetstatuslog_closing_orchid->occuredAt"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_buyback_active_{orchid}:
+        tradeOrder: "@buy_order_buyback_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_buyback_<current()>->createdAt"
+    buy_order_status_buyback_completed_{orchid}:
+        tradeOrder: "@buy_order_buyback_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@assetstatuslog_archived_<current()>->occuredAt"
+    sell_order_status_exit_completed_{ben, freya}:
+        tradeOrder: "@sell_order_exit_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@assetstatuslog_archived_orchid->occuredAt"
+
+App\Entity\ShareTrade:
+    share_trade_orchid_exit_{ben, freya}:
+        buyOrder: "@buy_order_buyback_orchid"
+        sellOrder: "@sell_order_exit_orchid_<current()>"
+        numberOfShares: "@sell_order_exit_orchid_<current()>->numberOfShares"
+        pricePerShare: "@sell_order_exit_orchid_<current()>->pricePerShare"
+        createdAt: "@sell_order_exit_orchid_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_settled_orchid_{ben, freya}:
+        shareTrade: "@share_trade_orchid_exit_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "@assetstatuslog_archived_orchid->occuredAt"
+    
+

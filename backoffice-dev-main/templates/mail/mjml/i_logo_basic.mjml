@@ -1,0 +1,38 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all font-family="ui-sans-serif, system-ui, sans-serif"></mj-all>
+      <mj-text color="#5C5C5C"></mj-text>
+    </mj-attributes>
+  </mj-head>
+  
+  <mj-body background-color="#F6F6F6">
+    
+    <mj-section padding="32px">
+        <mj-column padding="0">
+            <mj-image href="https://yielders.co.uk/" padding="0px" src="{{ logo_url }}" width="134px"></mj-image>
+        </mj-column>
+    </mj-section>
+    
+    <mj-section background-color="#fff" border-radius="24px 24px 24px 24px" padding="48px">
+      <mj-column padding="0">
+        <mj-text color="#000000" font-size="24px" line-height="1.25" padding="0px">
+          <strong>{{ title|default("Notification") }}</strong>
+        </mj-text>
+        <mj-spacer height="16px"></mj-spacer>
+        <mj-text font-size="16px" line-height="1.6" padding="0px">
+          {{ content|default("Notification information")|nl2br }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding="48px">
+      <mj-column padding="0">
+        <mj-text align="center" font-size="14px" line-height="1.5" padding="0px"> Yielders Ltd. Company Number: 09757611<br />Authorised and regulated by the Financial Conduct Authority (register number 745636). </mj-text>
+        <mj-spacer height="16px"></mj-spacer>
+        <mj-text align="center" font-size="14px" line-height="1.5" padding="0px"> Copyright © {{ 'now'|date('Y') }} Yielders. </mj-text>
+      </mj-column>
+    </mj-section>
+    
+  </mj-body>
+</mjml>

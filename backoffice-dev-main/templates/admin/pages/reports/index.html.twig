@@ -1,0 +1,70 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Reports' %}
+{% set mainHeading = 'Reports Browser' %}
+{% set maturityLabel = 'beta' %}
+
+{% set statusToColor = {
+    'available': 'green',
+    'pending': 'yellow',
+    'draft': 'gray',
+} %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'reports-list',
+        "sectionTitle": 'All Reports',
+        "linkActions": [
+            {
+				"text": "Create Mangopay Transaction Report",
+				"route": "admin_reports_create_mangopay",
+				"params": {},
+				"style": "btn-success",
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+				list: results
+			}) }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Description</th>
+                        <th>Origin</th>
+                        <th>Resource Id</th>
+                        <th>Reference Id</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in results %}
+                    <tr class="tw-text-sm" data-object-id="{{ report.id }}">
+                        <td><a class="btn btn-outline-primary text-nowrap"
+                            href="{{ path('admin_reports_view', { 
+                            id: report.id }
+                        ) }}">More Info</a></td>
+                        <td>{{ report.id }}</td>
+                        <td>{{ report.Description }}</td>
+                        <td>{{ report.origin|capitalize }}</td>
+                        <td>{{ report.resourceId }}</td>
+                        <td>{{ report.referenceId }}</td>
+                        <td class="tw-tabular-nums">{{ report.createdAt|date('Y-m-d H:i:s') }}</td>
+                        <td>
+                            <span class="d-flex gap-2 align-items-center">
+                                {{ include('admin/components/_indicator.html.twig', {color: statusToColor[report.status.value]|default('gray') }) }}
+                                {{ report.status.value|capitalize }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

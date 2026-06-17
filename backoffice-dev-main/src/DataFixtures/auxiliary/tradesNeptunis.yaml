@@ -1,0 +1,82 @@
+# Large prefunding, mostly complete
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_neptunis_freya_1: 75000 # 60k:15k split
+    shares_neptunis_ben_1: 9655 # retail
+
+App\Entity\TradeOrder:
+    buy_order_neptunis_{freya_1} (extends trade_order_prefund):
+        asset: "@assetneptunis"
+        user: "@userfreya"
+        numberOfShares: 75000
+        pricePerShare: "@assetneptunis->pricePerShare"
+        notes: "prefunding with retention"
+        complementaryOrder: "@sell_order_prefund_neptunis_<current()>"
+        createdAt: "<dateTimeBetween('first wednesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    sell_order_prefund_neptunis_{freya_1} (extends trade_order_prefund_sell):
+        asset: "@assetneptunis"
+        user: "@userfreya"
+        numberOfShares: 60000
+        pricePerShare: "@assetneptunis->pricePerShare"
+        notes: "prefunding with retention"
+        complementaryOrder: "@buy_order_neptunis_<current()>"
+        createdAt: "@buy_order_neptunis_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_neptunis_{ben_1} (extends trade_order_prefund):
+        asset: "@assetneptunis"
+        user: "@userben"
+        numberOfShares: 5681
+        pricePerShare: "@assetneptunis->pricePerShare"
+        notes: "prefunding no retention"
+        complementaryOrder: "@sell_order_prefund_neptunis_<current()>"
+        createdAt: "<dateTimeBetween('first tuesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    sell_order_prefund_neptunis_{ben_1} (extends trade_order_prefund_sell):
+        asset: "@assetneptunis"
+        user: "@userben"
+        numberOfShares: 5681
+        pricePerShare: "@assetneptunis->pricePerShare"
+        notes: "prefunding no retention"
+        complementaryOrder: "@buy_order_neptunis_<current()>"
+        createdAt: "@buy_order_neptunis_<current()>->createdAt"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_neptunis_{freya_1, ben_1}:
+        tradeOrder: "@buy_order_neptunis_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_neptunis_<current()>->createdAt"
+    buy_order_status_completed_neptunis_{freya_1, ben_1}:
+        tradeOrder: "@buy_order_neptunis_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_neptunis_<current()>->createdAt"
+    sell_order_status_active_neptunis_{freya_1, ben_1}:
+        tradeOrder: "@sell_order_prefund_neptunis_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@sell_order_prefund_neptunis_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    # prefunding
+    share_trade_neptunis_{freya_1, ben_1}:
+        buyOrder: "@buy_order_neptunis_<current()>"
+        sellOrder: "@sell_order_initial_neptunis"
+        numberOfShares: "@buy_order_neptunis_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_neptunis_<current()>->pricePerShare"
+        createdAt: "@buy_order_neptunis_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_neptunis_{freya_1, ben_1}:
+        shareTrade: "@share_trade_neptunis_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_neptunis_<current()>->createdAt"
+    trade_status_settled_neptunis_{freya_1, ben_1}:
+        shareTrade: "@share_trade_neptunis_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first tuesday of -1 months 16:00:04'))>"

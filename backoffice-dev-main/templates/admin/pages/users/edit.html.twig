@@ -1,0 +1,405 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% if user.id %}
+	{% set titleText = 'Edit User' %}
+{% else %}
+	{% set titleText = 'Add User' %}
+{% endif %}
+
+{% set backToRoute = 'admin_user_index' %}
+{% set areaHeading = 'Users' %}
+{% set mainHeading = titleText %}
+
+{% block page_content %}
+
+	{% if user.id|default and user.managedUsers is not empty %}
+		{% embed 'admin/components/_alert.html.twig' with {
+			variant: "info",
+		} %}
+			{% block message %}
+			<div class="d-flex flex-column gap-2">
+				<div>This user is managing {{ user.managedUsers|length }} other users</div>
+				<div>
+					<a href="{{ path('admin_user_managed_users', { id: user.id }) }}" class="btn btn-outline-dark">View Managed Users</a>
+				</div>
+			</div>
+			{% endblock message %}
+		{% endembed %}
+	{% endif %}
+
+	<div class="d-flex flex-wrap gap-2">
+		<a href="{{ path('admin_user_index') }}" class="btn btn-secondary">Cancel</a>
+		<a href="/admin/userdocument/add?user={{ user.id }}" class="btn btn-success">Add Document</a>
+		<a href="{{ path('admin_user_role_edit', { user: user.id }) }}" type="button" class="btn btn-outline-secondary">Edit User Role</a>
+		{% if is_granted('ROLE_ADMIN', app.user) %}
+			<a class="btn btn-danger" href="{{ path('admin_user_account_closure_overview', { id: user.id }) }}">Review Account Closure</a>
+		{% endif %}
+	</div>
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "user-dashboard-notice",
+        "sectionTitle": "New User Dashboard Available",
+        "sectionStyle": "border rounded-3 p-4 mb-3",
+        "linkActions": [
+            {
+                "text": "Go to User Dashboard",
+                "route": "admin_user_dashboard_overview",
+                "params": { id: user.id},
+                "style": "btn-dark",
+            },
+            {
+                "text": "Review KYC Status",
+                "route": "admin_user_dashboard_kyc",
+                "params": { id: user.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_alert.html.twig', {
+				variant: "notice",
+				message: "Several tabs on this page are moving over to the new user dashboard in addition to new per-user views. This page will eventually be exclusively for unaided editing of a user's fields.",
+			}) }}
+			<details class="bg-light rounded-2 p-3">
+				<summary class="">[Click to Expand] Current features/views available on a per user basis:</summary>
+				<ul class="mb-0">
+					<li>Kyc</li>
+					<li>Documents</li>
+					<li>Investments</li>
+					<li>Relistings</li>
+					<li>Payouts</li>
+					<li>Portfolio</li>
+					<li>Monthly Statement</li>
+					<li>Bank Account Registrations</li>
+				</ul>
+			</details>
+		{% endblock %}
+	{% endembed %}
+
+	{{ form_start (form, {attr:{'ng-non-bindable': 'ng-non-bindable'}}) }}
+	<div class="nav-tabs-custom">
+		<ul class="nav nav-tabs">
+			<li class="nav-item">
+				<a class="nav-link active" href="#main" data-bs-toggle="tab">Basic Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#personal" data-bs-toggle="tab">Personal Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#other-details" data-bs-toggle="tab">Other Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#address" data-bs-toggle="tab">Address Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#company" data-bs-toggle="tab">Company Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#investor" data-bs-toggle="tab">Compliance Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#custom-fields" data-bs-toggle="tab">Additional Fields</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#communication-fields" data-bs-toggle="tab">Communication Fields</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#documents" data-bs-toggle="tab">Documents</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#status-record" data-bs-toggle="tab">Status Record</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="main">
+				{{ form_row( form.username ) }}
+				{{ form_row( form.email ) }}
+				{{ form_row( form.honoricPrefix ) }}
+				{{ form_row( form.firstname ) }}
+				{{ form_row( form.lastname ) }}
+				{{ form_row( form.middlename) }}
+				{{ form_row( form.additionalName) }}
+				{{ form_row( form.honoricSuffix ) }}
+				{{ form_row( form.type ) }}
+				{{ form_row( form.jobTitle ) }}
+				{{ form_row( form.isVIP,  {'label' : 'Is VIP'}) }}
+				{{ form_row( form.gdpr_accepted,  {'label' : 'GDPR accepted'} ) }}
+				{{ form_row( form.managedBy ) }}
+				{{ form_row( form.obStep ) }}
+				{{ form_row( form.lastLogin ) }}
+				{{ form_row( form.enabled) }}
+				{# {{ form_row( form.roles ) }} #}
+			</div>
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="personal">
+				{{ form_row( form.gender ) }}
+
+				{{ form_row( form.birthDate) }}
+
+				{{ form_row( form.birthPlace ) }}
+				{{ form_row( form.birthCountry ) }}
+				{{ form_row( form.passportNumber ) }}
+				{{ form_row( form.passportCountry ) }}
+				{{ form_row( form.nationality ) }}
+				{{ form_row( form.drivingLicenseNo ) }}
+				{{ form_row( form.location ) }}
+				{{ form_row( form.phone1 ) }}
+				{{ form_row( form.phone2 ) }}
+				{{ form_row( form.mobile ) }}
+
+			</div>
+
+			<div class="tab-pane" id="other-details">
+				{{ form_row( form.mangoPayUserId ) }}
+				{{ form_row( form.mangoPayWalletId ) }}
+				{{ form_row( form.additionalType ) }}
+				{{ form_row( form.affiliateCode ) }}
+				{{ form_row( form.biography ) }}
+				{{ form_row( form.externalReferenceId ) }}
+				{{ form_row( form.referralCode ) }}
+				{{ form_row( form.taxId ) }}
+				{{ form_row( form.website ) }}
+				{{ form_row( form.walletUserVersion ) }}
+				{{ form_row( form.scaStatus ) }}
+				{{ form_row( form.scaEnrolledAt ) }}
+				{{ form_row( form.bankAccountsSyncedAt ) }}
+
+			</div>
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="address">
+				{% if is_granted('CAN_EDIT_USER', user) %}
+					<button type="button" class="btn btn-success" id="add-address-field">Add New Address</button>
+				{% endif %}
+				<br/>
+				<br/>
+				{{ include('admin/components/_alert.html.twig', {
+					variant: "info",
+					title: "Multiple Addresses",
+					message: "If there are multiple addresses, the most recent one (last one) will be considered the main/current address (highlighted by the indicator).",
+				}) }}
+				<div class="row" id="address-list" data-field-count={{ form.addresses | length }} data-prototype="{{ form_widget(form.addresses.vars.prototype)|e }}">
+					{% for field in form.addresses %}
+						<div id="address-field-{{ loop.index0 }}" class="address-field-container mt-3">
+							<div>
+								<i class="fa fa-times remove-address-field pull-right "></i>
+							</div>
+							{% if loop.index0 == (form.addresses | length) - 1 %}
+								<span class="badge text-bg-dark my-2">Main Address</span>
+							{% endif %}
+							{{ form_widget( field ) }}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="company">
+				{{ form_row( form.company.name) }}
+				{{ form_row( form.company.buildingName) }}
+				{{ form_row( form.company.registrationNumber) }}
+				{{ form_row( form.company.otherName) }}
+				{{ form_row( form.company.businessNature) }}
+				{{ form_row( form.company.regAddress1) }}
+				{{ form_row( form.company.regAddress2) }}
+				{{ form_row( form.company.regAddress3) }}
+				{{ form_row( form.company.regCountry) }}
+				{{ form_row( form.company.postCode) }}
+				{{ form_row( form.company.telephone) }}
+				{{ form_row( form.company.beneficialOwners) }}
+				{{ form_row( form.company.directors) }}
+				{{ form_row( form.company.companyWebsite) }}
+				{{ form_row( form.company.operatingAddress) }}
+				{{ form_row( form.company.operatingPostCode) }}
+			</div>
+
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="investor">
+				{{ form_row( form.investor.cxbWorthInvestor) }}
+				{{ form_row( form.investor.cxbSophisticatedInvestor) }}
+				{{ form_row( form.investor.cxbRestrictedUser) }}
+				{{ form_row( form.investor.cxbLtdCompInvestor) }}
+				{{ form_row( form.investor.alwaysGoUp) }}
+				{{ form_row( form.investor.incomeEveryMonth) }}
+				{{ form_row( form.investor.neverExit) }}
+				{{ form_row( form.investor.poiFileId) }}
+				{{ form_row( form.investor.wordsOfOwn) }}
+				{{ form_row( form.investor.corporateInvestor) }}
+				<div class="mt-5 mb-4">
+					<h5 class="fw-bold">PS22/10 Onboarding and Compliance</h5>
+					{{ include('admin/components/_alert.html.twig', {
+						variant: "warning",
+						message: "Managing a user's PS22/10 onboarding state in the 'Onboarding Hub' is recommended. You should avoid manually overriding the PS22/10 onboarding fields directly here.",
+					}) }}
+				</div>
+				{{ form_row( form.onboardingProfile.cooloffAccepted) }}
+				{{ form_row( form.onboardingProfile.cooloffEnd) }}
+				{{ form_row( form.onboardingProfile.riskWarningAccepted) }}
+				{{ form_row( form.onboardingProfile.category) }}
+				{{ form_row( form.onboardingProfile.categoryReviewedAt) }}
+				{{ form_row( form.onboardingProfile.assessmentPassed) }}
+				{{ form_row( form.onboardingProfile.realEstatePlanAccess) }}
+				{{ form_row( form.onboardingProfile.realEstateBuildAccess) }}
+				{# {{ form_row( form.onboardingProfile.features) }} #}
+			</div>
+
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="custom-fields">
+				{% if is_granted('CAN_EDIT_USER', user) %}
+					<button type="button" class="btn btn-success" id="add-custom-field">Add New Field</button>
+				{% endif %}
+				<br/>
+				<br/>
+				<div class="row" id="custom-fields-list" data-field-count={{ form.customFields | length }} data-prototype="{{ form_widget(form.customFields.vars.prototype)|e }}">
+					{% for field in form.customFields %}
+						<div id="custom-field-{{ loop.index0 }}" class="custom-field-container">
+							<div>
+								<i class="fa fa-times remove-custom-field pull-right "></i>
+							</div>
+							{{ form_widget( field ) }}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			<!-- /.tab-pane -->
+
+			<div class="tab-pane" id="communication-fields">
+
+				{% for singlecommunication in user.communication %}
+					<article class="border-bottom mb-3">
+						<p>
+							User :
+							{{ singlecommunication.recipient }}
+						</p>
+						<p>
+							Subject :
+							{{ singlecommunication.subject }}
+						</p>
+						<p>
+							Content :
+							{{ singlecommunication.content|striptags }}
+						</p>
+						<p>
+							Status :
+							{{ singlecommunication.status }}
+						</p>
+						<p>
+							CreatedAt :
+							{{ singlecommunication.createdAt|date }}
+						</p>
+					</article>
+				{% endfor %}
+
+			</div>
+
+			<div class="tab-pane" id="documents">
+				{% include 'admin/components/document-list.html.twig' with {'documents':user.documents,'permision':'CAN_UPDATE_USER','add':'admin_userdocument_add','edit':'admin_userdocument_edit','actions':'user_document'} only %}
+			</div>
+
+			<div class="tab-pane" id="status-record">
+				<div class="d-flex flex-column gap-3">
+					{{ include('admin/components/status_record_table.html.twig', {
+						object: user,
+						places: [
+							'email_not_verified',
+							'email_verified',
+							'registration_complete',
+							'approved',
+							'blocked',
+						]}) 
+					}}
+					{% embed 'admin/components/_bordered_section.html.twig' with {
+						"sectionId": "status-log-section",
+						"sectionTitle": "Status Logs",
+						"linkActions": [
+							{
+								"text": "Create State Transition and Log",
+								"route": "admin_user_status_log_create",
+								"params": {id: user.id},
+								"style": "btn-success",
+								"roleRequired": "ROLE_OPERATIONS",
+								"render": user.id is not null
+							},
+						]
+					} %}
+						{% block sectionContent %}
+						{{ include('admin/components/_alert.html.twig', {
+							variant: "notice",
+							message: "This is a new status record that supersedes the old/legacy one going forward. Legacy status will be ported to this new log based system. For backwards compatibility, the legacy status will remain in available for querying.",
+						}) }}
+						<div class="row g-3">
+							{{ include('admin/components/stat.html.twig', {
+								key: 'Current Status',
+								value: user.currentStatus.value|capitalize,
+								className: "col-md-6",
+							}) }}
+						</div>
+						<div class="table-responsive">
+							<h4 class="fw-bold fs-5">Status Logs</h4>
+							<table class="table" id="status-logs">
+								<thead>
+									<tr>
+										<th>Actions</th>
+										<th>Id</th>
+										<th>Status</th>
+										<th>Notes</th>
+										<th>Transitioned By</th>
+										<th>OccuredAt</th>
+										<th>CreatedAt</th>
+										
+									</tr>
+								</thead>
+								<tbody>
+									{% for status_log in user.statusLogs|default([]) %}
+									<tr data-object-id="{{ status_log.id }}">
+										<td>{% if is_granted('ROLE_OPERATIONS') %}
+											{{ include('admin/components/button_link.html.twig', {
+												linkProps: {
+													"text": "Edit",
+													"route": "admin_user_status_log_edit",
+													"params": {id: status_log.id},
+													"style": "btn-outline-secondary text-nowrap",
+												},
+											}) }}
+										{% endif %}</td>
+										<td data-field-name="id">{{ status_log.id }}</td>
+										<td data-field-name="status">{{ status_log.status.value|capitalize }}</td>
+										<td data-field-name="notes">{{ status_log.notes }}</td>
+										<td data-field-name="transitioned-by">{{ status_log.transitionedBy.userIdentifier|default('System') }}</td>
+										<td data-field-name="occured-at">{{ status_log.occuredAt|date('Y-m-d H:i:s') }}</td>
+										<td>{{ status_log.createdAt|date('Y-m-d H:i:s') }}</td>
+										
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+						{% endblock %}
+					{% endembed %}
+				</div>
+			</div>
+
+			{% include 'admin/components/blame-timestamp.html.twig' with {'object': user} only %}
+
+			{# Don't render any multifields that are empty #}
+			{% set multifields = [form.customFields, form.addresses] %}
+			{% for item in multifields %}
+				{% if item is empty  %}
+					{% do item.setRendered %}
+				{% endif %}
+			{% endfor %}
+		</div>
+		<!-- /.tab-content -->
+	</div>
+	{% if is_granted('CAN_EDIT_USER', user) %}
+		{{ form_widget(form.submit) }}
+	{% endif %}
+	{{ form_end( form ) }}
+
+{% endblock page_content %}
+
+{% block javascripts %}
+	{{ parent() }}
+	{{ encore_entry_script_tags('field_custom') }}
+	{{ encore_entry_script_tags('field_address') }}
+	{{ encore_entry_script_tags('form_required') }}
+{% endblock javascripts %}

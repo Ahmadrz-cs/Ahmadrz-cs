@@ -1,0 +1,10 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Dashboard' %}
+
+{% block page_content %}
+
+{{ include('admin/pages/monthend/_task_tracker.html.twig') }}
+
+{% endblock page_content %}

@@ -1,0 +1,73 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = app.request.query.get('redirectRoute') ?? 'admin_payment_order_manage' %}
+{% set backToRouteParams = { id: paymentOrder.id } %}
+{% set areaHeading = 'Payment Orders' %}
+{% set mainHeading = 'Confirm Deletion of All Payments' %}
+{% set htmlTitle = 'Clear All Payments' %}
+{% set baseTemplate = 'cms' %}
+
+{% block notices %}
+    {% embed 'admin/components/_alert.html.twig' with {
+        role: "alert",
+        variant: "warning",
+        showType: true,
+    } %}
+        {% block message %}
+            You are about to delete all payments from a payment order. <span class="fw-bold">This cannot be undone!</span>
+        {% endblock message %}
+    {% endembed %}
+{% endblock %}
+
+{# Configure page blocks #}
+{% block objectMeta %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "order-summary",
+        "sectionTitle": "Payment Order #" ~ paymentOrder.id|default(),
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3" data-object-id="{{ paymentOrder.id|default() }}">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Type',
+                value: paymentOrder.paymentType|capitalize
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled For',
+                value: paymentOrder.scheduledFor|date('Y-m-d', false)
+            }) }}
+            {% set asset = paymentOrder.asset %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Asset',
+                value: '#%s // %s (%s)'|format(asset.id, asset.name, asset.companyNumber),
+                className: 'col-12 col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Status',
+                value: paymentOrder.status|capitalize|replace({'_':'-'})
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Payments',
+                value: paymentOrder.payments|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payments Pending',
+                value: paymentOrder.payments|filter(p => p.status == 'pending')|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payments Paid',
+                value: paymentOrder.payments|filter(p => p.status == 'paid')|length
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}
+
+{% block formSubmit %}
+<button class="btn btn-danger" id="submit" type="submit">Clear All Payments</button>
+<a class="btn btn-outline-secondary"
+    href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_payment_order_manage', {
+        id:  paymentOrder.id
+    }) }}">Discard Changes</a>
+{% endblock %}

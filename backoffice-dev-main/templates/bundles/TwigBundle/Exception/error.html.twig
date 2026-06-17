@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..700&display=swap" rel="stylesheet">
+    <title>An Error Occurred: {{ status_text }}</title>
+    {% block stylesheets %}
+    {{ encore_entry_link_tags("error") }}
+    {% endblock %}
+</head>
+
+<body>
+    <div class="flex min-h-full flex-col bg-white pt-16 pb-12">
+        <main class="mx-auto flex w-full max-w-7xl flex-grow flex-col justify-center px-4 sm:px-6 lg:px-8">
+            {# <div class="flex shrink-0 justify-center">
+                <a href="/" class="inline-flex">
+                    <span class="sr-only">Yielders</span>
+                    <img class="h-12 w-auto" src="{{ asset('build/images/logo_wordmark_contained.svg') }}" alt="Yielders logo">
+                </a>
+            </div> #}
+            <div class="flex shrink-0 justify-center py-16">
+                <div class="text-center max-w-2xl ">
+                    <p class="text-6xl font-bold tracking-tight text-teal-600 sm:text-8xl">
+                        {{ status_code }}
+                    </p>
+                    <h1 class="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">{{ status_text }}
+                    </h1>
+                    <p class="mt-4 text-base bg-slate-50 p-8 rounded-md text-slate-700">
+                        {% block error_message %}
+                        Something is broken. Please let us know what you were doing when this error occurred.
+                        We will fix it as soon as possible. Sorry for any inconvenience caused.
+                        {% endblock %}
+                    </p>
+                    <div class="mt-6 space-x-4">
+                        <a href="{{ path('index') }}"
+                            class="duration-100 inline-flex items-center rounded-md border border-transparent bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">Go
+                            back to homepage</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

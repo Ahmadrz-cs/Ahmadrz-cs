@@ -1,0 +1,93 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Platform Configuration' %}
+{% set mainHeading = 'Application Settings' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'configure-application-settings',
+        "sectionTitle": 'Configure Application Settings',
+        "linkActions": [
+            {
+                "text": "Manage Superadmin Mangopay SCA",
+                "route": "admin_app_setting_superadmin_sca",
+                "params": {},
+                "style": "btn-warning",
+                "roleRequired": "ROLE_ADMIN",
+            },
+        ],
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form) }}
+            <div class="row g-3">
+                <div class="col-md-6">{{ form_row(form.yieldersFeeWallet) }}</div>
+                <div class="col-md-6">{{ form_row(form.ypmlFeeWallet) }}</div>
+                <div class="col-md-6">{{ form_row(form.orderIssueLimit) }}</div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": "Refresh",
+                        "route": app.request.attributes.get('_route'),
+                        "params": {},
+                        "style": "btn-light",
+                    },
+                }) }}
+            </div>
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'application-settings-overview',
+        "sectionTitle": 'Application Settings Overview',
+        "linkActions": [
+            {
+                "text": "View Mangopay Client",
+                "route": "admin_app_setting_mangopay_client",
+                "params": {},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_TECH_OPS",
+            },
+        ],
+    } %}
+        {% block sectionContent %}
+            <div class="table-responsive">
+                <table class="table" id="app-settings-metadata">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th>Section</th>
+                            <th>Created At</th>
+                            <th>Created By</th>
+                            <th>Updated At</th>
+                            <th>Updated By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for setting in appSettings %}
+                        <tr class="tw-text-sm">
+                            <td>{{ setting.id }}</td>
+                            <td class="tw-font-mono">{{ setting.name }}</td>
+                            <td class="tw-font-mono">{{ setting.value }}</td>
+                            <td>{{ setting.section|default('-') }}</td>
+                            <td>{{ setting.createdBy }}</td>
+                            <td>{{ setting.createdAt|date('Y-m-d H:i:s') }}</td>
+                            <td>{{ setting.updatedBy }}</td>
+                            <td>{{ setting.updatedAt|date('Y-m-d H:i:s') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

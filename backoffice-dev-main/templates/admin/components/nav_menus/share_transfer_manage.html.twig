@@ -1,0 +1,33 @@
+{% set currentPath = app.request.get("_route") %}
+
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: "tab-share-transfers",
+                text: "Share Transfers",
+                params: {},
+            },
+            {
+                route: "tab-investments",
+                text: "Investments",
+                params: {},
+            },
+            {
+                route: "tab-buy-backs",
+                text: "Proxy Buy Backs",
+                params: {},
+            },
+            {
+                route: "tab-pools",
+                text: "Share Transfer Pools",
+                params: {},
+            },
+        ]
+    }
+] %}
+
+{{ include('admin/components/_horizontal_nav_tabs_js.html.twig', {
+    navId: 'share-transfer-manage-nav',
+    links: menuLinks,
+}) }}

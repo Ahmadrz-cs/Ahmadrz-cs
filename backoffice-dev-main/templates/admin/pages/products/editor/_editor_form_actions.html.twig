@@ -1,0 +1,24 @@
+{% set saveActionText = "Save Changes" %}
+{% set exitActionText = "Discard Changes" %}
+{% set setupFlow = constant('App\\Controller\\Admin\\ProductEditorController::SETUP_FLOW') %}
+{% set nextRoute = 'admin_product_dashboard' %}
+
+{% if app.request.query.get('setup') %}
+	{% set saveActionText = "Save and Continue" %}
+	{% set exitActionText = "Skip for now" %}
+	{% set routeParams = routeParams|default({'id': asset.id})|merge({'setup': 1}) %}
+	{% set nextRoute = setupFlow[app.request.attributes.get('_route')]|default('admin_product_dashboard') %}
+{% else %}
+	{% set routeParams = {'id': asset.id} %}
+{% endif %}
+
+{% if wrapActions ?? true %}
+<div class="d-flex flex-wrap gap-2">
+{% endif %}
+
+<button class="btn btn-primary text-nowrap" id="submit" type="submit">{{ saveActionText }}</button>
+<a class="btn btn-outline-secondary text-nowrap" href="{{ path(nextRoute, routeParams) }}">{{ exitActionText }}</a>
+
+{% if wrapActions ?? true %}
+</div>
+{% endif %}

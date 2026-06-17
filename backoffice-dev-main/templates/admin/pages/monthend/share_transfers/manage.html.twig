@@ -1,0 +1,429 @@
+{% extends 'admin/layouts/col_2_med_right.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_share_transfers_list' %}
+{% set areaHeading = 'Monthend - Share Transfers' %}
+{% set mainHeading = shareTransferOrder.asset.name %}
+{% set maturityLabel = 'beta' %}
+{% set containerClass = 'container-fluid' %}
+
+{% set shareTransfersList = shareTransferOrder.shareTransfers|default([]) %}
+{% set totalShares = shareTransfersList|reduce((carry, v) => carry + v.shares) %}
+{% set isComplete = shareTransferOrder.status == constant('App\\Entity\\Enum\\OrderStatus::Completed') ? true : false %}
+
+{% set statusToColor = statusToColor|default({
+    'pending': 'gray',
+    'completed': 'green',
+}) %}
+
+{% block side_content %}
+    
+    <div class="xl:tw-sticky xl:tw-top-20">
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "metadata",
+            "sectionTitle": "Metadata",
+            "linkActions": [
+                {
+                    "text": isComplete ? "Mark as To Do" : "Mark as Completed",
+                    "route": "admin_monthend_share_transfers_toggle_state",
+                    "params": { id: shareTransferOrder.id },
+                    "style": isComplete ? "btn-outline-dark" : "btn-success",
+                },
+                {
+                    "text": "Edit Order",
+                    "route": "admin_monthend_share_transfers_edit",
+                    "params": { id: shareTransferOrder.id },
+                    "style": "btn-outline-secondary",
+                },
+            ]
+        } %}
+            {% block sectionContent %}
+            {% set bulk_action = isComplete ? "To Do" : "Completed" %}
+            {% set bulk_action_to_state = isComplete ? "Pending" : "Completed" %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                title: "Warning",
+                message: "Using the 'Mark as " ~ bulk_action ~ "' button in the metadata section will set all individual share transfers to '" ~ bulk_action_to_state ~ "' if they are not already.",
+            }) }}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: '#' ~ shareTransferOrder.asset.id ~ ' // ' ~ shareTransferOrder.asset.name ~ ' (' ~ shareTransferOrder.asset.companyNumber ~')',
+                    className: 'col-12'
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Order Id',
+                    value: shareTransferOrder.id,
+                    className: 'col-md-6'
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Filing Date',
+                    value: shareTransferOrder.scheduledFor|date('d F Y'),
+                    className: 'col-md-6'
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Covering Investments Between',
+                    value: shareTransferOrder.periodStart|date('d F Y')
+                        ~ ' - ' 
+                        ~ shareTransferOrder.periodEnd|date('d F Y'),
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Covering Repayments Between',
+                    value: (shareTransferOrder.repaymentStart is not null ? shareTransferOrder.repaymentStart|date('d F Y') : 'Not Set')
+                        ~ ' - ' 
+                        ~ (shareTransferOrder.repaymentEnd is not null ? shareTransferOrder.repaymentEnd|date('d F Y')  : 'Not Set'),
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Description',
+                    value: shareTransferOrder.description|default('-'),
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-2 p-3'
+                }) }}
+                {# {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: shareTransferOrder.status.value|capitalize|replace({'_':'-'}),
+                    className: 'col-md-6'
+                }) }} #}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: isComplete ? "Completed" : "To Do",
+                    className: 'col-md-6'
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Supported Setup Mode',
+                    value: proxyBuyBacks is empty ? "Direct" : "Pooled",
+                    className: 'col-md-6'
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Approved By',
+                    value: shareTransferOrder.approvedBy|default('-'),
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-2 p-3'
+                }) }}
+                {{ include('admin/components/blame-timestamp.html.twig', {
+                    object: shareTransferOrder,
+                }) }}
+            </div>
+            {% endblock %}
+        {% endembed %}
+    </div>
+
+{% endblock side_content %}
+
+{% block page_content %}
+
+    {{ include('admin/components/nav_menus/share_transfer_manage.html.twig') }}
+
+    <div class="tab-content">
+
+        <div class="tab-pane active" id="tab-share-transfers" role="tabpanel">
+            <section class="d-flex flex-column gap-4">
+                {% if not isComplete %}
+                    {% embed 'admin/components/_bordered_section.html.twig' with {
+                        "sectionId": "setup",
+                        "sectionTitle": "Setup",
+                        "linkActions": [
+                            {
+                                "text": "Generate Share Transfers",
+                                "route": "admin_monthend_share_transfers_generate_auto",
+                                "params": { id: shareTransferOrder.id},
+                                "style": "btn-primary",
+                            },
+                            {
+                                "text": "View Asset",
+                                "route": "admin_product_share_trades",
+                                "params": {id: shareTransferOrder.asset.id},
+                                "style": "btn-outline-secondary",
+                                "newTab": true,
+                            },
+                        ]
+                    } %}
+                        {% block sectionContent %}
+                            {# {{ include('admin/components/_alert.html.twig', {
+                                variant: "info",
+                                title: "Default Setup Modes",
+                                message: "'Direct' mode is used if all matching investments are in secondary/relisted listings. 'Pooled' mode is used if all matching investments are in first party listings. No setup mode is available if there is a mixture of investments from both listing types.",
+                            }) }} #}
+
+                            {{ include('admin/components/_kv_table.html.twig', {
+                                title: "Matching Share Trade Info",
+                                tableId: "matching-share-trade-metadata",
+                                valueDefaultStyle: "tw-tabular-nums",
+                                kv: {
+                                    "First party Count": firstParty|length,
+                                    "First party Shares": firstParty|reduce((carry, i) => carry + i.numberOfShares, 0),
+                                    "First party Value": firstParty|reduce((carry, i) => carry + i.tradeValue, 0),
+                                    "Relistings Count": relistings|length,
+                                    "Relistings Shares": relistings|reduce((carry, i) => carry + i.numberOfShares, 0),
+                                    "Relistings Value": relistings|reduce((carry, i) => carry + i.tradeValue, 0),
+                                    "Proxy Buy Back Count": proxyBuyBacks|length,
+                                    "Proxy Buy Back Shares": proxyBuyBacks|reduce((carry, i) => carry + i.numberOfShares, 0),
+                                    "Proxy Buy Back Value": proxyBuyBacks|reduce((carry, i) => carry + i.tradeValue, 0),
+                                }
+                            }) }}
+
+                        {% endblock %}
+                    {% endembed %}
+                {% endif %}
+
+                {% embed 'admin/components/_bordered_section.html.twig' with {
+                    "sectionId": "share-transfers",
+                    "sectionTitle": "Share Transfers",
+                    "linkActions": [
+                        {
+                            "text": "Clear All Share Transfers",
+                            "route": "admin_monthend_share_transfers_clear",
+                            "params": {id: shareTransferOrder.id,},
+                            "style": "btn-outline-danger",
+                            "roleRequired": "ROLE_OPERATIONS",
+                            "dangerous": true,
+                            "render": isComplete ? false : true,
+                        },
+                        {
+                            "text": "Export Share Transfers (CSV)",
+                            "route": app.request.attributes.get('_route'),
+                            "params": app.request.query.all|merge({id: shareTransferOrder.id, export: 1}),
+                            "style": "btn-outline-dark",
+                        },
+                        {
+                            "text": "Export Share Transfers (XLS)",
+                            "route": app.request.attributes.get('_route'),
+                            "params": app.request.query.all|merge({id: shareTransferOrder.id, export: 1, format:'xls'}),
+                            "style": "btn-outline-dark",
+                        },
+                    ]
+                } %}
+                    {% block sectionContent %}
+                    <div class="row g-3">
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Total Transfers',
+                            value: shareTransfersList|length
+                        }) }}
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Total Shares being Transferred',
+                            value: totalShares|number_format(0, '.', ',')
+                        }) }}
+                    </div>
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "info",
+                        title: "No share transfers showing?",
+                        message: "Try generating share transfers. Also note that full buyer and seller information (not shown in the table below) is available in the exports.",
+                    }) }}
+                    <div class="table-responsive">
+                        <table class="table" id="share-transfers-list">
+                            <thead>
+                                <tr>
+                                    <th>Actions</th>
+                                    <th>Id</th>
+                                    <th>Seller</th>
+                                    <th>Buyer</th>
+                                    {# <th>Investment</th> #}
+                                    <th class="text-end">Shares</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for shareTransfer in shareTransfersList %}
+                                    {% set isSingleComplete = shareTransfer.status == constant('App\\Entity\\Enum\\OrderRequestStatus::Completed') ? true : false %}
+                                    <tr data-object-id="{{ shareTransfer.id }}">
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1 text-nowrap">
+                                                {{ include('admin/components/button_link.html.twig', {
+                                                    linkProps: {
+                                                        "text": isSingleComplete ? "Mark as To Do" : "Mark as Completed",
+                                                        "route": "admin_monthend_share_transfers_toggle_state_single",
+                                                        "params": { id: shareTransfer.id },
+                                                        "style": isSingleComplete ? "btn-outline-dark" : "btn-outline-success",
+                                                    },
+                                                }) }}
+                                            </div>
+                                        </td>
+                                        <td>{{ shareTransfer.id }}</td>
+                                        <td data-field="seller">
+                                            <a href="{{ path('admin_user_dashboard_overview', {
+                                                id: shareTransfer.seller.id
+                                            }) }}">#{{ shareTransfer.seller.id }} 
+                                            // {{ shareTransfer.seller.username }}</a>
+                                        </td>
+                                        <td data-field="buyer">
+                                            <a href="{{ path('admin_user_dashboard_overview', {
+                                                id: shareTransfer.buyer.id
+                                            }) }}">#{{ shareTransfer.buyer.id }} 
+                                            // {{ shareTransfer.buyer.username }}</a>
+                                        </td>
+                                        <td class="text-end tw-tabular-nums" data-field="shares">{{ shareTransfer.shares }}</td>
+                                        <td data-field="status">
+                                            {{ include('admin/components/_indicator_with_text.html.twig', {
+                                                color: statusToColor[shareTransfer.status.value],
+                                                value: shareTransfer.status.value|capitalize
+                                            }) }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endblock %}
+                {% endembed %}
+            </section>
+        </div>
+
+        <div class="tab-pane" id="tab-investments" role="tabpanel">
+        
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "matched-investments",
+                "sectionTitle": "Investments Involved",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}
+
+                {{ include('admin/components/_kv_table.html.twig', {
+                    title: "Investment Trade Info",
+                    tableId: "investment-trade-metadata",
+                    valueDefaultStyle: "tw-tabular-nums",
+                    kv: {
+                        "First party Count": firstParty|length,
+                        "First party Shares": firstParty|reduce((carry, i) => carry + i.numberOfShares, 0),
+                        "First party Value": firstParty|reduce((carry, i) => carry + i.tradeValue, 0),
+                        "Relistings Count": relistings|length,
+                        "Relistings Shares": relistings|reduce((carry, i) => carry + i.numberOfShares, 0),
+                        "Relistings Value": relistings|reduce((carry, i) => carry + i.tradeValue, 0),
+                    }
+                }) }}
+
+                {{ include('admin/components/share_trades/_list_table.html.twig', {
+                    showAsset: false,
+                    tableId: 'investment-trade-list',
+                    objects: relistings|merge(firstParty),
+                }) }}
+
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="tab-pane" id="tab-buy-backs" role="tabpanel">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "matched-buy-backs",
+                "sectionTitle": "Proxy Buy Backs Involved",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}
+
+                {{ include('admin/components/_kv_table.html.twig', {
+                    title: "Proxy Buy Back Trade Info",
+                    tableId: "proxy-buy-back-trade-metadata",
+                    valueDefaultStyle: "tw-tabular-nums",
+                    kv: {
+                        "Proxy Buy Back Count": proxyBuyBacks|length,
+                        "Proxy Buy Back  Shares": proxyBuyBacks|reduce((carry, i) => carry + i.numberOfShares, 0),
+                        "Proxy Buy Back  Value": proxyBuyBacks|reduce((carry, i) => carry + i.tradeValue, 0),
+                    }
+                }) }}
+
+                {{ include('admin/components/share_trades/_list_table.html.twig', {
+                    showAsset: false,
+                    tableId: 'proxy-buy-back-trade-list',
+                    objects: proxyBuyBacks,
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="tab-pane" id="tab-pools" role="tabpanel">
+            {% if proxyBuyBacks is empty %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "notice",
+                    title: "Direct Share Transfers Only - No Prefunders Repaid",
+                    message: "No prefunders were repaid during the repayment period, so direct share transfers will be used.",
+                }) }}
+            {% else %}
+                <div class="d-flex flex-column gap-3">
+                    {% embed 'admin/components/_bordered_section.html.twig' with {
+                        "sectionId": "proxy-buy-back-pools",
+                        "sectionTitle": "Proxy Buy Back Pools",
+                        "linkActions": []
+                    } %}
+                        {% block sectionContent %}
+                            <div class="row g-3">
+                                {{ include('admin/components/stat.html.twig', {
+                                    key: 'Unique Prefunders',
+                                    value: pooledBuyBacks|length,
+                                    className: 'col-md-6'
+                                }) }}
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table" id="pooled-buy-backs">
+                                    <thead>
+                                        <tr>
+                                            <th>User Id</th>
+                                            <th>Username</th>
+                                            <th class="text-end">Shares</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pooledSeller in pooledBuyBacks %}
+                                            <tr>
+                                                <td data-field="sellerId">{{ pooledSeller.user.id }}</td>
+                                                <td data-field="sellerUsername">
+                                                    <a href="{{ path('admin_user_dashboard_overview', {
+                                                        id: pooledSeller.user.id
+                                                    }) }}">#{{ pooledSeller.user.id }} 
+                                                    // {{ pooledSeller.user.username }}</a>
+                                                </td>
+                                                <td class="text-end tw-tabular-nums" data-field="shares">{{ pooledSeller.shares }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endblock %}
+                    {% endembed %}
+
+                    {% embed 'admin/components/_bordered_section.html.twig' with {
+                        "sectionId": "investment-trade-pools",
+                        "sectionTitle": "Investment Trade Pools",
+                        "linkActions": []
+                    } %}
+                        {% block sectionContent %}
+                            <div class="row g-3">
+                                {{ include('admin/components/stat.html.twig', {
+                                    key: 'Unique Investors',
+                                    value: pooledInvestments|length,
+                                    className: 'col-md-6'
+                                }) }}
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table" id="pooled-investments">
+                                    <thead>
+                                        <tr>
+                                            <th>User Id</th>
+                                            <th>Username</th>
+                                            <th class="text-end">Shares</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pooledBuyer in pooledInvestments %}
+                                            <tr>
+                                                <td data-field="buyerId">{{ pooledBuyer.user.id }}</td>
+                                                <td data-field="buyerUsername">
+                                                    <a href="{{ path('admin_user_dashboard_overview', {
+                                                        id: pooledBuyer.user.id
+                                                    }) }}">#{{ pooledBuyer.user.id }} 
+                                                    // {{ pooledBuyer.user.username }}</a>
+                                                </td>
+                                                <td class="text-end tw-tabular-nums" data-field="shares">{{ pooledBuyer.shares }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endblock %}
+                    {% endembed %}
+                </div>
+            {% endif %}
+        </div>
+        
+    </div>
+
+{% endblock page_content %}

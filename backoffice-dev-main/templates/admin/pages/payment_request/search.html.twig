@@ -1,0 +1,78 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = exitRoute ?? 'admin_payment_order_manage' %}
+{% set backToRouteParams = { id: paymentRequest.paymentOrder.id } %}
+{% set areaHeading = 'Payment Orders' %}
+{% set mainHeading = 'Link Mangopay Transfer' %}
+{% set htmlTitle = 'Link Transfer' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "supporting-info",
+        "sectionTitle": "Supporting Information",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Order Id',
+                value: paymentRequest.paymentOrder.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Request Id',
+                value: paymentRequest.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Type',
+                value: paymentRequest.paymentOrder.paymentType|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled Monthend',
+                value: paymentRequest.paymentOrder.scheduledFor|date('Y-m'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Covering Period Between',
+                value: paymentRequest.paymentOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                    ~ ' - ' 
+                    ~ paymentRequest.paymentOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                className: 'col-md-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Amount',
+                value: '£' ~ paymentRequest.amount|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Status',
+                value: paymentRequest.status|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Debit Wallet',
+                value: debitWalletId,
+                className: 'col-md-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Credit Wallet',
+                value: paymentRequest.payee.mangopayWalletId,
+                className: 'col-md-6',
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ form_start(form) }}
+        <div class="row">
+            <div class="col-12">{{ form_row(form.transferId) }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {{ form_widget(form.submit) }}
+            <a class="btn btn-outline-secondary" href="{{ path(exitRoute ?? 'admin_payment_order_manage', {
+                id: paymentRequest.paymentOrder.id
+            }) }}">Cancel</a>
+        </div>
+        {{ form_rest(form) }}
+    {{ form_end(form) }}
+
+{% endblock page_content %}

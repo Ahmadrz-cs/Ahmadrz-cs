@@ -1,0 +1,36 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: 'admin_administration_clients',
+                text: 'API Clients',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_webhooks_mangopay_index',
+                text: 'Mangopay Webhooks',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_user_list_staff',
+                text: 'User Roles and Permissions',
+            }, 
+            {
+                route: 'admin_email_templates_legacy_list',
+                text: 'Email Templates',
+                roleRequired: 'ROLE_TECH_OPS',
+            }, 
+            {
+                route: 'admin_app_setting',
+                text: 'Application Settings',
+                roleRequired: 'ROLE_TECH_OPS',
+            }, 
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_vertical_nav') ~'.html.twig', {
+    navId: 'configurationNav',
+    toggleText: 'Configuration',
+    links: menuLinks,
+}) }}

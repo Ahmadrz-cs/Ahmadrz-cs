@@ -1,0 +1,29 @@
+<div class="border rounded bg-light text-center p-3" id="checkup-prompt">
+    {% set cooloffElapsed = date() >= onboardingProfile.cooloffEnd %}
+    {% if cooloffElapsed %}
+        <h4 class="mb-2">Please update your investor profile</h4>
+        <p>You have pending actions on your investor profile. You will not be able to invest until your investor profile has been updated.</p>
+        <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+            <a href="{{ path('profile') }}" class="btn btn-primary rounded-pill px-1 px-sm-2 mr-2">Go to your Profile</a>
+        </div>
+        {# <p>As part of our regulatory requirements, we need to ensure our products are still suitable for you. You will not be able to invest until your investor profile has been updated.</p>
+        <form name="form" method="post" action={{ path('checkup_index') }}>
+            <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                <button type="submit" id="form_submit" name="form[submit]" class="btn btn-primary rounded-pill px-1 px-sm-2 ">Update Now</button>
+            </div>
+        </form> #}
+    {% else %}
+        {% set timeInterval = onboardingProfile.cooloffEnd.diff(date()) %}
+        <h4 class="mb-2">Cooling off period</h4>
+        <div class="mt-2">
+            <p>Your cooling off period is due to end in
+                <span class="font-medium">
+                    <u>{{ timeInterval.h }}hrs
+                        {{ timeInterval.i }}mins</u>
+                </span>
+            </p>
+            <p>You will not be able to invest during the first 24 hours after starting the signing up process and/or acknowledging the cooling off period.</p>
+            <p class="mb-0">This is to provide a period of time for you to decide whether the investments we offer are right for you. However, you will still be able to browse investment opportunities during this time.</p>
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,48 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_transactions_mangopay_transfer' %}
+{% set backToRouteParams = { transferId: transaction.Id } %}
+{% set areaHeading = 'Transactions' %}
+{% set mainHeading = 'Mangopay Create Refund' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set statusToColor = {
+    'SUCCEEDED': 'green',
+    'CREATED': 'gray',
+    'FAILED': 'red',
+} %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'create-refund-form',
+        "sectionTitle": 'Configure Mangopay Refund',
+    } %}
+		{% block sectionContent %}
+            
+			{{ form_start(form) }}
+			<div class="row ">
+				<div class="col-12">{{ form_row(form.Tag) }}</div>
+			</div>
+			<div class="">
+				<button class="btn btn-success" id="submit" type="submit">Create Refund</button>
+				<a class="btn btn-outline-secondary" href="{{ 
+                    path('admin_transactions_mangopay_transfer', { transferId: transaction.Id }) 
+                }}">Abandon</a>
+			</div>
+			{{ form_end(form) }}
+
+		{% endblock %}
+	{% endembed %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "warning",
+        title: "Check the transfer to be refunded",
+        message: "Please check that this is the intended transfer before creating the refund. You can view the initial transfer info below.",
+    }) }}
+
+    {{ include('admin/pages/transactions/mangopay/_transaction_common.html.twig') }}
+
+{% endblock page_content %}

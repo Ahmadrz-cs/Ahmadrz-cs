@@ -1,0 +1,70 @@
+{% extends 'admin/pages/monthend/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    <div class="row g-3">
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "share-transfer-orders",
+                "sectionTitle": "All Share Transfer Orders",
+                "linkActions": [
+                    {
+                        "text": "Create Share Transfer",
+                        "route": "admin_monthend_share_transfers_create",
+                        "params": {assetId: asset.id},
+                        "style": "btn-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row">
+                    <div class="col-sm-6">{{ pagerfanta(results, 'twitter_bootstrap4') }}</div>
+                    <section class="col-sm-6 mb-3 d-flex justify-content-end">
+                        <span class="border rounded-2 d-inline-block p-2 me-1" id="list-meta-results">{{ results.count()|number_format(0, '.', ',') }} Results</span>
+                        <span class="border rounded-2 d-inline-block p-2" id="list-meta-page">{{ results.getNbPages()|number_format(0, '.', ',') }} Pages</span>
+                    </section> 
+                </div>
+                <div class="table-responsive">
+                    <table class="table" id="share-transfer-order-list">
+                    <thead>
+                        <tr>
+                            <th>Actions</th>
+                            <th>Id</th>
+                            <th>Description</th>
+                            <th>Related Monthend (Filing Date)</th>
+                            <th>Period</th>
+                            <th class="text-end">Shares</th>
+                            <th class="text-end">Transfers</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shareTransferOrder in results|default([]) %}
+                            {% set totalShares = shareTransferOrder.shareTransfers|reduce((carry, v) => carry + v.shares) %}
+                            <tr>
+                                <td>
+                                    <a class="btn btn-outline-primary" href="{{ path('admin_monthend_share_transfers_manage', { id: shareTransferOrder.id }) }}">
+                                        {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View
+                                        {% endif -%}
+                                    </a>
+                                </td>
+                                <td>{{ shareTransferOrder.id }}</td>
+                                <td>{{ shareTransferOrder.description }}</td>
+                                <td>{{ shareTransferOrder.scheduledFor|date('Y-m-d') }}</td>
+                                <td>{{ shareTransferOrder.periodStart|date('Y-m-d') }} - {{ shareTransferOrder.periodEnd|date('Y-m-d') }}</td>
+                                <td class="text-end tw-tabular-nums">{{ totalShares|number_format(0, '.', '') }}</td>
+                                <td class="text-end tw-tabular-nums">{{ shareTransferOrder.shareTransfers|length }}</td>
+                                <td>{{ shareTransferOrder.status.value|capitalize|replace({'_':'-'}) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock dashboard_content %}

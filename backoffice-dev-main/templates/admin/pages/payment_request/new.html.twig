@@ -1,0 +1,48 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = app.request.query.get('redirectRoute') ?? 'admin_payment_order_manage' %}
+{% set backToRouteParams = { id: paymentOrder.id } %}
+{% set areaHeading = 'Payment Orders' %}
+{% set mainHeading = mainHeading|default('Add Payment to Order #' ~ paymentOrder.id) %}
+{% set htmlTitle = htmlTitle|default('Add Payment') %}
+{% set baseTemplate = 'cms' %}
+
+{# Configure page blocks #}
+{% block notices %}
+    {% if shareholderIds is empty %}
+        <div class="alert alert-warning" role="alert">
+            There are no unique payees remaining. Edit an existing payment instead.
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block formContents %}
+    {% if form.tradeOrder is defined %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Avoid Manual Repayments! Use the Repayment Generator Instead",
+            message: "Due to the strict requirements on repayment order execution, add repayments manually is VERY error prone. Manual repayments are intended for very specific circumstances that the generator cannot fulfill.",
+        }) }}
+    {% endif %}
+
+    <section class="row">
+        <div class="col-sm-6">{{ form_row(form.payee, {attr: {'class': 'searchable' }}) }}</div>
+        {% if form.amount is defined %}
+            <div class="col-sm-6">{{ form_row(form.amount) }}</div>
+        {% endif %}
+        {% if form.shareholding is defined %}
+            <div class="col-sm-6">{{ form_row(form.shareholding) }}</div>
+        {% endif %}
+        {% if form.tradeOrder is defined %}
+            <div class="col-sm-6">{{ form_row(form.tradeOrder) }}</div>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Add Payment</button>
+    <a class="btn btn-outline-secondary"
+        href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_payment_order_manage', {
+            id: paymentOrder.id
+        }) }}">Cancel</a>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Payment Orders' %}
+{% set mainHeading = 'Payment Orders List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS') %}
+<a class="btn btn-success" href="{{ path('admin_payment_order_create') }}">Create Payment Order</a>
+{% endif %}
+<a class="btn btn-outline-dark"
+        href="{{ path('admin_payment_order_export') }}">Export Payment Orders</a>
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_payment_order', { paymentType: ['Dividend'] }) }}" class="btn btn-light">Dividends</a>
+<a href="{{ path('admin_payment_order', { status: ['draft'] }) }}" class="btn btn-light">Draft</a>
+<a href="{{ path('admin_payment_order', { status: ['in_progress', 'approved'] }) }}" class="btn btn-light">Ready To Run</a>
+<a href="{{ path('admin_payment_order', { status: ['completed'] }) }}" class="btn btn-light">Completed</a>
+
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetName) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.paymentType} only %}
+</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.status} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped " id="payment-order-list">
+    <thead>
+        <tr>
+            <th>Actions</th>
+            <th>Id</th>
+            <th>Type</th>
+            <th>Asset</th>
+            <th>Description</th>
+            <th>Scheduled For</th>
+            <th>Payments</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for paymentOrder in objects|default([]) %}
+        <tr>
+            <td>
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": is_granted('ROLE_OPERATIONS') ? "Manage" : "View",
+                        "route": 'admin_payment_order_manage',
+                        "params": {id: paymentOrder.id},
+                        "style": "btn-outline-dark text-nowrap",
+                    },
+                }) }}
+            </td>
+            <td data-field="id">{{ paymentOrder.id }}</td>
+            <td data-field="type">{{ paymentOrder.paymentType|capitalize }}</td>
+            <td data-field="asset">
+                <a href="{{ path('admin_asset_edit', { id: paymentOrder.asset.id }) }}">
+                    #{{ paymentOrder.asset.id }} // {{ paymentOrder.asset.name }}
+                    ({{ paymentOrder.asset.companyNumber }})
+                </a>
+            </td>
+            <td data-field="id">{{ paymentOrder.description }}</td>
+            <td data-field="scheduledFor">{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+            <td data-field="paymentCount">{{ paymentOrder.payments|length }}</td>
+            <td data-field="status">{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,441 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{% block title %}
+    My Wallet
+{% endblock %}
+{% block body %}
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<!-- profile detail -->
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{% include('@AppBundle/Common/profilenav.html.twig')%}
+					</div>
+					<div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<!-- add new fund -->
+							<div class="tab-pane fade show active">
+								<div class="row mt-3">
+
+									<!-- status -->
+									<div class="col-lg-12">
+										{# <div class="profile-banner portfolio-head wallet-profile">
+
+											<div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+												<div class="row">
+													<div class="col-md-6 u-name">
+														<h3>Hi
+															{{ userInfo.given_name }}
+														</h3>
+													</div>
+													<div class="col-md-6 p-wal">
+														<ul class="list-inline mb-0">
+															<li>
+																<p class="h3 mb-0">£
+																	<span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+																</p>in my wallet
+															</li>
+															{% if wallet.id|default() %}
+																<li class="">
+																	<a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+																	<a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+																</li>
+															{% endif %}
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div> #}
+									</div>
+
+									<!-- add dettails -->
+									<div class="col-lg-12">
+										<div class="transaction-history-block t-history">
+											<div class="com-block">
+												<section id="profile">
+													<h4 class="mb-3">Direct Debit Settings</h4>
+                                                    <hr class="mb-4">
+
+													<div class="page-inner">
+													<!-- .page-title-bar -->
+													<header class="page-title-bar">
+													</header>
+													<!-- /.page-title-bar -->
+													<!-- .page-section -->
+													<div class="page-section">
+														<!--.grid row -->
+														<div class="flex-row mb-2 d-none d-lg-block">
+															<!-- .card -->
+															<div class="card card-fluid" id="links-card">
+															<h6 class="card-header"> Your Details </h6>
+															<!-- .nav -->
+															<nav class="nav nav-tabs">
+																<a href="{{ path('direct_debit_summary') }}" id="summaryLink" class="col nav-link active">Summary</a>
+																<a href="{{ path('direct_debit_details') }}" id="detailsLink" class="col nav-link">Billing Details</a>
+																<a href="{{ path('direct_debit_cancel') }}" id="cancelLink" class="col nav-link">Cancel Direct Debit</a>
+															</nav>
+															<!-- /.nav -->
+															</div>
+															<!-- /.card -->
+														</div>
+														<!-- /.grid row -->
+														<!-- grid row -->
+														<div class="row mb-2 d-lg-none">
+															<div class="col-lg-4">
+																<!-- .card -->
+																<div class="card card-fluid" id="links-card">
+																<h6 class="card-header"> Your Details </h6>
+																<!-- .nav -->
+																<nav class="nav nav-tabs flex-column">
+																	<a href="{{ path('direct_debit_summary') }}" id="mobileSummaryLink" class="nav-link active">Summary</a>
+																	<a href="{{ path('direct_debit_details') }}" id="mobileDetailsLink" class="nav-link">Billing Details</a>
+																	<a href="{{ path('direct_debit_cancel') }}" id="mobileCancelLink" class="nav-link">Cancel Direct Debit</a>
+																</nav>
+																<!-- /.nav -->
+																</div>
+																<!-- /.card -->
+															</div>
+														</div>
+														<!-- /.grid row -->
+														<!-- /grid row -->
+														<div class="flex-row">
+															<!-- .card -->
+															<div class="card card-fluid mb-3">
+															<h6 class="card-header">Direct Debit Status</h6>
+															<!-- .card-body -->
+															<div class="card-body text-center">
+															<div class="mb-2" id="direct-debit-status">
+																{% if mandateStatus == "CREATED" %}
+																	<h4><span class="badge badge-warning align-self-center">Disabled</span></h4>
+																	<smalll> Please confirm your mandate</smalll>
+																{% elseif mandateStatus == "SUBMITTED" and directDebitStatus %}
+																	<h3><span class="badge badge-secondary align-self-center">Active</span></h3>
+																{% elseif mandateStatus == "SUBMITTED" and not directDebitStatus %}
+																	<h4><span class="badge badge-warning align-self-center">Paused</span></h4>
+																{% elseif mandateStatus == "ACTIVE" and directDebitStatus %}
+																	<h3><span class="badge badge-secondary align-self-center">Active</span></h3>
+																{% elseif mandateStatus == "ACTIVE" and not directDebitStatus %}
+																	<h4><span class="badge badge-warning align-self-center">Paused</span></h4>
+																{% elseif mandateStatus == "FAILED" %}
+																	<h4><span class="badge badge-danger align-self-center">Disabled</span></h4>
+																	<smalll> There is a problem with your Direct Debit, please contact us to find out more </smalll>
+																{% endif %}
+
+															</div>
+
+															<!-- Direct Debit Pause switch -->
+															<div>
+																{% if currentDay == 20  %}
+																	<div></div>
+																{% elseif mandateStatus == "SUBMITTED" or mandateStatus == "ACTIVE"  %}
+																	{{ form_start(form, {'attr': {'id': 'active_form'}}) }}
+																	<div class="custom-control custom-control-right custom-switch">
+																		{{ form_widget(form.active, {'attr': {'class': 'custom-control-input' }}) }}
+																		<label class="custom-control-label" for="direct_debit_active_type_active">Direct Debit Active</label>
+																	</div>
+																	{{ form_end(form) }}
+																{% endif %}
+
+															</div>
+
+															</div>
+															<!-- /.card-body -->
+															</div>
+															<!-- /.card -->
+
+															<!-- Direct Debit Amount -->
+															<!-- .card -->
+															<div class="card card-fluid mb-3">
+															<h6 class="card-header">Direct Debit Amount</h6>
+															<!-- .card-body -->
+															<div class="card-body">
+																<div class="mb-2">
+																	{{ form_start(amountForm, {'attr': {'id': 'amount_form'}}) }}
+																	<label for="Direct Debit Amount">Amount (£)</label>
+																		{{ form_widget(amountForm.amount, {'attr': {'class': 'form-control' }}) }}
+																		<div class="amount-error">
+																			{{ form_errors(amountForm.amount) }}
+																		</div>
+																		<div class="color-box break">
+																			<div class="shadow">
+																				<div class="note-box">
+																					<p><i class="fas fa-info-circle"></i> The minimum Direct Debit amount that can be set is £50 a month.</p>
+																				</div>
+																			</div>
+																		</div>
+																</div>
+																<div>
+																	{{ form_widget(amountForm.submit, {'attr': {'class': 'btn btn-primary btn-lg btn-block' }}) }}
+																	{{ form_end(amountForm) }}
+																</div>
+															<!-- /.card-body -->
+															</div>
+															<!-- /.card -->
+															</div>
+
+															<!-- .card -->
+															<div class="card card-fluid mb-3">
+															<h6 class="card-header">Next Payment Date</h6>
+															<!-- .card-body -->
+															<div class="card-body text-center">
+															<div id="next-payment-date">
+																{% if mandateStatus == "SUBMITTED" and directDebitStatus or mandateStatus == "ACTIVE" and directDebitStatus %}
+																	<h4>{{ nextPaymentDate }}</h4>
+																{% else %}
+																	<h4>No upcoming payments</h4>
+																{% endif %}
+															</div>
+															</div>
+															<!-- /.card-body -->
+															</div>
+															<!-- /.card -->
+
+															<!-- .card -->
+															<div class="card card-fluid mb-3">
+															<h6 class="card-header">Mandate</h6>
+															<!-- .card-body -->
+															<div class="card-body text-center">
+{#															<div>#}
+{#																<button class="btn btn-primary btn-lg "> Donwload </button>#}
+{#															</div>#}
+																<form action="{{ mandateUrl }}">
+																	<input class="btn btn-primary btn-lg" type="submit" value="View Mandate" />
+																</form>
+
+															</div>
+															<!-- /.card-body -->
+															</div>
+															<!-- /.card -->
+														</div>
+														<!-- /grid column -->
+														</div>
+														<!-- /grid row -->
+													</div>
+													<!-- /.page-section -->
+													</div>
+
+												</section>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<style>
+
+
+	.nav-tabs.flex-column .nav-link {
+		border-width: 0 0 0 3px;
+		border-radius: 0;
+	}
+
+	.amount-error {
+		color: red;
+	}
+
+	.nav-tabs .nav-link {
+		padding: 1rem;
+		border-width: 0 0 3px;
+	}
+
+	#links-card .nav-link {
+		outline: 0;
+    	color: #686f76;
+	}
+
+	.active> .nav-link, .nav-link.active, .nav-link:focus, .nav-link:hover {
+		color: #6cbcb6;
+	}
+
+	.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+		color: #28313b;
+    	background-color: transparent;
+    	border-color: #6cbcb6;
+	}
+
+	.nav-tabs {
+		border-bottom: transparent;
+	}
+
+	.card-header:first-child {
+		border-radius: 0 0;
+	}
+
+	.card {
+		border-radius: 0 0;
+	}
+
+	.col-lg-12 {
+		padding-left: 10px;
+	}
+
+	.badge-secondary {
+
+			background-color: #d6eceb;
+	}
+
+	div.custom-control-right {
+		padding-right: 24px;
+		padding-left: 0;
+		margin-left: 0;
+		margin-right: 0;
+
+	}
+	div.custom-control-right .custom-control-label::after{
+		right: -1.5rem;
+		left: auto;
+	}
+	div.custom-control-right .custom-control-label::before {
+		right: -2.35rem;
+		left: auto;
+	}
+
+	.color-box {
+		margin: 15px 0;
+	}
+
+	.shadow {
+		background: #F7F8F9;
+		padding: 3px;
+		margin: 10px 0;
+	}
+
+	.info-tab {
+		width: 40px;
+		height: 40px;
+		display: inline-block;
+		position: relative;
+		top: 8px;
+	}
+
+	.info-tab {
+		float: left;
+		margin-left: -23px;
+	}
+
+	.note-icon {
+		background: #47ADE0;
+	}
+
+	.note-box {
+		color: rgba(63, 110, 106, 0.9376);
+		background-color: #d6eceb;
+		padding: 8px 8px 3px 14px;
+	}
+	.note-box a {
+		color: #337ab7;
+	}
+
+	.note-box a:hover {
+		background-color: transparent;
+		text-decoration: underline;
+	}
+
+	</style>
+
+{% endblock %}
+
+{% block pagejs %}
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+<!-- Include Font Awesome -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"/>
+
+
+<script type="text/javascript">
+
+	$(document).ready(function() {
+
+			var directDebitStatus = {{ directDebitStatus ? 'true' : 'false' }};
+
+			$('#direct_debit_active_type_active').click(function() {
+
+				$('#active_form').submit();
+			});
+
+			var form = $("form[name='direct_debit_amount_type']");
+
+			form.keyup(function (){
+				var amount=parseFloat(document.getElementById("direct_debit_amount_type_amount").value);
+				if(amount < 50) {
+					$('button#direct_debit_amount_type_submit').prop('disabled', true);
+					$('div.note-box p').addClass('font-weight-bold');
+					$('input#direct_debit_amount_type_amount').addClass('input_error_highlight');
+					return false;
+				}
+				else {
+					$('button#direct_debit_amount_type_submit').prop('disabled', false);
+					$('div.note-box p').removeClass('font-weight-bold');
+					$('input#direct_debit_amount_type_amount').removeClass('input_error_highlight');
+					return true;
+				}
+			});
+
+			$('#active_form').submit(function(e) {
+				e.preventDefault();
+				var url = "{{ path('direct_debit_summary') }}";
+				var formSerialize = $('#active_form').serialize();
+				$("#direct_debit_active_type_active").attr("disabled", true);
+
+				$.post(url, formSerialize, function(response) {
+					//your callback here
+
+					if(response['status'] == 'success'){
+						$("#direct_debit_active_type_active").attr("disabled", false);
+
+						if (directDebitStatus) {
+							directDebitStatus = false;
+							$("#direct-debit-status").html('<h4><span class="badge badge-warning align-self-center">Paused</span></h4>');
+							$("#next-payment-date").html('<h4>No upcoming payments</h4>');
+						} else {
+							directDebitStatus = true;
+							$("#direct-debit-status").html('<h4><span class="badge badge-secondary align-self-center">Active</span></h4>');
+							$("#next-payment-date").html('<h4>{{ nextPaymentDate }}</h4>');
+						}
+					} else {
+
+						var checkbox = $('input:checkbox[name="direct_debit_active_type[active]"]').is(':checked');
+						if (checkbox) {
+							$('input:checkbox[name="direct_debit_active_type[active]"]').get(0).checked = false;
+						} else {
+							$('input:checkbox[name="direct_debit_active_type[active]"]').get(0).checked = true;
+						}
+
+						alert("There was an issue enabling/disabling your direct debit. Please try again.");
+
+						$("#direct_debit_active_type_active").attr("disabled", false);
+					}
+
+					}, 'JSON');
+			});
+	});
+
+</script>
+
+
+{% endblock %}

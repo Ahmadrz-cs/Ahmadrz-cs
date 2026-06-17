@@ -1,0 +1,60 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = backToRoute|default('admin_transactions_index') %}
+{% set areaHeading = 'Transactions' %}
+{% set mainHeading = 'Transaction #' ~ object.id %}
+{% set htmlTitle = 'Transaction View' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'transaction-overview',
+        "sectionTitle": 'About This Transaction',
+        "linkActions": [
+            {
+                "text": "Sync Mangopay Status",
+                "route": "admin_transactions_mangopay_sync",
+                "params": {id: object.id},
+                "style": "btn-outline-dark text-nowrap",
+                "render": is_granted('ROLE_ADMIN', app.user) and object.referenceId is not empty
+            },
+            {
+                "text": "View Mangopay Transaction",
+                "route": "admin_transactions_mangopay_transfer",
+                "params": {transferId: object.referenceId ?? 1},
+                "style": "btn-outline-dark text-nowrap",
+                "render": object.Type in ['TRANSFER', 'NP'] and object.referenceId is not empty
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_kv_table.html.twig', {
+                title: null,
+                tableId: "transaction-info",
+                valueDefaultStyle: "tw-font-mono",
+                kv: {
+                    "Id": object.id,
+                    "Type": object.type|default('N/A'),
+                    "Status": object.paymentStatus|default('N/A'),
+                    "Reference Id": object.referenceId|default('N/A'),
+                    "Debit User Id": object.debitUserId|default('N/A'),
+                    "Credit User Id": object.creditUserId|default('N/A'),
+                    "Debit Wallet Id": object.debitResourceId|default('N/A'),
+                    "Credit Wallet Id": object.creditResourceId|default('N/A'),
+                    "Currency": object.currency|default('N/A'),
+                    "Amount": (object.amount / 100)|number_format(2),
+                    "Fees": (object.fee / 100)|number_format(2),
+                    "Share Amount": object.shareAmount|default('N/A'),
+                    "Investment Id": object.invId|default('N/A'),
+                    "Offering Id": object.offeringId|default('N/A'),
+                    "Trade Order Id": object?.tradeOrder?.id|default('N/A'),
+                    "Comments": object.comments|default('N/A'),
+                    "Created At": object.createdAt ? object.createdAt|date('Y-m-d H:i:s') : 'N/A',
+                    "Created By": object.createdBy|default('N/A'),
+                    "Updated At": object.updatedAt ? object.createdAt|date('Y-m-d H:i:s') : 'N/A',
+                    "Updated By": object.updatedBy|default('N/A'),
+                }
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

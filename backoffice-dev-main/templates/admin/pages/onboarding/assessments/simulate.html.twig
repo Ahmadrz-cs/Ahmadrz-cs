@@ -1,0 +1,30 @@
+{% extends 'admin/pages/onboarding/assessments/new.html.twig' %}
+
+{% set user = assessment.profile.user %}
+
+{% set mainHeading = 'Appropriateness Assessment Simulator' %}
+
+{% block objectMeta %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        title: "Simulator Assistance",
+        message: "The simulator shows what choices are configured for the question (even if not active and available) and which choices are correct. Actual users doing an assessment will only be shown active choices.",
+    }) }}
+    {{ include('admin/components/onboarding/_question_and_choices.html.twig') }}
+{% endblock %}
+
+{% block formContents %}
+    <h4 class="fw-bold fs-4">Select your answer below:</h4>
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        message: "Order of choices is shuffled every time in this simulator.",
+    }) }}
+    <section class="row">
+        <div class="col-12">{{ form_row(form.choice) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Submit Answer</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_onboarding_profile', { id:  user.id }) }}">Leave Simulator</a>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'investments',
+        "sectionTitle": 'Investments',
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Replaced by Share Trade Order System",
+            message: "This section shows all legacy investments. Investments have been replaced by Share Trades and Trade Orders under the Share Trade Order System.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Investments',
+                value: investments.count|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {% include 'admin/components/pagerfanta_meta_slim.html.twig' with {'list': investments} only %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Invested On</th>
+                        <th>Type</th>
+                        <th>Buyer</th>
+                        <th>Seller</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Shares</th>
+                        <th>Offering</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investment in investments %}
+                    <tr>
+                        <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">{{ investment.id }}</a></td>
+                        <td>{{ investment.createdAt|date("Y-m-d") }}</td>
+                        <td>{{ investment.type|capitalize }}</td>
+                        <td><a href="{{ path('admin_user_edit', {
+                                id: investment.user.id
+                            }) }}">{{ investment.user }}</a>
+                        </td>                            <td>
+                            {% if investment.offering.sellInvestment is not empty %}
+                            <a href="{{ path('admin_user_edit', {
+                                id: investment.offering.sellInvestment.user.id
+                            }) }}">{{ investment.offering.sellInvestment.user }}</a>
+                            {% else %}
+                            Yielders
+                            {% endif %}
+                        </td>
+                        <td class="text-end tw-tabular-nums">{{ investment.investmentValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ investment.shareamount|number_format(0, '.', ',') }}</td>
+                        <td><a href="{{ path('admin_offering_edit', { id: investment.offering.id }) }}">{{ investment.offering.id
+                                }}</a></td>
+                        <td>{{ investment.lifecyclestatus|capitalize}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

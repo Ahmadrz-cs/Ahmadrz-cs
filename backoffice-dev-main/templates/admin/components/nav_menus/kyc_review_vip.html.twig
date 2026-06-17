@@ -1,0 +1,23 @@
+{% set currentPath = app.request.get("_route") %}
+
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: "tab-supporting-info",
+                text: "Supporting Info",
+                params: {},
+            },
+            {
+                route: "tab-source-of-funds",
+                text: "Source of Funds",
+                params: {},
+            },
+        ]
+    }
+] %}
+
+{{ include('admin/components/_horizontal_nav_tabs_js.html.twig', {
+    navId: 'kyc-vip-review-nav',
+    links: menuLinks,
+}) }}

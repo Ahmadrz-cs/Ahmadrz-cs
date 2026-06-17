@@ -1,0 +1,84 @@
+# This is Clarence Hold
+# Unique traits - high rent, capital depreciation, newest offering
+# Notes -  featured
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{clarence} (extends asset_base):
+        name: Clarence Hold A - Camden
+        alternateName: Apartment 12 Clarence Hold, Camden - London
+        briefDescription: Apartment in the hustle and bustle of Camden Town in zone 2 of London.
+        pricePerShare: 2.56
+        amountOfShares: 100000
+        companyNumber: SPVAF00011
+        netProjectedYield: '0.0712'
+        netProjectedIncome: '18225'
+        termStart: "@self->createdAt"
+        createdAt: "<dateTimeBetween('-12 months', '-10 months')>"
+        featured: 1
+
+App\Entity\AssetAddress:
+    assetaddress{clarence} (extends assetaddress_base):
+        address1: Apt 12, Clarence Hold
+        address2: Clarence Way
+        address3: Camden Town
+        city: London
+        postCode: NW1 7YH
+        longitude: -0.144751
+        latitude: 51.543887
+
+App\Entity\AssetMember:
+    assetmember{clarence} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{clarence_aoa, clarence_im}:
+        asset: "@assetclarence"
+        document: "@doc<current()>"
+    assetdoc{clarence_logo}:
+        asset: "@assetclarence"
+        document: "@doc<current()>"
+    assetgalleryclarence{1..3}:
+        asset: "@assetclarence"
+        document: "@galleryclarence<current()>" 
+    assetdoc{clarence_calc}:
+        asset: "@assetclarence"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{clarence} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 7.12
+        grossProjectReturn: 33.92
+        isFeatured: true
+        createdAt: "<dateTimeBetween('now', 'now')>"
+        updatedAt: "<dateTimeBetween($createdAt, 'now')>"
+
+App\Entity\OfferingDocuments:
+    offeringdoc{clarence_calc}:
+        offering: "@offeringclarence"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{clarence_aoa} (extends doc_aoa):
+    doc{clarence_im} (extends doc_im):
+    doc{clarence_logo} (extends doc_logo):
+        description: "Refurbished block of terrraces"
+        filename: "camdenstock.jpg"
+    doc{clarence_calc} (extends doc_calculations):
+    galleryclarence1 (extends doc_property_photo):
+        filename: "kitchenstock.jpg"
+    galleryclarence2 (extends doc_property_photo):
+        filename: "livingroomstock.jpg"
+    galleryclarence3 (extends doc_property_photo):
+        filename: "smallbedroomstock.jpg"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{clarence} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

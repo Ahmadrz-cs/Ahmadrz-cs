@@ -1,0 +1,36 @@
+{% set navLinks = [
+    {
+        route: "admin_monthend_income_transfer_builder_start",
+        text: "Starting Balance",
+        params: {'id': transferOrder.id},
+    },
+    {
+        route: "admin_monthend_income_transfer_builder_expenses",
+        text: "Expenses",
+        params: {'id': transferOrder.id},
+    },
+    {
+        route: "admin_monthend_income_transfer_builder_tax",
+        text: "Tax",
+        params: {'id': transferOrder.id},
+    },
+    {
+        route: "admin_monthend_income_transfer_builder_treasury",
+        text: "Treasury",
+        params: {'id': transferOrder.id},
+    },
+    {
+        route: "admin_monthend_income_transfer_builder_distribution",
+        text: "Distribution",
+        params: {'id': transferOrder.id},
+    },
+] %}
+
+{% set menuLinks = [
+    {"linkDefinitions": navLinks}
+] %}
+
+{{ include('admin/components/_horizontal_nav.html.twig', {
+    navId: 'incomeTransferBuilderNav',
+    links: menuLinks,
+}) }}

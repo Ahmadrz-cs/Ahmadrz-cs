@@ -1,0 +1,64 @@
+App\Entity\TransferOrder:
+    transferOrder_base (template):
+        transferType: "custom"
+        description: "<sentence()>"
+        scheduledFor: "<(new DateTime('first day of this month'))>"
+        status: "draft"
+        createdBy: "@userA1"
+        createdAt: "@self->scheduledFor"
+    
+    # see predefined descriptions in TransferOrderPreset.php
+    transferOrder_income_transfer (template, extends transferOrder_base):
+        transferType: "asset income processing"
+        description: "Process asset income"
+    transferOrder_fee_collection (template, extends transferOrder_base):
+        transferType: "fee collection"
+        description: "Collect Yielders fees"
+    transferOrder_settlement (template, extends transferOrder_base):
+        transferType: "investment settlement"
+        description: "Settle investments and stamp duty"
+    transferOrder_prefunder_allocation (template, extends transferOrder_base):
+        transferType: "payment allocation"
+        description: "Allocate funds to repay prefunders"
+    transferOrder_income_disaggregation (template, extends transferOrder_base):
+        transferType: "income disaggregation"
+        description: "Split multi-asset aggregated income"
+
+# default to transfer from "actual" to "hold" asset wallets (rebalancing)
+App\Entity\TransferRequest:
+    transferRequest_base (template):
+        status: "pending"
+        description: "<sentence()>"
+        debitWalletId: "wlt_m_01HW3DETE9YHAGN7GEGAH1PF65"
+        creditWalletId: "wlt_m_01HW3DD8S6MFPYGVC0FPBHXAF2"
+        amount: "<randomFloat(2, 2, 16)>"
+        createdBy: "@userA1"
+        createdAt: "<dateTimeBetween('-1 week', '-2 days')>"
+        updatedAt: "<dateTimeBetween($createdAt, now)>"
+
+    # see predefined descriptions in MonthendService.php
+    transferRequest_income_transfer (template, extends transferRequest_base):
+        debitWalletId: "@asset<current()>->depositWalletId"
+        creditWalletId: "@asset<current()>->expensesWalletId"
+    transferRequest_accountacy (template, extends transferRequest_income_transfer):
+        description: "Accountancy fees"
+    transferRequest_insurance (template, extends transferRequest_income_transfer):
+        description: "Insurance"
+    transferRequest_corptax (template, extends transferRequest_income_transfer):
+        description: "Corporation tax"
+        creditWalletId: "@asset<current()>->taxWalletId"
+    transferRequest_maintenance (template, extends transferRequest_income_transfer):
+        description: "Maintenance accrual"
+        creditWalletId: "@asset<current()>->treasuryWalletId"
+    transferRequest_dividend (template, extends transferRequest_income_transfer):
+        description: "Shareholder dividend"
+        creditWalletId: "@asset<current()>->distributionWalletId"
+    transferRequest_management (template, extends transferRequest_income_transfer):
+        description: "Yielders management fees"
+
+    transferRequest_income_disaggregation (template, extends transferRequest_base):
+        description: "Deposit rental income"
+        debitWalletId: "wlt_m_01HW3CMGAM5NJJ01RM8TQ6H8BS"
+        creditWalletId: "wlt_m_01HW3DETE9YHAGN7GEGAH1PF65"
+    transferRequest_fee_collection (template, extends transferRequest_base):
+        creditWalletId: "wlt_m_01HW3DC5APRJ5N8KWSBHMBYX48"

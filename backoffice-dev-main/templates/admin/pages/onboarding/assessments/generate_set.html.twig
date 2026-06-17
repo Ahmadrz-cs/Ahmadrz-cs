@@ -1,0 +1,53 @@
+{% extends 'admin/layouts/onboarding.html.twig' %}
+
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = 'Assessment Sets' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'onboarding' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "question-set-links",
+        "sectionTitle": "Quick Links",
+        "linkActions": [
+			{
+                "text": "Question Set 1",
+                "route": app.request.attributes.get('_route'),
+                "params": {set: 1},
+                "style": "btn-light",
+            },
+            {
+                "text": "Question Set 2",
+                "route": app.request.attributes.get('_route'),
+                "params": {set: 2},
+                "style": "btn-light",
+            },
+            {
+                "text": "Question Set 3",
+                "route": app.request.attributes.get('_route'),
+                "params": {set: 3},
+                "style": "btn-light",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "Quick links for up to first 3 question sets are shown. But if there are insufficient questions, the last available question in that area will be used. If there are no questions in that area, no questions will be shown.",
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {# {{ include('admin/components/_alert.html.twig', {
+        variant: "notice",
+        title: "Simulator Assistance",
+        message: "This section shows what choices are configured for the question (even if not available) and which choices are correct. Actual users doing an assessment won't be shown this.",
+    }) }} #}
+
+    {% for question in questions %}
+        {{ include('admin/components/onboarding/_question_and_choices.html.twig', { 
+            question: question, 
+            choiceCounts: questionChoiceCounts[question.id]
+        }) }}
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'admin/layouts/income_transfer_builder.html.twig' %}
+
+{% set originalTotal = transferOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+{% set expensesTotal = groupedTransfers.expenses|reduce((carry, v) => carry + v.amount) %}
+{% set taxTotal = groupedTransfers.tax|reduce((carry, v) => carry + v.amount) %}
+{% set taxableIncome = transferOrder.targetTotal|default(0) - expensesTotal %}
+
+{% block page_content %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "tax",
+        "sectionTitle": "Taxes",
+        "linkActions": [
+            {
+                "text": "Continue to Next Section",
+                "route": "admin_monthend_income_transfer_builder_treasury",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+            },
+            {
+                "text": "Finish and Review",
+                "route": "admin_monthend_income_transfer_manage",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The tax wallet is for allocating funds that are intended for tax liabilities. This is typically corporation tax.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Deposit Wallet Id',
+                value: walletIds.deposit|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Tax Wallet Id',
+                value: walletIds.tax|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Expenses',
+                value: '£' ~ expensesTotal|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Taxable Income',
+                value: '£' ~ taxableIncome|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expected Corp Tax (19-25%)',
+                value: '£' ~ (taxableIncome * 0.19)|number_format(2, '.', ',')
+                    ~ ' - '
+                    ~ (taxableIncome * 0.25)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Taxes',
+                value: '£' ~ taxTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/pages/monthend/income_transfers/builder/_section_table.html.twig', {
+            section: "tax",
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

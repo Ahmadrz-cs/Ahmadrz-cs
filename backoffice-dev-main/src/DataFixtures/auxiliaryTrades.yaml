@@ -1,0 +1,13 @@
+include:
+    - auxiliary/propertyTradesInitial.yaml
+    - auxiliary/tradesOrchid.yaml
+    - auxiliary/tradesClarenceHold.yaml
+    - auxiliary/tradesKolness.yaml
+    - auxiliary/tradesLakeside.yaml
+    - auxiliary/tradesNeptunis.yaml
+    - auxiliary/tradesNixis.yaml
+    - auxiliary/tradesPartingdale.yaml
+    - auxiliary/tradesRoyalGardens.yaml
+    - auxiliary/tradesRoyalGlades.yaml
+    - auxiliary/tradesSandfox.yaml
+    - auxiliary/propertyTradesExit.yaml

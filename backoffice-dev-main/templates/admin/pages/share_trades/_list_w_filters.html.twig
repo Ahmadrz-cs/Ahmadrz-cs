@@ -1,0 +1,95 @@
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% embed 'admin/layouts/embeddable_filtered_list.html.twig' with options|default({}) %}
+    {% block createActions %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Create Share Trade",
+                "route": "admin_share_trade_create",
+                "params": {},
+                "style": "btn-success",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+        }) }}
+    {% endblock %}
+    {% block filterPresets %}
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ sellOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Initial.value
+            ] })
+        ) }}" class="btn btn-light">Sold by First Party Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ sellOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Market.value,
+                enum('App\\Entity\\Enum\\TradeOrderType').Limit.value,
+                enum('App\\Entity\\Enum\\TradeOrderType').StopLoss.value,
+            ] })
+        ) }}" class="btn btn-light">Sold by Relistings Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ buyOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Market.value,
+                enum('App\\Entity\\Enum\\TradeOrderType').Limit.value,
+                enum('App\\Entity\\Enum\\TradeOrderType').StopLoss.value,
+            ] })
+        ) }}" class="btn btn-light">Retail Investments Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ buyOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').OffMarket.value
+            ] })
+        ) }}" class="btn btn-light">Off Market Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ buyOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Prefunding.value
+            ] })
+        ) }}" class="btn btn-light">Prefunding Investments Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ buyOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Proxy.value
+            ] })
+        ) }}" class="btn btn-light">Prefunding Buy Back Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ buyOrderType: [
+                enum('App\\Entity\\Enum\\TradeOrderType').BuyBack.value
+            ] })
+        ) }}" class="btn btn-light">Exit Buy Back Only</a>
+    {% endblock %}
+
+    {% block collapsibleFilters %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.uuid) }}</div>
+        {% if form.assetId is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>{% endif %}
+        {% if form.assetName  is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetName) }}</div>{% endif %}
+        {% if form.userId  is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>{% endif %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.sellOrder) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.sellerId) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.sellerUsername) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.buyOrder) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.buyerId) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.buyerUsername) }}</div>
+    {% endblock %}
+
+    {% block collapsibleFiltersExpandedChoice %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.sellOrderType) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.buyOrderType) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.status) }}</div>
+    {% endblock %}
+
+    {% block collapsibleFiltersRange %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+    {% endblock %}
+
+    {% block table %}
+        {{ include('admin/components/share_trades/_list_table.html.twig', {
+            showAsset: showAsset ?? true,
+            objects: objects,
+        }) }}
+    {% endblock %}
+{% endembed %}

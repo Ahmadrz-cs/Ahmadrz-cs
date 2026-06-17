@@ -1,0 +1,29 @@
+{% if isAllowedToInvest|default(false) %}
+    <form class="invest-steps" action="{{ path('product_properties_invest', {'id': asset.id, 'orderId': selectedOrder.uuid}) }}" method="get">
+        <h6 class="mb-2">To invest in this asset, follow the steps below:</h6>
+        <section class="mb-3">
+            <p class="mb-1 font-weight-bold">Step 1</p>
+            <p class="text-md">Download and review the supporting documents for this asset</p>
+            {% for doc in documents %}
+                <a target="_blank" href="{{ doc.url }}" class="btn btn-sm mb-1 btn-secondary file-download">{{ doc.filename }}</a>
+            {% endfor %}
+        </section>
+        <section class="mb-3">
+            <p class="mb-1 font-weight-bold">Step 2</p>
+            <p class="text-md">Confirm that you have read the supporting documents for this asset</p>
+            <div class="form-check custom-control custom-checkbox mt-1">
+                <input class="custom-control-input" type="checkbox" value="" id="docsReviewed" required="required">
+                <label class="custom-control-label" for="docsReviewed">
+                    I have read the supporting documents and would like to invest
+                </label>
+            </div>
+        </section>
+        <section>
+            <p class="mb-1 font-weight-bold">Step 3</p>
+            <p class="text-md">Configure and review your investment</p>
+            <button class="btn btn-primary rounded-pill px-5 mr-sm-2" type="submit">Invest</button>
+        </section>
+    </form>
+{% else %}
+    {{ include('@AppBundle/Common/_investment_requirements.html.twig') }}
+{% endif %}

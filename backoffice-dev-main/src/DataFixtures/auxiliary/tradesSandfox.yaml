@@ -1,0 +1,47 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_sandfox_ben_1: 496
+
+App\Entity\TradeOrder:
+    buy_order_sandfox_{ben_1} (extends trade_order_invest):
+        asset: "@assetsandfox"
+        user: "@userben"
+        numberOfShares: 496
+        pricePerShare: "@assetsandfox->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -4 months', 'last thursday of -4 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_sandfox_{ben_1}:
+        tradeOrder: "@buy_order_sandfox_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_sandfox_<current()>->createdAt"
+    buy_order_status_completed_sandfox_{ben_1}:
+        tradeOrder: "@buy_order_sandfox_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_sandfox_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_sandfox_{ben_1}:
+        buyOrder: "@buy_order_sandfox_<current()>"
+        sellOrder: "@sell_order_initial_sandfox"
+        numberOfShares: "@buy_order_sandfox_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_sandfox_<current()>->pricePerShare"
+        createdAt: "@buy_order_sandfox_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_sandfox_{ben_1}:
+        shareTrade: "@share_trade_sandfox_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_sandfox_<current()>->createdAt"
+    trade_status_settled_sandfox_{ben_1}:
+        shareTrade: "@share_trade_sandfox_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -3 months 14:24:15'))>"

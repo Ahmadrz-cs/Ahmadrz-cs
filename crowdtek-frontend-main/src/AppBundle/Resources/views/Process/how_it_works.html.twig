@@ -1,0 +1,157 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}How It Works
+{% endblock %}
+
+{% block cssfile %}
+	<link href="{#{ asset('/bundles/app/css/bootstrap-lightbox.css') }#}" rel="stylesheet" type="text/css">
+{% endblock %}
+{% block body %}
+
+
+	<main role="main">
+
+	<!-- hero banner -->
+		<div class="hero-banner how-itworks banner-medium bg-fixed bg-overlay">
+			<div class="container pt-6 pt-md-8 position-relative layer-z-1">
+				<div class="hero-banner-content pr-2 py-4 text-center">
+					<div class="row">
+						<div class="col-lg-9 mx-auto">
+							<h2 class="h1 hero-banner-hd text-light mb-3">
+								How it works
+							</h2>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	
+
+	{# {%  include('@AppBundle/Common/submenu-block.html.twig') with { active :'the-process', sub_active: 'how-it-works' } %} #}
+
+
+	<div class="description-block my-6">
+		<div class="container">
+			<div class="row two-col">
+				<div class="col-lg-4 info-left">
+					<h3>How does crowdinvesting work?</h3>
+				</div>
+				<div class="col-lg-8 info-rightRight">
+					<p>Yielders is a crowdinvesting property platform that gives you easy access to the UK property market and allows you to earn competitive returns. With our ethical investment model, there is no mortgage, interest, debt or hidden fees, which means you can grow your wealth without compromising on your values.
+					Yielders is for everyone; whether you’re saving for retirement, your first home or your children’s education.
+					We do the hard work for you. All you need to do is sign up and start investing.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="white-block">
+		<div class="container" >
+			<div class="card flex-column flex-md-row border-dark p-4">
+				<div class="col mb-2 mb-md-0 text-center">
+					<h4 class="h3 mb-2 text-primary">Invest</h3>
+					<p>Invest in carefully vetted assets based in London and across the South East.
+						                        Our team of experts identifies assets offering strong yields across the asset lifespan. We target above market yields.</p>
+				</div>
+				<div class="col mb-2 mb-md-0 text-center">
+					<h4 class="h3 mb-2 text-primary">Grow</h3>
+					<p>Our carefully chosen assets will allow for your money to grow whilst invested in SPV structures.
+						                        Our platform allows for you to track your investments over time; periodically updating you based on all relevant index information.</p>
+				</div>
+				<div class="col mb-2 mb-md-0 text-center">
+					<h4 class="h3 mb-2 text-primary">Yield</h3>
+					<p>Upfront fixed term rental agreements of 2-5 years on all our assets. This allows 'Yielders' to yield the returns faster, from a fully funded asset.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<section class="bg-teal mt-6 pt-5 pb-5">
+		<div class="container">
+			<h3 class="text-center pt-5 mb-3">
+				Sign up and start investing in less than 3 minutes
+			</h3>
+			<div class="row py-6">
+				<div class="col-lg-3 col-md-6 mb-4 mb-md-0 text-center">
+					<div class="d-flex flex-row flex-md-column">
+						<div class="px-2 px-md-0 howitwork-icon">
+							<img src="{{ asset('bundles/app/images/icon-4.svg') }}" class="icon mb-3 img-fluid" loading="lazy" alt="">
+						</div>
+						<div class="pr-2 px-md-0 howitwork-content">
+							<h5 class="mb-2 text-left text-md-center">Pick your property</h5>
+							<p class="text-left text-md-center">Have a look at the properties our expert team has carefully sourced then choose the one that’s right for you. To minimise risk, diversify your portfolio by investing in more than one.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6 mb-4 mb-md-0 text-center">
+					<div class="d-flex flex-row flex-md-column">
+						<div class="px-2 px-md-0 howitwork-icon">
+							<img src="{{ asset('bundles/app/images/icon-5.svg') }}" class="icon mb-3 img-fluid" loading="lazy" alt="">
+						</div>
+						<div class="pr-2 px-md-0 howitwork-content">
+							<h5 class="mb-2 text-left text-md-center">Make an investment</h5>
+							<p class="text-left text-md-center">With as little as £100, use your secure e-wallet to buy a share of your chosen property. You’re in control, so you decide how much to invest and which property to invest in.</p>
+						</div>
+					</div>
+
+				</div>
+				<div class="col-lg-3 col-md-6 mb-4 mb-md-0 text-center">
+					<div class="d-flex flex-row flex-md-column">
+						<div class="px-2 px-md-0 howitwork-icon">
+							<img src="{{ asset('bundles/app/images/logos/yielderssquarelogowhite.svg') }}" class="icon mb-3 img-fluid" loading="lazy" alt="">
+						</div>
+						<div class="pr-2 px-md-0 howitwork-content">
+							<h5 class="mb-2 text-left text-md-center">Earn a regular income</h5>
+							<p class="text-left text-md-center">Every month, you earn rental income that we send straight to your e-wallet. With an annual average rental income of over 6%+ net, we offer more than double the return of stocks and bonds*.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-6 mb-4 mb-md-0 text-center">
+					<div class="d-flex flex-row flex-md-column">
+						<div class="px-2 px-md-0 howitwork-icon">
+							<img src="{{ asset('bundles/app/images/icon-6.svg') }}" class="icon mb-3 img-fluid" loading="lazy" alt="">
+						</div>
+						<div class="pr-2 px-md-0 howitwork-content">
+							<h5 class="mb-2 text-left text-md-center">Collect your profit</h5>
+							<p class="text-left text-md-center">When it’s time to sell the property, we give you a share of the total profit. We’re proud to say our investors make consistently high returns each year*. But if you need to leave early, you can sell your shares on our secondary market.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12 text-center mt-4">
+					<p class="">*Past performance isn’t a reliable indicator of future performance</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+
+
+</main>
+{% endblock %}
+{% block pagejs %}
+<script>
+
+ //block position change on hover - home page
+    $(".how-work-box .item-col").hover(function () {
+        var frameLeft = $(this).position().left;
+        var fcontent = frameLeft + 70
+        var pointIndex = $(this).index();
+        $(".how-work-box .frame-wrap").css("left", frameLeft + "px");
+        $(this).find(".c-content").css("left", "-" + fcontent + "px");
+        $(this).addClass("active").siblings().removeClass("active");
+        $(".how-content").eq(pointIndex - 1).fadeIn("slow").siblings().fadeOut("slow");
+    }, function () {
+        /*var originalLeft = $(".how-work-box .item-col.active").position().left;
+         $(".how-work-box .frame").css("left",originalLeft+"px");*/
+    });
+     $(".how-work-box .item-col").click(function () {
+        $(this).addClass("active").siblings().removeClass("active");
+	 });
+	 $(document).ready(function(){
+		 	$($(".how-work-box .item-col")[0]).trigger('mouseenter');
+
+	 });
+</script>
+{% endblock %}

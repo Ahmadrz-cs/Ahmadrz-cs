@@ -1,0 +1,90 @@
+# Codeception Test Suite Configuration
+#
+# Suite for acceptance tests.
+# Perform tests in browser using the WebDriver or PhpBrowser.
+# If you need both WebDriver and PHPBrowser tests - create a separate suite.
+
+actor: AcceptanceTester
+modules:
+    enabled:
+        - Asserts
+        - Sequence
+        - Db:
+            # db config in codeception.yml
+            # uncomment the dump and populate if running tests adhoc
+            # password: null
+            dump: tests/_data/test_db_with_fixtures.sql
+            populate: true
+            populator: 'mysql -u $user -h $host $dbname -p$password < $dump'
+        - WebDriver:
+            url: 'http://local.qac.com'
+#            browser: firefox
+            browser: chrome
+            window_size: 1680x1050
+            pageload_timeout: 120
+            wait: 2
+            
+env:
+    local-chrome:
+         modules:
+            config:
+                WebDriver:
+                    url: 'http://local.qac.com'
+                    browser: chrome
+                    window_size: 1680x1050
+                Db:
+                    dsn: "mysql:host=localhost;dbname=crowddb"
+                    user: "root"
+                    password: ""
+                    populator: 'mysql -u $user -h $host $dbname < $dump'
+
+    remote-chrome:
+         modules:
+            config:
+                WebDriver:
+                    url: 'https://test-front.yielderverse.co.uk'
+                    browser: chrome
+                    host: 172.17.0.1
+                    port: 4444
+                    window_size: 1680x1050
+
+    docker-chrome:
+         modules:
+            config:
+                WebDriver:
+                    url: 'http://front.dev.local'
+                    browser: chrome
+                    window_size: 1280x1080
+                    host: selenium-grid
+                    port: 4444
+                Db:
+                    dsn: "mysql:host=db;dbname=crowddb"
+                    user: "ydev"
+                    password: "YankeeDelta522"
+                    populator: 'mysql -u $user -h $host $dbname -p$password < $dump'
+    
+    ci-linear-chrome:
+         modules:
+            config:
+                WebDriver:
+                    url: 'https://test-front.yielderverse.co.uk'
+                    browser: chrome
+                    host: selenium-chrome
+                    port: 4444
+                    window_size: 1680x1050
+    
+    ci-independent-chrome:
+         modules:
+            config:
+                WebDriver:
+                    url: 'http://front-ci.dev'
+                    browser: chrome
+                    host: selenium-chrome
+                    port: 4444
+                    window_size: 1680x1050
+                    wait: 2
+                Db:
+                    dsn: "mysql:host=citestdb;dbname=crowddb"
+                    user: "ydev"
+                    password: "YankeeDelta522"
+                    populator: 'mysql -u $user -h $host $dbname -p$password < $dump'

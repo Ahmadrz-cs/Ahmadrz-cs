@@ -1,0 +1,106 @@
+{% extends 'admin/pages/monthend/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% if currentDividend is not empty %}
+
+        {% set paymentsCompletedList = currentDividend.payments|filter(p => p.status == constant('App\\Entity\\PaymentRequest::STATE_PAID')) %}
+        {% set originalTotal = currentDividend.payments|reduce((carry, v) => carry + v.amount) %}
+        {% set completedTotal = paymentsCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "current-monthend",
+                "sectionTitle": "Current Monthend",
+                "linkActions": [
+                    {
+                        "text": "View Current Monthend",
+                        "route": "admin_monthend_dividend_manage",
+                        "params": {"id": currentDividend.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Current Monthend',
+                        value: currentDividend.scheduledFor|date('Y-m-d'),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: currentDividend.status|capitalize|replace({'_':'-'}),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Payments Completed',
+                        value: paymentsCompletedList|length
+                            ~ '/' ~ currentDividend.payments|length
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Paid (£)',
+                        value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+    {% endif %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "payment-orders",
+        "sectionTitle": "All Dividend Payment Orders",
+        "linkActions": [
+            {
+                "text": "Create Dividend",
+                "route": "admin_monthend_dividend_create",
+                "params": {assetId: asset.id},
+                "style": "btn-success",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row">
+            <div class="col-sm-6">{{ pagerfanta(paymentOrders, 'twitter_bootstrap4') }}</div>
+            <section class="col-sm-6 mb-3 d-flex justify-content-end">
+                <span class="border rounded-2 d-inline-block p-2 me-1" id="list-meta-results">{{ paymentOrders.count()|number_format(0, '.', ',') }} Results</span>
+                <span class="border rounded-2 d-inline-block p-2" id="list-meta-page">{{ paymentOrders.getNbPages()|number_format(0, '.', ',') }} Pages</span>
+            </section> 
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="payment-order-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Scheduled For</th>
+                        <th>Payments</th>
+                        <th>Status</th> 
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paymentOrder in paymentOrders|default([]) %}
+                    <tr>
+                        <td><a class="btn btn-outline-primary"
+                            href="{{ path('admin_monthend_dividend_manage', { id: paymentOrder.id }) }}">
+                            {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View{% endif -%}
+                            </a>
+                        </td>
+                        <td>{{ paymentOrder.id }}</td>
+                        <td>{{ paymentOrder.paymentType|capitalize }}</td>
+                        <td>{{ paymentOrder.description }}</td>
+                        <td>{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                        <td>{{ paymentOrder.payments|length }}</td>
+                        <td>{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

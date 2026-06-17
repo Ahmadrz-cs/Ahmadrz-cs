@@ -1,0 +1,33 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set orderVariant = '' %}
+{% set activity = 'Monthend Tools' %}
+
+{% if order.transferType is defined %}
+	{% set orderVariant = 'Transfer' %}
+	{% set activity = order.transferType.value|title %}
+{% elseif order.paymentType is defined %}
+	{% set orderVariant = 'Payment' %}
+	{% set activity = order.paymentType|title %}
+{% endif %}
+
+{% set backToRoute = exitRoute|default('admin_monthend_assets') %}
+{% set backToRouteParams = { id: order.id } %}
+{% set areaHeading = 'Monthend - ' ~ activity %}
+{% set mainHeading = 'Edit ' ~ activity ~ ' Order' %}
+{% set htmlTitle = 'Edit ' ~ orderVariant ~ ' Order' %}
+
+{% block page_content %}
+
+	{{ form_start(form) }}
+	<div class="row">
+		<div class="col-sm-6">{{ form_row(form.scheduledFor) }}</div>
+		<div class="col-sm-6">{{ form_row(form.description) }}</div>
+	</div>
+	<div class="">
+		<button class="btn btn-success" id="submit" type="submit">Save Changes</button>
+		<a class="btn btn-outline-secondary" href="{{ path(exitRoute|default('admin_monthend_assets'), { id: order.id }) }}">Discard Changes</a>
+	</div>
+	{{ form_end(form) }}
+
+{% endblock page_content %}

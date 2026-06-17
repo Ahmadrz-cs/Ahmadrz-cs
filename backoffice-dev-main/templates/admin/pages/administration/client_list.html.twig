@@ -1,0 +1,46 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'API Clients' %}
+{% set mainHeading = 'OAuth2 API Clients' %}
+
+{% block page_content %}
+
+    {% if is_granted('ROLE_TECH_OPS', app.user) %}
+    <div>
+        <a href="{{ path('admin_administration_clients_add') }}" class="btn btn-success">Create New Client</a>
+    </div>
+    {% endif %}
+    <div class="table-responsive">
+        <table class="table table-striped datatable " id="clientlist">
+            <thead>
+                <tr>
+                    <th>Client Identifier</th>
+                    <th>Alias</th>
+                    <th>User</th>
+                    <th>Redirect URIs (Allow-list)</th>
+                    <th>Grants</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for userClient in userClients %}
+                    <tr>
+                        <td><a href="{{ path('admin_administration_clients_edit', { identifier: userClient.client.identifier }) }}">{{ userClient.client.identifier }}</a></td>
+                        <td title="{{ userClient.description }}">{{ userClient.alias }}</td>
+                        <td><a href="{{ path('admin_user_edit', { id: userClient.user.id }) }}">{{ userClient.user }}</a></td>
+                        <td class="tw-text-sm">{{ userClient.client.redirectUris|join('\n')| nl2br }}</td>
+                        <td class="tw-text-sm">{{ userClient.client.grants|join('\n')| nl2br }}</td>
+                        <td>
+                            {% if userClient.client.active  %}
+                            <span class="badge text-bg-success">Yes</span>
+                            {% else %}
+                            <span class="badge text-bg-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock page_content %}

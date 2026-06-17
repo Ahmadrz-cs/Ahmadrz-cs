@@ -1,0 +1,239 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Statements' %}
+
+{% set settlementTotal = settlements|reduce((carry, v) => carry + v.investmentValue) %}
+{% set relistingTotal = relistings|reduce((carry, v) => carry + v.investmentValue) %}
+{% set dividendTotal = dividends|reduce((carry, v) => carry + v.payoutAmount) %}
+{% set divestmentTotal = divestments|reduce((carry, v) => carry + v.payoutAmount) %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {{ include('admin/components/_prototype_warning.html.twig', {
+        featureName: 'consolidated monthly statements'
+    }) }}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'statement-configuration',
+        "sectionTitle": 'Statement Configuration',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Search Range',
+                value: dateRange.start|date('Y-m-d') ~ ' <= X < ' ~ dateRange.end|date('Y-m-d'),
+                className: 'col-md-6'
+            }) }}
+        </div>
+        {{ form_start(form) }}
+            <div class="row ">
+                <div class="col-sm-6">{{ form_row(form.month) }}</div>
+            </div>
+            <div class="">
+                <button class="btn btn-primary" id="submit" type="submit">Apply Config</button>
+                <a class="btn btn-outline-secondary"
+                    href="{{ path('admin_user_dashboard_statements', { id: user.id }) }}">Reset Config to Default</a>
+            </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'investments-settled',
+        "sectionTitle": 'Investments Settled',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Investments',
+                value: settlements|length(0, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Value of Investments',
+                value: '£' ~ settlementTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Invested On</th>
+                        <th>Type</th>
+                        <th>Seller</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Shares</th>
+                        <th>Offering</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investment in settlements %}
+                    <tr>
+                        <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">{{ investment.id }}</a></td>
+                        <td><a href="{{ path('admin_product_dashboard', { id: investment.offering.asset.id }) }}">{{ investment.offering.asset.name }}</a></td>
+                        <td>{{ investment.createdAt|date("Y-m-d") }}</td>
+                        <td>{{ investment.type|capitalize }}</td>
+                        <td>
+                            {% if investment.offering.sellInvestment is not empty %}
+                            {{ investment.offering.sellInvestment.user|default('N/A') }}
+                            {% else %}
+                            Yielders
+                            {% endif %}
+                        </td>
+                        <td class="text-end tw-tabular-nums">{{ investment.investmentValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ investment.shareamount|number_format(0, '.', ',') }}</td>
+                        <td><a href="{{ path('admin_offering_edit', { id: investment.offering.id }) }}">{{ investment.offering.id
+                                }}</a></td>
+                        <td>{{ investment.lifecyclestatus|capitalize}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'dividends',
+        "sectionTitle": 'Dividends',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Dividends',
+                value: dividends|length(0, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Value of Dividends',
+                value: '£' ~ dividendTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Due Date</th>
+                        <th class="text-end">Amount</th>
+                        <th>Transaction Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in dividends %}
+                    <tr>
+                        <td><a href="{{ path('admin_payout_edit', { id: payout.id }) }}">{{ payout.id }}</a></td>
+                        <td>
+                            <a href="{{ path('admin_asset_edit', { id: payout.asset.id }) }}">{{ payout.asset }}</a>
+                        </td>
+                        <td>{{ payout.dueDate|date("Y-m-d") }}</td>
+                        <td class="text-end tw-tabular-nums">{{ payout.payoutAmount }}</td>
+                        <td>{{ payout.transactionId }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'relistings-settled',
+        "sectionTitle": 'Relistings Settled',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Relisting Sales',
+                value: relistings|length(0, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Value of Relisting Sales',
+                value: '£' ~ relistingTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Invested On</th>
+                        <th>Type</th>
+                        <th>Buyer</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Shares</th>
+                        <th>Offering</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investment in relistings %}
+                    <tr>
+                        <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">{{ investment.id }}</a></td>
+                        <td><a href="{{ path('admin_product_dashboard', { id: investment.offering.asset.id }) }}">{{ investment.offering.asset.name }}</a></td>
+                        <td>{{ investment.createdAt|date("Y-m-d") }}</td>
+                        <td>{{ investment.type|capitalize }}</td>
+                        <td><a href="{{ path('admin_user_edit', { id: investment.user.id }) }}">{{ investment.user }}</a></td>
+                        <td class="text-end tw-tabular-nums">{{ investment.investmentValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ investment.shareamount|number_format(0, '.', ',') }}</td>
+                        <td><a href="{{ path('admin_offering_edit', { id: investment.offering.id }) }}">{{ investment.offering.id
+                                }}</a></td>
+                        <td>{{ investment.lifecyclestatus|capitalize}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'divestments',
+        "sectionTitle": 'Divestments',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Divestments',
+                value: divestments|length(0, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Value of Divestments',
+                value: '£' ~ divestmentTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Due Date</th>
+                        <th class="text-end">Amount</th>
+                        <th>Transaction Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in divestments %}
+                    <tr>
+                        <td><a href="{{ path('admin_payout_edit', { id: payout.id }) }}">{{ payout.id }}</a></td>
+                        <td>
+                            <a href="{{ path('admin_asset_edit', { id: payout.asset.id }) }}">{{ payout.asset }}</a>
+                        </td>
+                        <td>{{ payout.dueDate|date("Y-m-d") }}</td>
+                        <td class="text-end tw-tabular-nums">{{ payout.payoutAmount }}</td>
+                        <td>{{ payout.transactionId }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

@@ -1,0 +1,199 @@
+# Fully funded asset
+# All investors in one place for ease of parsing
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_lodge_freya_1: 50451 # prefunding liquidation
+    shares_lodge_freya_2: 6723 # cancelled (rejected under old system)
+    shares_lodge_freya_X: 25813 # cancelled (withdrawn under old system) - not included in new
+    shares_lodge_freya_3: 6446 # prefunding 5263 liquidation, 1183 retention
+    shares_lodge_lorna_1: 43103 # prefunding liquidation no retention
+    shares_lodge_ben_1: 9655 # retail
+    shares_lodge_ben_2: 690 # retail
+    shares_lodge_holly_1: 352 # retail
+
+App\Entity\TradeOrder:
+    # retail launch of lodge
+    sell_order_initial_retail_{lodge} (extends trade_order_initial):
+        asset: "@asset<current()>"
+        numberOfShares: <(100000 - 1183)> # 100k - 1183 retained
+        pricePerShare: "@asset<current()>->pricePerShare"
+        notes: "retail launch"
+        createdBy: "$user"
+        createdAt: "<(new DateTime('last tuesday of -3 months 10:15:07'))>"
+    buy_order_lodge_{freya_1} (extends trade_order_prefund):
+        asset: "@assetlodge"
+        user: "@userfreya"
+        numberOfShares: 50451
+        pricePerShare: "@assetlodge->pricePerShare"
+        complementaryOrder: "@sell_order_prefund_lodge_<current()>"
+        createdAt: "<dateTimeBetween('first wednesday of -4 months', 'last friday of -4 months')>"
+        createdBy: "$user"
+    sell_order_prefund_lodge_{freya_1} (extends trade_order_prefund_sell):
+        asset: "@assetlodge"
+        user: "@userfreya"
+        numberOfShares: 50451
+        pricePerShare: "@assetlodge->pricePerShare"
+        # Liquidation order should be made at the same time as the prefunding
+        complementaryOrder: "@buy_order_lodge_<current()>"
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_lodge_{freya_2} (extends trade_order_prefund):
+        asset: "@assetlodge"
+        user: "@userfreya"
+        numberOfShares: 6723
+        pricePerShare: "@assetlodge->pricePerShare"
+        notes: "Prefunding cancelled"
+        complementaryOrder: "@sell_order_prefund_lodge_<current()>"
+        createdAt: "<dateTimeBetween('first wednesday of -4 months', 'last thursday of -4 months')>"
+        createdBy: "$user"
+    sell_order_prefund_lodge_{freya_2} (extends trade_order_prefund_sell):
+        asset: "@assetlodge"
+        user: "@userfreya"
+        numberOfShares: 6723
+        pricePerShare: "@assetlodge->pricePerShare"
+        notes: "Prefunding cancelled"
+        complementaryOrder: "@buy_order_lodge_<current()>"
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_lodge_{freya_3} (extends trade_order_prefund):
+        asset: "@assetlodge"
+        user: "@userfreya"
+        numberOfShares: 6446
+        pricePerShare: "@assetlodge->pricePerShare"
+        complementaryOrder: "@sell_order_prefund_lodge_<current()>"
+        createdAt: "<dateTimeBetween('first thursday of -3 months', 'last saturday of -3 months')>"
+        createdBy: "$user"
+    sell_order_prefund_lodge_{freya_3} (extends trade_order_prefund_sell):
+        asset: "@assetlodge"
+        user: "@userfreya"
+        numberOfShares: 5263
+        notes: "Partial prefunding liquidation, 1183 shares retained"
+        complementaryOrder: "@buy_order_lodge_<current()>"
+        pricePerShare: "@assetlodge->pricePerShare"
+        # Liquidation order should be made at the same time as the prefunding
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_lodge_{lorna_1} (extends trade_order_prefund):
+        asset: "@assetlodge"
+        user: "@userlorna"
+        numberOfShares: 43103
+        pricePerShare: "@assetlodge->pricePerShare"
+        complementaryOrder: "@sell_order_prefund_lodge_<current()>"
+        createdAt: "<dateTimeBetween('first monday of -4 months', 'last thursday of -4 months')>"
+        createdBy: "$user"
+    sell_order_prefund_lodge_{lorna_1} (extends trade_order_prefund_sell):
+        asset: "@assetlodge"
+        user: "@userlorna"
+        numberOfShares: 43103
+        notes: "Full prefunding liquidation"
+        complementaryOrder: "@buy_order_lodge_<current()>"
+        pricePerShare: "@assetlodge->pricePerShare"
+        # Liquidation order should be made at the same time as the prefunding
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_lodge_{ben_1} (extends trade_order_invest):
+        asset: "@assetlodge"
+        user: "@userben"
+        numberOfShares: 9655
+        pricePerShare: "@assetlodge->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    buy_order_lodge_{ben_2} (extends trade_order_invest):
+        asset: "@assetlodge"
+        user: "@userben"
+        numberOfShares: 690
+        pricePerShare: "@assetlodge->pricePerShare"
+        createdAt: "<dateTimeBetween('second tuesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    buy_order_lodge_{holly_1} (extends trade_order_invest):
+        asset: "@assetlodge"
+        user: "@userholly"
+        numberOfShares: 352
+        pricePerShare: "@assetlodge->pricePerShare"
+        createdAt: "<dateTimeBetween('second saturday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    buy_order_lodge_{proxy_tests} (extends trade_order_proxy):
+        asset: "@assetlodge"
+        user: "@userA1"
+        numberOfShares: 5250
+        pricePerShare: "@assetlodge->pricePerShare"
+        createdAt: "<dateTimeBetween('second saturday of -1 months', 'last thursday of -1 months')>"
+        createdBy: "$user"
+        notes: "test proxy buybacks"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_lodge_{freya_1, freya_2, freya_3, lorna_1, ben_1, ben_2, holly_1}:
+        tradeOrder: "@buy_order_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_lodge_<current()>->createdAt"
+    buy_order_status_completed_lodge_{freya_1, freya_2, freya_3, lorna_1, ben_1, ben_2, holly_1}:
+        tradeOrder: "@buy_order_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_lodge_<current()>->createdAt"
+    sell_order_status_active_lodge_{freya_1, freya_3, lorna_1}:
+        tradeOrder: "@sell_order_prefund_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@sell_order_prefund_lodge_<current()>->createdAt"
+    buy_order_status_suspended_lodge_{proxy_tests}:
+        tradeOrder: "@buy_order_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Suspended)>
+        occuredAt: "@buy_order_lodge_<current()>->createdAt"
+    sell_order_status_cancelled_lodge_{freya_2}:
+        tradeOrder: "@sell_order_prefund_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Cancelled)>
+        occuredAt: "@buy_order_lodge_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    # prefunding
+    share_trade_lodge_{freya_1, freya_2, freya_3, lorna_1}:
+        buyOrder: "@buy_order_lodge_<current()>"
+        sellOrder: "@sell_order_initial_lodge"
+        numberOfShares: "@buy_order_lodge_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_lodge_<current()>->pricePerShare"
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+    # retail
+    share_trade_lodge_{ben_1, ben_2, holly_1}:
+        buyOrder: "@buy_order_lodge_<current()>"
+        sellOrder: "@sell_order_initial_retail_lodge"
+        numberOfShares: "@buy_order_lodge_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_lodge_<current()>->pricePerShare"
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+    # proxy buy backs
+    share_trade_lodge_{proxy_tests}:
+        buyOrder: "@buy_order_lodge_<current()>"
+        sellOrder: "@sell_order_prefund_lodge_freya_3"
+        numberOfShares: "@buy_order_lodge_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_lodge_<current()>->pricePerShare"
+        createdAt: "@buy_order_lodge_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_lodge_{freya_1, freya_2, freya_3, lorna_1, ben_1, ben_2, holly_1}:
+        shareTrade: "@share_trade_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_lodge_<current()>->createdAt"
+    trade_status_settled_lodge_{freya_1, lorna_1}:
+        shareTrade: "@share_trade_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first tuesday of -3 months 16:00:04'))>"
+    trade_status_cancelled_lodge_{freya_2}:
+        shareTrade: "@share_trade_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Cancelled)>
+        occuredAt: "<(new DateTime('first tuesday of -3 months 16:22:04'))>"
+    trade_status_cancelled_lodge_{proxy_tests}:
+        shareTrade: "@share_trade_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Cancelled)>
+        occuredAt: "<(new DateTime('last friday of -1 months 19:24:04'))>"
+    trade_status_settled_lodge_{freya_3}:
+        shareTrade: "@share_trade_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first monday of -2 months 14:54:12'))>"
+    trade_status_settled_lodge_{ben_1, ben_2, holly_1}:
+        shareTrade: "@share_trade_lodge_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first friday of -1 months 11:09:02'))>"

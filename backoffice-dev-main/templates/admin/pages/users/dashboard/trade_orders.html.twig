@@ -1,0 +1,21 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'trade-orders',
+        "sectionTitle": 'Trade Orders',
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/pages/trade_orders/_list_w_filters.html.twig', {
+                options: {
+                    showPresets: true,
+                    showFilters: true,
+                    showAsset: true,
+                    showUser: false,
+                },
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

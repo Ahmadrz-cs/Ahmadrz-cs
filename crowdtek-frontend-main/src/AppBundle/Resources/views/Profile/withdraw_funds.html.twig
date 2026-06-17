@@ -1,0 +1,144 @@
+{% if active is not defined %}
+	{% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+	{% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% block title %}My Profile
+{% endblock %}
+
+{% block body %}
+
+	<!-- main body -->
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{{ include('@AppBundle/Common/profilenav.html.twig') }}
+					</div>
+					<div class="col-md-9">
+						<div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4">
+							{% if linkedAccounts is empty %}
+								<h4>Manage Linked Bank Account</h4>
+								<p>Adding a new bank account involves 3 steps:</p>
+								<ol>
+									<li>Submit your bank account details and recent bank statement (from within the last 3 months)</li>
+									<li>Wait for a member of our team to review and approve your submission. You will be notified once your bank account has been approved. We may get in touch if more information is required.</li>
+									<li>Activate you bank account in your profile</li>
+								</ol>
+								{% if linkingRestrictions is empty %}
+								<a href="{{ path('bank_account_registrations_new') }}" class="btn btn-primary rounded-pill px-2 mt-1">Add new Bank Account</a>
+								{% endif %}
+								{% if constant('AppBundle\\Entity\\Enum\\RestrictionReason::ScaEnrollment') in linkingRestrictions %}
+									{{ include('@AppBundle/Common/_sca_enrollment_prompt.html.twig', {restrictedAction: "link a new bank account"}) }}
+								{% endif %}
+								{% if constant('AppBundle\\Entity\\Enum\\RestrictionReason::IdentityVerification') in linkingRestrictions %}
+									{{ include('@AppBundle/Common/_id_verification_prompt.html.twig') }}
+								{% endif %}
+							{% endif %}
+
+							{% if linkedAccounts is not empty %}
+
+							<div>
+								<h4>Create A Payout</h4>
+								<a href="{{ path('bank_account_registrations_index') }}" class="btn btn-light rounded-pill px-2 mt-1 mb-3">Manage Linked Bank Accounts</a>
+								<p>Minimum withdrawal amount is £10. International withdrawal fee applies. 
+									<a target="_blank" href="http://help.yielders.co.uk/en/articles/3436611-international-withdrawals" class="font-medium">Read More</a>
+								</p>
+							</div>
+
+							{{ form_start(form) }}
+							<div class="row">
+								<div class="col-md-6">{{ form_row(form.account) }}</div>
+								<div class="col-md-6">{{ form_row(form.amount) }}</div>
+							</div>
+							<div class="d-flex justify-content-start" style="gap: 0.5rem;">
+								<button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Submit</button>
+							</div>
+							{{ form_rest(form) }}
+							{{ form_end(form) }}
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+	</main>
+
+
+{% endblock %}
+
+{% block pagejs %}
+
+	<script>
+		$(document).ready(function () {
+
+				$('#account-select').change(function() {
+					//Check the change and use above logic to disable/enable submit button
+					var selectedVal = $('#account-select').val();
+
+					if(selectedVal == '') {
+						$('#submit-btn').prop('disabled', true);
+					} else {
+						$('#submit-btn').prop('disabled', false);
+					}
+				});
+
+				$('#bank_account_type').on('change', function (e) {
+					e.preventDefault();
+					var type = $(this).val();
+					if (type === 'GB') {
+					$('#gb_type').show();
+					$('#sort_code').prop('required', true);
+					$('#account_number').prop('required', true);
+
+					$('#iban_type').hide();
+					$('#iban').prop('required', false);
+					$('#bic').prop('required', false);
+
+					} else {
+					$('#gb_type').hide();
+					$('#sort_code').prop('required', false);
+					$('#account_number').prop('required', false);
+
+					$('#iban_type').show();
+					$('#iban').prop('required', true);
+					$('#bic').prop('required', true);
+					}
+				return true;
+				});
+
+		document.querySelector("#form-payout-bankwire").addEventListener('submit', function (e) {
+			if (!document.getElementById('bank_account_id').value) {
+			$('#acc_selection_msg').removeClass('hidden');
+			e.preventDefault();
+			}
+		});
+	});
+
+	</script>
+
+{% endblock %}

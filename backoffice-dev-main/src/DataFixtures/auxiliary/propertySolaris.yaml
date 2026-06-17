@@ -1,0 +1,79 @@
+# This is Light at the Peninsula lighthouse
+# Unique trait - 2 primariy offerings for 1 asset
+# Other notes - 3 year term
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{solaris} (extends asset_base):
+        name: Light at the Peninsula - Land's End
+        alternateName: Land's End sea home
+        briefDescription: Cosy home at the tip of England with a view of the sea and lighthouse.
+        pricePerShare: 1.23
+        amountOfShares: 80000
+        companyNumber: SPVAF00004
+        investmentTerm: 36
+        netProjectedYield: '0.0633'
+        netProjectedIncome: '6228'
+        createdAt: "<dateTimeBetween('-8 months', '-5 months')>"
+        termStart: "@self->createdAt"
+
+App\Entity\AssetAddress:
+    assetaddress{solaris} (extends assetaddress_base):
+        address1: Light at the Peninsula
+        address2: 5 Seanorth Cove
+        city: Penzance
+        postCode: TR20 7BT
+        longitude: -5.713433
+        latitude: 50.065039
+
+App\Entity\AssetMember:
+    assetmember{solaris} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{solaris_aoa, solaris_im}:
+        asset: "@assetsolaris"
+        document: "@doc<current()>"
+    assetdoc{solaris_logo}:
+        asset: "@assetsolaris"
+        document: "@doc<current()>"
+    assetdoc{solaris_calc}:
+        asset: "@assetsolaris"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{solaris}Alpha (extends offering_base):
+        asset: "@asset<current()>"
+        name: Light at the Peninsula Upper - Land's End
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: 35000
+        netRentProjected: 6.33
+        grossProjectReturn: 21.22
+    offering{solaris}Beta (extends offering_base):
+        asset: "@asset<current()>"
+        name: Light at the Peninsula Lower - Land's End
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: 45000
+        netRentProjected: 5.68
+        grossProjectReturn: 16.86
+
+App\Entity\OfferingDocuments:
+    offeringdoc{solarisAlpha, solarisBeta}_calc:
+        offering: "@offering<current()>"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{solaris_aoa} (extends doc_aoa):
+    doc{solaris_im} (extends doc_im):
+    doc{solaris_logo} (extends doc_logo):
+        description: "Lighthouse by the sea"
+        filename: "lighthousestock.jpg"
+    doc{solarisAlpha, solarisBeta} (extends doc_calculations):
+    doc{solaris_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{solaris} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

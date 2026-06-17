@@ -1,0 +1,84 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/book/service_container.html
+parameters:
+    locale: en
+    cv_network: yielders
+    admin_email_address: team@yielders.co.uk
+    company: CROWDTEK
+    salesforce_remote_tests: false
+    crowdtek_short_logging: true
+    session.prefix: sf_s_f_
+    session.ttl: 86400
+    session.handler_id: "%env(VALKEY_DSN)%?prefix=%session.prefix%&ttl=%session.ttl%"
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $network: "%cv_network%"
+            $endPoint: "%env(API_ENDPOINT_CORE)%"
+
+    # Interface defaults go here
+    # https://symfony.com/doc/current/service_container/autowiring.html#working-with-interfaces
+    # Symfony 4.4 allows argument name defaults
+    Psr\Log\LoggerInterface $logger: "@monolog.logger.crowdtek"
+    Psr\Log\LoggerInterface: "@monolog.logger.crowdtek"
+    GuzzleHttp\ClientInterface: "@http.client"
+
+    AppBundle\:
+        resource: "../../src/AppBundle/*"
+        exclude: "../../src/AppBundle/{DependencyInjection,Entity,Form,Logger,Resources,Util,AppBundle.php}"
+
+    ClientBundle\:
+        resource: "../../src/ClientBundle/*"
+        exclude: "../../src/ClientBundle/{DependencyInjection,ClientBundle.php}"
+
+    AppBundle\Form\Onboarding\:
+        resource: "../../src/AppBundle/Form/Onboarding"
+
+    AppBundle\Controller\OnboardingController:
+        arguments:
+            $recaptchaSiteKey: "%env(RECAPTCHA_SITE_KEY)%"
+            $recaptchaSecret: "%env(RECAPTCHA_SECRET_KEY)%"
+    
+    AppBundle\Controller\ProfileController:
+        arguments:
+            $adminEmail: "%admin_email_address%"
+            $tempDir: "%kernel.cache_dir%"
+
+    AppBundle\Logger\CrowdTekProcessor:
+        # Last arg is for short logging if set to true
+        arguments: [DEBUG, [], 0, "%crowdtek_short_logging%"]
+        tags:
+            - { name: monolog.processor }
+
+    ClientBundle\Service\CrowdTekClient:
+        arguments:
+            $clientId: "%env(YIELDERS_API_ID)%"
+            $clientSecret: "%env(YIELDERS_API_SECRET)%"
+
+    ClientBundle\Service\PublicService:
+        arguments:
+            $clientId: "%env(YIELDERS_API_ID)%"
+            $clientSecret: "%env(YIELDERS_API_SECRET)%"
+            $accountUrl: "%env(API_ENDPOINT_ACCOUNT)%"
+            $emailCheckKey: "%env(EMAIL_CHECK_KEY)%"
+            $company: "%company%"
+    
+    ClientBundle\Service\Yielders\ApiClient:
+        arguments:
+            $client: "@http.client"
+
+    http.client:
+        class: GuzzleHttp\Client
+        factory: ['ClientBundle\Service\Yielders\YieldersClientFactory', "createApiClient"]
+        arguments:
+            $baseUri: "%env(API_ENDPOINT_CORE)%"
+            $config: []
+
+    crowdtek_log_formatter:
+        class: Bramus\Monolog\Formatter\ColoredLineFormatter
+    
+    Symfony\Component\Dotenv\Command\DotenvDumpCommand: ~

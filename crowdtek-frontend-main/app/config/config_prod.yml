@@ -1,0 +1,62 @@
+imports:
+    - { resource: config.yml }
+    - { resource: parameters_prod.yml }
+    - { resource: services_prod.yml }
+
+framework:
+    session:
+        gc_probability: 0
+        
+#framework:
+#    validation:
+#        cache: apc
+
+#monolog:
+#   handlers:
+#        main:
+#           #type:  stream
+#            type:  rotating_file
+#            path:  %kernel.logs_dir%/%kernel.environment%.log
+#            level: debug
+#            max_files: 10
+#        custom:
+#            type: service
+##            #id: bab_logentries.handler
+#            id: monolog.handler.logentries
+#            level: error
+#        firephp:
+#            type:  firephp
+#            level: info
+#        chromephp:
+#            type:  chromephp
+#            level: info
+# /** CROWDTEK LOGGING */
+monolog:
+    channels: ['crowdtek']
+    handlers:
+        main:
+            type: fingers_crossed
+            action_level: debug
+            handler: nested
+            buffer_size: 50
+            channels: ["!deprecation"]
+        nested:
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            channels: ["!event"]
+            level: debug
+            formatter: crowdtek_log_formatter
+
+#monolog:
+#    handlers:
+#        main:
+#            type:         fingers_crossed
+#            action_level: error
+#            handler:      nested
+#        nested:
+#            type:  stream
+#            path:  "%kernel.logs_dir%/%kernel.environment%.log"
+#            level: debug
+#        console:
+#            type:  console

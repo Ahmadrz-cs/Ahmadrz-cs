@@ -1,0 +1,108 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_settlement_manage' %}
+{% set backToRouteParams = {id: transferOrder.id} %}
+{% set areaHeading = 'Monthend - Settlement Notification' %}
+{% set mainHeading = transferOrder.asset.name|default('Asset not configured for settlement order') %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set settlementTransfers = transferOrder.transfers|default([])|filter(t => constant('App\\Service\\MonthEndService::DESCRIPTION_PRESETS')['settlement'] in t.description)  %}
+
+{% block page_content %}
+
+    {# {{ include('admin/pages/monthend/order_actions.html.twig', {
+        order: transferOrder,
+        originalTotal: originalTotal
+    }) }} #}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "email-notifications",
+        "sectionTitle": "Email Notifications",
+        "linkActions": [
+            {
+                "text": "Refresh Status",
+                "route": app.request.attributes.get('_route'),
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Settlement Transfers',
+                value: settlementTransfers|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Remaining Notifications to Send',
+                value: settlementTransfers|filter(v => v.status == 'complete' and v.userNotifiedAt is null)|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Notifications Sent',
+                value: settlementTransfers|filter(v => v.userNotifiedAt is not null)|length
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Sending an email notification is only available for transfers that have been paid. 'Send All Notifications' will only send notifications for transfers that have not already sent one before.",
+        }) }}
+        {{ form_start(form, { attr: {class: "d-flex gap-2"} }) }}
+        {{ form_row(form.submit, { attr: {class: "btn btn-primary"} }) }}
+        {{ form_row(form.submitAsync, { attr: {class: "btn btn-outline-primary"} }) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        <div class="table-responsive">
+            <table class="table table-striped datatable" id="transfers-notification-list">
+                <thead>
+                    <tr>
+                        <th>Investor</th>
+                        <th>Investor Contact Email</th>
+                        <th class="text-end">Investment Amount (£)</th>
+                        <th class="text-end">Investment Shares</th>
+                        <th class="text-end">Settlement Amount (£)</th>
+                        <th>Settlement Status</th>
+                        <th>Notification Sent At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferRequest in settlementTransfers %}
+                    <tr data-object-id="{{ transferRequest.id }}">
+                        {% set shareTrade = transferRequest.shareTrade %}
+                        <td data-field="user">
+                            <a href="{{ path('admin_user_edit', { id: shareTrade.buyOrder.user.id }) }}">#{{ shareTrade.buyOrder.user.id
+                                }} // {{ shareTrade.buyOrder.user.username }}</a>
+                        </td>
+                        <td data-field="userEmail">{{ shareTrade.buyOrder.user.email }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="investmentAmount">{{ shareTrade.tradeValue|string|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="shares">{{ shareTrade.numberOfShares|number_format(0, '', ',') }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="transferAmount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                        <td>{{ transferRequest.status|capitalize }}{% if transferRequest.statusInfo %} ({{ transferRequest.statusInfo }}){% endif %}</td>
+                        <td>{{ transferRequest.userNotifiedAt ? transferRequest.userNotifiedAt|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>
+                            {% if is_granted('ROLE_OPERATIONS') and transferRequest.status == 'complete' %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": transferRequest.userNotifiedAt ? "Resend" : "Send",
+                                        "route": "admin_monthend_settlement_notification_send",
+                                        "params": {
+                                            id: transferRequest.id,
+                                        },
+                                        "style": transferRequest.userNotifiedAt ? "btn-outline-secondary" : "btn-outline-primary",
+                                    },
+                                }) }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

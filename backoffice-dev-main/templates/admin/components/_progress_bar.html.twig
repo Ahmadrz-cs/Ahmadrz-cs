@@ -1,0 +1,30 @@
+{# {% set progressBars = [
+    {
+        "color": "bg-success",
+        "label": "label",
+        "value": "value",
+        "valueText": "value",
+    }
+] %} #}
+
+{# 
+    Optional variables:
+        - className = class names to style the progress wrapper
+        - height = height of progress wrapper using any valid css value and unit, e.g. 1rem or 24px
+#}
+
+<div class="progress {{ className|default('rounded-2') }}" style="height: {{ height|default('24px')}};">
+
+{% for item in progressBars %}
+    <div class="progress-bar {{ item.color|default('text-bg-primary') }}"
+        role="progressbar"
+        aria-label="{{ item.label }}"
+        style="width: {{ item.value }}%"
+        aria-valuenow="{{ item.value }}"
+        aria-valuemin="0"
+        aria-valuemax="100">{% if showText ?? true %}{{ item.valueText is defined ? item.valueText : item.value|number_format(2, '.') }}{% if showUnit ?? true %}%{% endif %}
+        {% endif %}
+    </div>
+{% endfor %}
+
+</div>

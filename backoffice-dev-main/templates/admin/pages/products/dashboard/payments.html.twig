@@ -1,0 +1,81 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "dividends",
+        "sectionTitle": "Dividends",
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Dividends Paid',
+                value: "£" ~ payoutSummary.dividendsTotal|default(0)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Months Dividend Paid',
+                value: payoutSummary.paymentPeriods|default(0),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Most Recent Dividend',
+                value: payoutSummary is empty or payoutSummary.lastDividendPaidAt is empty ? "N/A" : payoutSummary.lastDividendPaidAt|date('Y-m-d'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Dividends Paid This Month',
+                value: "£" ~ payoutSummary.dividendsThisMonth|default(0)|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "payments",
+        "sectionTitle": "Payments",
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Made',
+                value: payments.count|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {% include 'admin/components/pagerfanta_meta_slim.html.twig' with {'list': payments} only %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Due Date</th>
+                        <th>Payee</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Shareholding</th>
+                        <th>Transaction Id</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments|default([]) %}
+                    <tr>
+                        <td><a href="{{ path('admin_payout_edit', { id: payment.id }) }}">{{ payment.id }}</a></td>
+                        <td>{{ payment.payoutType == 1 ? 'Profit Share' : 'Dividend' }}</td>
+                        <td class="tw-tabular-nums">{{ payment.dueDate|date('Y-m-d', false) }}</td>
+                        <td>{%- if payment.creditedUser is not null -%}
+                                <a href="{{ path('admin_user_dashboard_payments', { id: payment.creditedUser.id }) }}">#{{ payment.creditedUser.id }}
+                                    // {{ payment.creditedUser.userIdentifier }}</a>
+                            {%- else -%}
+                                Missing user relation
+                            {%- endif -%}</td>
+                        <td class="text-end tw-tabular-nums">{{ payment.payoutAmount|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ payment.shareholding }}</td>
+                        <td>{{ payment.transactionId }}</td>
+                        <td class="tw-tabular-nums">{{ payment.createdAt|date('Y-m-d H:i:s', false) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+            
+{% endblock dashboard_content %}

@@ -1,0 +1,20 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = backToRoute|default('admin_transfer_order_index') %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = mainHeading|default('New Transfer Order') %}
+{% set baseTemplate = 'cms' %}
+
+{# Configure page blocks #}
+{% block formContents %}
+    <section class="row">
+        <div class="col-sm-6">{{ form_row(form.transferType) }}</div>
+        <div class="col-sm-6">{{ form_row(form.scheduledFor) }}</div>
+        <div class="col-12">{{ form_row(form.description) }}</div>
+        <div class="col-12">{{ form_row(form.asset, {attr: {'class': 'searchable' }}) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Create Transfer Order</button>
+{% endblock %}

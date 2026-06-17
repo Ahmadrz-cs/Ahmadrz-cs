@@ -1,0 +1,28 @@
+{% set keyColumnWidth = keyColumnWidth|default(50)|abs %}
+
+<div class="table-responsive {{ tableWrapperStyle|default() }}">
+    {% if title|default() %}<h5 class="font-weight-bold">{{ title }}</h5>{% endif %}
+    <table class="table {{ tableStyle|default() }}" {% if tableId|default() %}id="{{ tableId }}"{% endif %}>
+        <colgroup>
+            <col span="1" style="width: {{ keyColumnWidth }}%;">
+            <col span="1" style="width: {{ 100 - keyColumnWidth }}%;">
+        </colgroup>
+        {% if headers|default() %}
+        <thead>
+            <tr>
+                <th>{{ headers.k|default() }}</th>
+                <th>{{ headers.v|default() }}</th>
+            </tr>
+        </thead>
+        {% endif %}
+        <tbody>
+            {% for k, v in kv %}
+                {% set v = v is iterable ? v|json_encode(constant('JSON_PRETTY_PRINT')) : v %}
+                <tr>
+                    <td class="{{ keyDefaultStyle|default() }}">{{ k|striptags('<span>,<b>')|nl2br|raw }}</td>
+                    <td class="{{ valueDefaultStyle|default() }}" data-field-name={{ k|lower|replace({' ': '-'}) }}>{{ v|striptags('<span>,<b>')|nl2br|raw }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

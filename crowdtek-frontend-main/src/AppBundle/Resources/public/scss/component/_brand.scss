@@ -1,0 +1,30 @@
+.navbar {
+    &-brand {
+        @include media('>desktop') {
+            min-width: 156px;
+          }
+
+          @include media('<desktop') {
+            // z-index: 9999;
+            }
+        img {
+            height: 44px;
+            @include transition-ease;
+
+            @include media('<desktop') {
+                height: 30px;
+              }
+              
+        }
+    }
+}
+
+.sticky {
+    .navbar-brand {
+        
+        img {
+            height: 30px;
+            
+        }
+    }
+}

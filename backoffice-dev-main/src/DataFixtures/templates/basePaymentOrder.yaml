@@ -1,0 +1,17 @@
+App\Entity\PaymentOrder:
+    paymentOrder_base (template):
+        paymentType: 'Dividend'
+        description: "<sentence()>"
+        scheduledFor: "<(new DateTime('first day of this month'))>"
+        status: 'draft'
+        createdBy: "@userA1"
+        createdAt: "@self->scheduledFor"
+
+App\Entity\PaymentRequest:
+    paymentRequest_base (template):
+        status: 'pending'
+        amount: "<randomFloat(2, 2, 16)>"
+        shareholding: '<numberBetween(48, 510)>'
+        createdBy: "@userA1"
+        createdAt: "<dateTimeBetween('-1 week', '-2 days')>"
+        updatedAt: "<dateTimeBetween($createdAt, now)>"

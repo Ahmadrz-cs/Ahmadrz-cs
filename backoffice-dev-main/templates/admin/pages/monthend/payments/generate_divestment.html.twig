@@ -1,0 +1,114 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_divestment_manage' %}
+{% set backToRouteParams = {'id': paymentOrder.id} %}
+{% set areaHeading = 'Monthend - Generate ' ~ paymentOrder.paymentType ~'s' %}
+{% set mainHeading = paymentOrder.asset.name %}
+{% set htmlTitle = 'Generate Payments' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set sharesInCirculation = currentShareholders|reduce((carry, v) => carry + v.shares) %}
+
+{% block page_content %}
+
+    <div class="row g-3">
+
+        {% if paymentOrder.payments is not empty %}
+        
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "overwrite-warning",
+                "sectionTitle": "Overwriting Existing Payments",
+                "sectionStyle": "border rounded-3 p-3 p-lg-4 border-warning",
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "There are already payments in this order. Generating new payments will overwrite the existing ones!",
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        {% if sharesInCirculation != paymentOrder.asset.amountOfShares %}
+
+        {% set shareDifference = sharesInCirculation - paymentOrder.asset.amountOfShares %}
+        
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "shares-number-warning",
+                "sectionTitle": "Shares in Circulation Mismatch",
+                "sectionStyle": "border rounded-3 p-4 border-warning",
+            } %}
+                {% block sectionContent %}
+                <p class="mb-0">The number of shares in circulation does not match the number of shares issued for the asset.
+                    This could be caused by any number of reasons, including among others:</p>
+                <ul class="mb-0">
+                    <li>Some prefunders have not been repaid, so there are more shares in circulation than originally issued</li>
+                    <li>The asset has not been fully sold yet, so there are fewer shares in circulation than expected</li>
+                    <li>The offering has external commits for whatever reason, so there are fewer tracked shares in circulation than expected</li>
+                    <li>The asset has already been partially divested or in the process of being divested</li>
+                </ul>
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shares Issued',
+                        value: paymentOrder.asset.amountOfShares|number_format(0, '', ','),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Active Shares in Circulation',
+                        value: sharesInCirculation|number_format(0, '', ','),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Difference',
+                        value: shareDifference|abs|number_format(0, '', ','),
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "guidelines",
+                "sectionTitle": "Guidelines",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}                        
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shares Issued',
+                        value: paymentOrder.asset.amountOfShares|number_format(0, '', ','),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Share Price',
+                        value: '£' ~ paymentOrder.asset.pricePerShare|number_format(2, '.', ','),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Valuation',
+                        value: '£' ~ paymentOrder.asset.fundingGoal|number_format(2, '.', ','),
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-12">
+            {{ form_start(form) }}
+            <div class="row g-3">
+                <div class="col-sm-6">{{ form_row(form.shares) }}</div>
+                <div class="col-sm-6">{{ form_row(form.amount) }}</div>
+            </div>
+            <div class="">
+                <button class="btn btn-success" id="submit" type="submit">Generate Payments</button>
+                <a class="btn btn-outline-secondary"
+                    href="{{ path('admin_monthend_divestment_manage', { id: paymentOrder.id }) }}">Cancel</a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+{% endblock page_content %}

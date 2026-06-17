@@ -1,0 +1,13 @@
+{% set defaultParams = {} %}
+
+{% set currentPath = app.request.get("_route") %}
+
+{% block menu_content %}
+	<div class="d-flex">
+		<div class="btn-group" role="group" aria-label="{{ links.navLabel }}" id="{{ links.navId }}">
+			{% for link in links.linkDefinitions %}
+				<a class="btn text-nowrap border border-dark {% if link.active ?? false or (autodetectActive ?? false and currentPath is same as(link.route)) %}text-bg-dark active{% else %}btn-outline-dark{% endif %}" href="{{ path(link.route, link.params|default(defaultParams)) }}">{{ link.text }}</a>
+			{% endfor %}
+		</div>
+	</div>
+{% endblock menu_content %}

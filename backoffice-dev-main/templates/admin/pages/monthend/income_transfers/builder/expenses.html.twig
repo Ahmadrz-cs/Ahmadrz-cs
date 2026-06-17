@@ -1,0 +1,53 @@
+{% extends 'admin/layouts/income_transfer_builder.html.twig' %}
+
+{% set originalTotal = transferOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+{% set expensesTotal = groupedTransfers.expenses|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "expenses",
+        "sectionTitle": "Expenses",
+        "linkActions": [
+            {
+                "text": "Continue to Next Section",
+                "route": "admin_monthend_income_transfer_builder_tax",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+            },
+            {
+                "text": "Finish and Review",
+                "route": "admin_monthend_income_transfer_manage",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The expenses wallet is for allocating funds that are intended to pay for running costs of the asset. This can include insurance, accountancy fees, Yielders managment fees, etc.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Deposit Wallet Id',
+                value: walletIds.deposit|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expenses Wallet Id',
+                value: walletIds.expenses|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Expenses',
+                value: '£' ~ expensesTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/pages/monthend/income_transfers/builder/_section_table.html.twig', {
+            section: "expenses",
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

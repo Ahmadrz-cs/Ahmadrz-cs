@@ -1,0 +1,161 @@
+
+	<nav class="nav flex-column nav-pills asidenav mb-3" id="profilenav" role="tablist" aria-orientation="vertical">
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('profile') }}" id="proDashboard">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}dashboard.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>Dashboard</strong>
+					</p>
+					<span class="text-sm d-inline-flex">Add money to your wallet</span>
+				</div>
+			</div>
+		</a>
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick" href="{{ path('profile_edit') }}" id="proGeneral">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}info.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>General Information</strong>
+					</p>
+					<span class="text-sm d-inline-flex">Update your personal details</span>
+				</div>
+			</div>
+		</a>
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick" href="{{ path('password_security') }}" id="proSecurity">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}lock.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>Security</strong>
+					</p>
+					<span class="text-sm d-inline-flex">Change your password</span>
+				</div>
+			</div>
+		</a>
+		{% if  userInfo.is_vip|default() %}
+		{% else %}
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('apply-top-yielder') }}" id="proTopYielders">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}man.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>Top Yielders</strong>
+					</p>
+					<span class="text-sm d-inline-flex">Apply today</span>
+				</div>
+			</div>
+		</a>
+		{% endif %}
+
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick" href="{{ path('transactions_list') }}" id="proTransaction">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}history.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>Transaction History</strong>
+					</p>
+					<span class="text-sm d-inline-flex">View your history</span>
+				</div>
+			</div>
+		</a>
+
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('profile_categorisation') }}" id="proCategorisation">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}self-certification.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0">
+						<strong>Investor Type</strong>
+					</p>
+				</div>
+			</div>
+		</a>
+
+		{# <a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('direct_debit_summary') }}" id="proDirectDebit">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}history.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>Direct Debit</strong>
+					</p>
+				</div>
+			</div>
+		</a> #}
+
+		{# <a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('feedback') }}" id="proFeedback">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}info.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0 line-height-sm">
+						<strong>Feedback</strong>
+					</p>
+				</div>
+			</div>
+		</a> #}
+
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('contact_preferences') }}" id="proContactPreferences">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}man.svg" loading="lazy" alt="">
+				<div class="ml-1">
+					<p class="mb-0">
+						<strong>Contact Preferences</strong>
+					</p>
+				</div>
+			</div>
+		</a>
+
+		<a class="nav-link border-left-0 border-right border-bottom p-2 navClick"  href="{{ path('bank_account_registrations_index') }}" id="proBankAccounts">
+			<div class="d-flex align-items-start">
+				<img src="{{asset('bundles/app/svg/')}}wallet.svg" loading="lazy" alt="" style="width:24px; height:24px;">
+				<div class="ml-1">
+					<p class="mb-0">
+						<strong>Linked Bank Accounts</strong>
+					</p>
+				</div>
+			</div>
+		</a>
+
+	</nav>
+
+  <script>
+        $(document).ready(function(){
+			$('.navClick').removeClass('active');
+			let urlSegments = $(location).attr('href').split('/').reverse()
+            let lastSegUrl = urlSegments[0];
+			let penultSegUrl = urlSegments[1];
+			if(lastSegUrl == 'categorisation' || penultSegUrl == 'categorisation'){
+				$('#proCategorisation').addClass('active');
+			}
+			else if(lastSegUrl=='profile'){
+				$('#proGeneral').addClass('active');
+
+			}else if(lastSegUrl=='password-security'){
+				$('#proSecurity').addClass('active');
+
+			} else if(lastSegUrl=='apply-top-yielder'){
+				$('#proTopYielders').addClass('active');
+
+			} else if(lastSegUrl=='transactions' || lastSegUrl=='transaction-export'){
+				$('#proTransaction').addClass('active');
+
+			} else if(lastSegUrl=='direct-debit'){
+				$('#proDirectDebit').addClass('active');
+
+			} else if(lastSegUrl=='feedback'){
+				$('#proFeedback').addClass('active');
+			} else if(lastSegUrl=='contact-preferences'){
+				$('#proContactPreferences').addClass('active');
+			} else if(urlSegments.some(str => str.includes('bank-accounts'))){
+				$('#proBankAccounts').addClass('active');
+			} else{
+				$('#proDashboard').addClass('active');
+			}
+
+			if($(window).width() >= 768) {
+           		$("#profilenav").removeClass("asidenav");
+        	}else{
+           		$("#profilenav").addClass("asidenav");  
+			}
+
+        });
+        </script>

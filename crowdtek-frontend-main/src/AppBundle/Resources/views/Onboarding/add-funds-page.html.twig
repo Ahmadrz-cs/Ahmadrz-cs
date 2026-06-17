@@ -1,0 +1,102 @@
+<div class="row" style="margin-top:25px;">
+    <div class="col-md-6 mobile-clear">
+        <label for="optcard" class="radio">
+            <input type="radio" name="rdo" id="optcard" class="hidden" checked="checked" onclick="paymenttype(); checkAmountValid();" />
+            <span class="label"></span>Pay by Visa/Mastercard
+        </label>
+    </div>
+    <div class="col-md-6 mobile-clear ">
+        <label for="optbank" class="radio">
+            <input type="radio" name="rdo" id="optbank" class="hidden" onclick="paymenttype(); checkAmountValid();" />
+            <span class="label"></span>Pay by Bankwire
+        </label>
+
+    </div>
+</div>
+
+<div style="clear:both"></div>
+
+<p class="nml_p" id="paycard_notice" style="padding: 16px 0;"> Please note the minimum amount to add funds is £100 and maximum of £1500 per Visa/Mastercard transaction </p>
+
+<p class="nml_p hide" id="paywire_notice" style="padding: 16px 0;"> Please note the following details will be sent to your email shortly</p>
+
+<div class="group" style="margin-top:25px;">
+    <div style="margin-left: 7px; color:#999; font-size: 13px;">
+        Amount
+    </div>
+    {{ form_label(form.amount, null, {label_attr:{id:"lblamount", class:"hide"}}) }}
+    <span class="highlight"></span>
+    <span class="bar"></span>
+    {{ form_widget(form.amount, {attr:{style:"padding-top: 0;", onchange:"return amtvali();",onblur:"extractNumber(this,3,true);", onkeypress:"return blockNonNumbers(this, event, true, true);"}}) }}
+</div>
+
+<div id="paycard">
+    <div class="group">
+        {{ form_widget(form.cardNumber, {attr:{onchange:"return amtvali();", onblur:"extractNumber(this,3,false);", onkeypress:"return blockNonNumbers(this, event, false, false);", maxlength:"16", min:"16"}}) }}
+        <span class="highlight"></span>
+        <span class="bar"></span>
+        {{ form_label(form.cardNumber, null, {label_attr:{id:"lblcardNumber"}}) }}
+    </div>
+
+    <div class="group">
+        {{ form_widget(form.cardCvx, {attr:{onchange:"return amtvali();", onblur:"extractNumber(this,3,false);", onkeypress:"return blockNonNumbers(this, event, false, false);", maxlength:"3", min:"3"}}) }}
+        <span class="highlight"></span>
+        <span class="bar"></span>
+        {{ form_label(form.cardCvx, null, {label_attr:{id:"lblcardCvx"}}) }}
+    </div>
+
+    <div class="group">
+        <div class="col-md-12" style="padding-left:0px;color:#999;">
+            Card Expiration Date
+        </div>
+        {{ form_widget(form.expiryDatePicker.day, {attr:{class:'hidden'}}) }}
+        {{ form_widget(form.expiryDatePicker.month, {attr:{onchange:"return amtvali();",class:'custom-dropdown__select custom-dropdown__select--red', style:'width:4em; border-bottom:solid thin #e5e5e5; border-radius:0; padding-right:1.5em;'}}) }}
+        <span class="delim">&#47;</span>
+        {{ form_widget(form.expiryDatePicker.year, {attr:{onchange:"return amtvali();",class:'custom-dropdown__select custom-dropdown__select--red', style:'width:5em; border-bottom:solid thin #e5e5e5; border-radius:0;padding-right:1.5em;'}}) }}
+
+
+    </div>
+
+    <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+        {{ form_widget(form.addFunds, {attr:{class:"btn_grdnt", onclick:"return amtvali();"}}) }}
+    </div>
+</div>
+<div id="paybankwire" class="hide">
+    <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+        <button id="add-funds-bankwire" class="btn_grdnt" onclick="payWithBankWire()">Add Funds</button>
+    </div>
+    <div id="payviabankwire" class="hide">
+        <div class="group">
+            <span style=" color:#aaa;">Type</span>
+            <input type="text" id="txttype" name="txttype" value="PAYIN" placeholder="PAYIN" readonly="readonly" />
+        </div>
+        <div class="group">
+            <span style=" color:#aaa;">Owner</span>
+            <input type="text" id="txtowner" name="txtowner" value="Leetchi Corp SA" placeholder="Leetchi Corp SA" readonly="readonly" />
+        </div>
+        <div class="group">
+            <span style=" color:#aaa;">IBAN</span>
+            <input type="text" id="txtiban" name="txtiban" value="GB09 BARC 2000 0063 9564 74" placeholder="GB09 BARC 2000 0063 9564 74" readonly="readonly" />
+        </div>
+        <div class="group">
+            <span style=" color:#aaa;">BIC</span>
+            <input type="text" id="txtbic" name="txtbic" value="CELLLULL" placeholder="CELLLULL" readonly="readonly" />
+        </div>
+        <div class="group">
+            <span style=" color:#aaa;">Wire Reference</span>
+            <input type="text" id="txtwire" name="txtwire" value="ff1ff4aeee3" placeholder="ff1ff4aeee3" readonly="readonly" />
+        </div>
+        <div class="group">
+            <span style=" color:#aaa;">Sort Code</span>
+            <input type="text" id="txtsort" name="txtsort" value="20-00-00" placeholder="20-00-00" readonly="readonly" />
+        </div>
+        <div class="group">
+            <span style=" color:#aaa;">Account</span>
+            <input type="text" id="txtac" name="txtac" value="63956474" placeholder="63956474" readonly="readonly" />
+        </div>
+
+        <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+            <a class="btntest" href="{{ path('product_properties_current') }}">OK</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+App\Entity\TradeOrder:
+    trade_order_base (template):
+        createdAt: "<dateTimeBetween('-2 months', 'now')>"
+    trade_order_initial (template, extends trade_order_base):
+        # Share creation/issuing
+        direction: <(App\Entity\Enum\TradeDirection::Sell)>
+        type: <(App\Entity\Enum\TradeOrderType::Initial)>
+        user: "@userA1"
+    trade_order_invest (template, extends trade_order_base):
+        # Retail investment
+        direction: <(App\Entity\Enum\TradeDirection::Buy)>
+        type: <(App\Entity\Enum\TradeOrderType::Market)>
+    trade_order_prefund (template, extends trade_order_base):
+        # Prefunding investment
+        direction: <(App\Entity\Enum\TradeDirection::Buy)>
+        type: <(App\Entity\Enum\TradeOrderType::Prefunding)>
+    trade_order_prefund_sell (template, extends trade_order_base):
+        # Prefunding investment required liquidation
+        direction: <(App\Entity\Enum\TradeDirection::Sell)>
+        type: <(App\Entity\Enum\TradeOrderType::Prefunding)>
+    trade_order_secondary (template, extends trade_order_base):
+        # Secondary market relisting
+        direction: <(App\Entity\Enum\TradeDirection::Sell)>
+        type: <(App\Entity\Enum\TradeOrderType::Market)>
+    trade_order_proxy (template, extends trade_order_base):
+        # Repayment proxy buybacks
+        direction: <(App\Entity\Enum\TradeDirection::Buy)>
+        type: <(App\Entity\Enum\TradeOrderType::Proxy)>
+    trade_order_buyback (template, extends trade_order_base):
+        # Exit/divestment buybacks
+        user: "@userA1"
+        direction: <(App\Entity\Enum\TradeDirection::Buy)>
+        type: <(App\Entity\Enum\TradeOrderType::BuyBack)>
+    trade_order_exit (template, extends trade_order_base):
+        # Exit/divestment exit by user
+        direction: <(App\Entity\Enum\TradeDirection::Sell)>
+        type: <(App\Entity\Enum\TradeOrderType::BuyBack)>
+
+# Not really much to template for everything else
+App\Entity\ShareTrade:
+    share_trade_base (template):
+
+App\Entity\TradeOrderStatusLog:
+    trade_order_status_log_base (template):
+
+App\Entity\ShareTradeStatusLog:
+    share_trade_status_log_base (template):

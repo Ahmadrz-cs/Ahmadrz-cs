@@ -1,0 +1,151 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{# {% extends "@AppBundle/base-lite.html.twig" %} #}
+{% block title %}My Wallet
+{% endblock %}
+{% block body %}
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9 p-1 pl-md-4 pb-md-4 mt-2">
+                        {# <div class="profile-banner portfolio-head wallet-profile">
+                            <div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+                                <div class="row">
+                                    <div class="col-lg-6 u-name">
+                                        <h3>Hi
+                                            {{ userInfo.given_name }}
+                                        </h3>
+                                    </div>
+                                    <div class="col-lg-6 p-wal">
+                                        <ul class="list-inline mb-0">
+                                            <li>
+                                                <p class="h3 mb-0">£
+                                                    <span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+                                                </p>in my wallet
+                                            </li>
+                                            {% if wallet.id|default() %}
+                                                <li class="">
+                                                    <a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+                                                    <a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> #}
+                        {# End of Profile header #}
+                        <section>
+                            <h3>Add funds by bankwire payin: Next Steps</h3>
+                            {# <div class="alert alert-success">Your bankwire transfer instruction has been successfully received by our payment provider.</div> #}
+                            <p>Your bankwire transfer instruction has been successfully received by our payment provider.</p>
+                            <p>Please follow the instructions below to make a bank wire transfer into your wallet. You can find additional examples and help in our
+                                <a href="http://help.yielders.co.uk/en/articles/3436595-bankwire-transfers" target="_blank" class="font-medium">help centre article.</a>
+                            </p>
+                            <p>You will also receive an email containing the transfer details outlined below.</p>
+                            <section class="mt-3" id="bankwire-step-2">
+                                <h4>2. Add new or choose existing recipient/payee</h4>
+                                <p>In your banking app or website, add a new or choose an existing recipient/payee with the following bank account details. Your transfer will be made to our payment provider.</p>
+                                <div class="row mt-2">
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>Owner</label>
+                                        <input type="text" id="txtowner" class="form-control" name="txtowner" value="{{ bankAccount.owner_name}}" placeholder="{{ bankAccount.owner_name}}" readonly="readonly"/>
+                                    </div>
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>Account Type</label>
+                                        <input type="text" id="txttype" class="form-control" name="txttype" value="Business" placeholder="Business" readonly="readonly"/>
+                                        <p class="help-block text-md mt-1">
+                                            Some banks/apps ask whether the recipient is a person/individual or a business. You should select business for this.
+                                        </p>
+                                    </div>
+                                    <h5 class="mt-2 col-12">For UK bank transfers (BACS)</h5>
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>Sort Code</label>
+                                        <input type="text" id="txtsort" class="form-control" name="txtsort" value="20-00-00" placeholder="20-00-00" readonly="readonly"/>
+                                    </div>
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>Account Number</label>
+                                        <input type="text" id="txtac" class="form-control" name="txtac" value="63956474" placeholder="63956474" readonly="readonly"/>
+                                    </div>
+                                    <h5 class="mt-2 col-12">For international transfers</h5>
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>IBAN</label>
+                                        <input type="text" id="txtiban" class="form-control" name="txtiban" value="{{ bankAccount.IBAN }}" placeholder="{{ bankAccount.IBAN }}" readonly="readonly"/>
+                                        <p class="help-block text-md mt-1">
+                                            If needed by your bank/app, the recipient country can be derived from the first two letters of the IBAN. E.g. GB = United Kingdom
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>BIC</label>
+                                        <input type="text" id="txtbic" class="form-control" name="txtbic" value="{{ bankAccount.BIC }}" placeholder="{{ bankAccount.BIC }}" readonly="readonly"/>
+                                    </div>
+                                </div>
+                            </section>
+                            {# Step 2 #}
+                            <section class="mt-3" id="bankwire-step-3">
+                                <h4>3. Make the bank transfer to the new recipient/payee</h4>
+                                <p>In your banking app or website, create a bank transfer with the following transfer details.</p>
+                                <p>The reference and amount are used together by our payment provider to route your bankwire transfer to your wallet.</p>
+                                <p>
+                                    <span class="font-medium">Please ensure that both the transfer REFERENCE and AMOUNT are correct! Your transfer may be delayed if incorrect details are used.</span>
+                                </p>
+                                <div class="row mt-2">
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>Amount (£)</label>
+                                        <input type="text" id="txtamount" class="form-control font-weight-bold bg bg-secondary border border-medium rounded" name="txtamount" value="{{ amount }}" placeholder="{{ amount }}" readonly="readonly"/>
+                                        <p class="help-block text-md mt-1">
+                                            <span class="font-medium">Please ensure this is correct to avoid delays.</span> Want to change the amount? <a href="{{ path("add_funds_bankwire") }}" class="font-medium">Generate a new transfer instruction here</a>
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-6 form-group mb-1">
+                                        <label>Bankwire Reference</label>
+                                        <input type="text" id="txtwire" class="form-control font-weight-bold bg bg-secondary border border-medium rounded" name="txtwire" value="{{ bankAccount.wire_reference }}" placeholder="{{ bankAccount.wire_reference }}" readonly="readonly"/>
+                                        <p class="help-block text-md mt-1">
+                                            <span class="font-medium">Please ensure this is correct to avoid delays.</span> This reference is valid for up to 4 weeks, but we recommend you use it as soon as possible. 
+                                        </p>
+                                    </div>
+                                </div>
+                            </section>
+                            {# Step 3 #}
+                            <section class="mt-3" id="bankwire-step-4">
+                                <h4>4. Wait for transfer to be processed</h4>
+                                <p>Once you have made the transfer with the above details, it will take some time for the transfer to clear:</p>
+                                <ul>
+                                    <li>UK transfers are usually processed within a working day.</li>
+                                    <li>International transfers are usually processed within 3-5 working days.</li>
+                                </ul>
+                                <p>Note that public holidays will impact processing times. Please contact us if you have any queries or require further assistance.</p>
+                                <a href="{{ path('profile') }}" class="btn btn-primary rounded-pill px-3">Return to Profile</a>
+                            </section>
+                            {# Step 4 #}
+                        </section>
+                        {# main profile area #}
+                    </div>
+                </div>
+            </div>
+        </section>
+        {# Profile layout common #}
+    </main>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"></script>
+{% endblock %}

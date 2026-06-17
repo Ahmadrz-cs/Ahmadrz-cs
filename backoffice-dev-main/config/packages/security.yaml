@@ -1,0 +1,108 @@
+# https://symfony.com/doc/current/security.html
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        # Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        # Stick with bcrypt for maximum compatibility
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: "bcrypt"
+            # cost 13 is the default as Symfony 7.4 https://symfony.com/doc/7.4/security/passwords.html#the-bcrypt-password-hasher
+            # Set explicitly for greater control rather than deferring to library upgrades
+            cost: 13
+
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+        ROLE_ADMIN: [ROLE_FINANCIAL_OPS, ROLE_TECH_OPS]
+        ROLE_FINANCIAL_OPS: [ROLE_OPERATIONS]
+        ROLE_OPERATIONS: [ROLE_ANALYST]
+        ROLE_TECH_OPS: [ROLE_ANALYST]
+        ROLE_ANALYST: [ROLE_USER]
+        ROLE_VENDOR: [ROLE_USER]
+        ROLE_USER: [ROLE_USER]
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        healthcheck:
+            pattern: ^/healthcheck$
+            security: false
+        oauth2_token:
+            pattern: ^/oauth2/token$
+            security: false
+        api_next:
+            pattern: ^/(v3)
+            security: true
+            stateless: true
+            oauth2: true
+        api:
+            pattern: ^/(v1|v2)/yielders
+            security: true
+            stateless: true
+            oauth2: true
+        main:
+            pattern: ^/
+            form_login:
+                provider: app_user_provider
+                enable_csrf: true
+                login_path: app_login
+                check_path: app_login
+            logout:
+                path: app_logout
+            two_factor:
+                multi_factor: false
+                auth_form_path: 2fa_login # The route name you have used in the routes.yaml
+                check_path: 2fa_login_check # The route name you have used in the routes.yaml
+                enable_csrf: true
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-firewall
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    # Mangopay webhooks must come localhost or IPs specified by Mangopay
+    access_control:
+        # Authentication routes
+        - { path: ^/logout$, roles: PUBLIC_ACCESS }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        -   path: '^/webhooks/mangopay'
+            roles: PUBLIC_ACCESS
+            methods: GET
+            ips: [127.0.0.1, ::1, '%env(MANGOPAY_TRUSTED_IPS)%']
+        - { path: ^/oauth2/authorize, roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/oauth2, roles: PUBLIC_ACCESS }
+        - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
+
+        # CMS admin
+        - { path: ^/admin, roles: [ROLE_ANALYST] }
+
+        # API
+        - { path: ^/v1/yielders/public, roles: PUBLIC_ACCESS }
+        - { path: ^/(v1|v2)/yielders, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+        # Default fallback
+        - { path: ^/, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            # By default, password hashers are resource intensive and take time. This is
+            # important to generate secure password hashes. In tests however, secure hashes
+            # are not important, waste resources and increase test times. The following
+            # reduces the work factor to the lowest possible values.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                # algorithm: auto
+                algorithm: "bcrypt"
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

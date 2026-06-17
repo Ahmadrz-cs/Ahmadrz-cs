@@ -1,0 +1,38 @@
+{% extends 'admin/pages/question_choice/new.html.twig' %}
+
+{% set mainHeading = 'Edit Question Choice #' ~ question_choice.id|default() %}
+{% set htmlTitle = 'Edit Question Choice' %}
+
+{% block objectMeta %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": "question-overview",
+		"sectionTitle": "Question Overview",
+	} %}
+		{% block sectionContent %}
+		<div class="row g-3">
+			{{ include('admin/pages/question/_field_overview.twig') }}
+		</div>
+		{% endblock %}
+	{% endembed %}
+
+    {% if question_choice.id %}
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "choice-meta",
+            "sectionTitle": "Choice Metadata",
+        } %}
+            {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/blame-timestamp.html.twig', {
+                    object: question_choice,
+                }) }}
+            </div>
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_question_show', { id:  question.id }) }}">Discard
+        Changes</a>
+{% endblock %}

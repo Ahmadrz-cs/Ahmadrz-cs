@@ -1,0 +1,70 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Status Logs' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "status-logs",
+        "sectionTitle": "Status Logs",
+        "linkActions": [
+            {
+                "text": "Create State Transition and Log",
+                "route": "admin_user_status_log_create",
+                "params": {
+                    id: user.id,
+                    redirectRoute: "admin_user_dashboard_status_logs"
+                },
+                "style": "btn-success",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Status',
+                value: user.currentStatus.value|capitalize,
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="status-logs-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Transitioned By</th>
+                        <th>OccuredAt</th>
+                        <th>CreatedAt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for status_log in user.statusLogs|default([]) %}
+                    <tr data-object-id="{{ status_log.id }}">
+                        <td>{% if is_granted('ROLE_OPERATIONS') %}
+                            {{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Edit",
+                                    "route": "admin_user_status_log_edit",
+                                    "params": {id: status_log.id, redirectRoute: "admin_product_status_logs"},
+                                    "style": "btn-outline-secondary text-nowrap",
+                                },
+                            }) }}
+                        {% endif %}</td>
+                        <td data-field-name="id">{{ status_log.id }}</td>
+                        <td data-field-name="status">{{ status_log.status.value|capitalize }}</td>
+                        <td data-field-name="notes">{{ status_log.notes }}</td>
+                        <td data-field-name="transitioned-by">{{ status_log.transitionedBy.userIdentifier|default('System') }}</td>
+                        <td data-field-name="occured-at">{{ status_log.occuredAt|date('Y-m-d H:i:s') }}</td>
+                        <td>{{ status_log.createdAt|date('Y-m-d H:i:s') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

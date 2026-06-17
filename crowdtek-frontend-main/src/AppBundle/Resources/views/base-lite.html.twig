@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="utf-8">
+  <title>
+    {% block title %}Yielders - Fair share of property{% endblock %}
+  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no" />
+  <meta name="description"
+    content="Yielders is an equity based crowdfunding platform for UK property investment, offering prefunded assets to the crowd. Halal Investments." />
+  <meta name="keywords"
+    content="Yielders UK, Property Crowdfunding UK, Property Crowdfunding, Yielders, property partner, property investment London, property investment uk, London investment property, shares in property, investing in property uk, uk property investment, investment scheme, crowdfunding property, halal investments, halal invest, halal equity crowdfunding, islamic fintech, islamic fintech uk" />
+  <meta name="author" content="Yielders.co.uk" />
+  <meta name="robots" content="index,follow" /> {% set favPathIco=asset('bundles/app/images/ico/') %}
+
+  <!-- favicon -->
+  <link rel="icon" type="image/png" href="{{ favPathIco }}favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="{{ favPathIco }}favicon.svg" />
+  <link rel="shortcut icon" href="{{ favPathIco }}favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ favPathIco }}apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Yielders" />
+  <link rel="manifest" href="{{ favPathIco }}site.webmanifest" />
+
+  <!-- style -->
+  {% set cssPath=asset('bundles/app/css/')%}
+  <link rel="stylesheet" href="{{ cssPath }}main.css?v={{ version }}" />
+  <script src='https://www.google.com/recaptcha/api.js' async></script>
+  <script src="{{ asset('bundles/app/js/jquery.js') }}"></script>
+
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+          w[l] = w[l] || []; w[l].push({
+            'gtm.start':
+              new Date().getTime(), event: 'gtm.js'
+          }); var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+              'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+          })(window, document, 'script', 'dataLayer', 'GTM-58ZGRVT');</script>
+  <!-- End Google Tag Manager -->
+</head>
+
+{% set footerLogo='logo_wordmark_contained.svg' %}
+
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-58ZGRVT" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+    <div class="modal fade" id="modal-alertInfo" tabindex="-1" role="dialog" aria-labelledby="modal-alert"
+      aria-hidden="true">
+      <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+          <div class="modal-header" style="border-bottom:none;">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="alert">{{ message|raw }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% endfor %}
+
+  {% block body %}{% endblock %}
+  {% block modals %}{% endblock %}
+
+  {# {% include '@AppBundle/Common/footer.html.twig' %} #}
+
+  {#<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>#}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+
+  {% block pagejs %}{% endblock %}
+
+  <script>
+    $(document).ready(function(){
+      if ($("#modal-alertInfo").length) {
+        $("#modal-alertInfo").modal("show");
+      }
+      readMoreFormat($('.footerText'),296);
+    });
+    function readMoreFormat(cc = $("p.property-info"),count=100) {
+      cc.each(function() {
+        var text = $(this).text();
+        var rest = text.substring(count);
+        if (text.length <= count) return;
+        else {
+          if (text.length > count) {
+          var period = rest.indexOf('.');
+          var space = rest.indexOf(' ');
+          count += Math.max(Math.min(period, space), 0);
+        }
+        rest = text.substring(count);
+        var visibleText = $(this).text().substring(0, count);
+        $(this).html(
+          visibleText +
+          '<a href="#" style="margin-left: 4px" class="more btn-underline font-medium text-sm">Read More..</a>' +
+          '<span style="display:none;">' + rest +' <a href="#" class="less btn-underline font-medium text-sm">Close</a></span>'
+        );
+        }
+      });
+
+      $("a.more", cc).click(function(event) {
+        event.preventDefault();
+        $(this)
+          .hide()
+          .prev()
+          .hide();
+        $(this)
+          .next()
+          .show();
+      });
+
+      $("a.less", cc).click(function(event) {
+        event.preventDefault();
+        $(this)
+          .parent()
+          .hide()
+          .prev()
+          .show()
+          .prev()
+          .show();
+      });
+    }
+  </script>
+</body>
+
+</html>

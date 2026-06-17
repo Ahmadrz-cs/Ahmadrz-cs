@@ -1,0 +1,33 @@
+{% set currentPath = app.request.get("_route") %}
+
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: "tab-supporting-info",
+                text: "Supporting Info",
+                params: {},
+            },
+            {
+                route: "tab-country",
+                text: "Country",
+                params: {},
+            },
+            {
+                route: "tab-contego",
+                text: "Contego-Northrow",
+                params: {},
+            },
+            {
+                route: "tab-mangopay",
+                text: "Mangopay",
+                params: {},
+            },
+        ]
+    }
+] %}
+
+{{ include('admin/components/_horizontal_nav_tabs_js.html.twig', {
+    navId: 'kyc-recurring-review-nav',
+    links: menuLinks,
+}) }}

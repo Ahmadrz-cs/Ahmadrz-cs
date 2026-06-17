@@ -1,0 +1,72 @@
+# This is Sandfox Fields
+# Unique traits - has external commitments
+# Notes: 4 year term
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{sandfox} (extends asset_base):
+        name: Sandfox Fields - Kent
+        briefDescription: Quiet neighbourhood nestled on the outskirts of Ashford, Kent; The Garden of England.
+        pricePerShare: 1.25
+        amountOfShares: 100000
+        companyNumber: SPVAF00009
+        investmentTerm: 48
+        netProjectedYield: '0.0632'
+        netProjectedIncome: '7900'
+        minimumInvestment: '10'
+        termStart: "@self->createdAt"
+        createdAt: "<dateTimeBetween('-7 months', '-5 months')>"
+
+App\Entity\AssetAddress:
+    assetaddress{sandfox} (extends assetaddress_base):
+        address1: Sandfox Fields
+        address2: 6 Sandfox Fields
+        city: Ashford
+        postCode: TN24 6RB
+        longitude: 0.892883
+        latitude: 51.146848
+
+App\Entity\AssetMember:
+    assetmember{sandfox} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{sandfox_aoa, sandfox_im}:
+        asset: "@assetsandfox"
+        document: "@doc<current()>"
+    assetdoc{sandfox_logo}:
+        asset: "@assetsandfox"
+        document: "@doc<current()>"
+    assetdoc{sandfox_calc}:
+        asset: "@assetsandfox"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{sandfox} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 6.32
+        grossProjectReturn: 26.77
+        externalCommitments: 12100
+
+App\Entity\OfferingDocuments:
+    offeringdoc{sandfox_calc}:
+        offering: "@offeringsandfox"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{sandfox_aoa} (extends doc_aoa):
+    doc{sandfox_im} (extends doc_im):
+    doc{sandfox_logo} (extends doc_logo):
+        description: "Quayside apartment showcase"
+        filename: "kentstock.jpg"
+    doc{sandfox_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{sandfox} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

@@ -1,0 +1,23 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = mainHeading|default('Add Transfer to Order #' ~ transferOrder.id) %}
+{% set htmlTitle = htmlTitle|default('Add Transfer') %}
+{% set baseTemplate = 'cms' %}
+
+{# Configure page blocks #}
+{% block formContents %}
+    <section class="row">
+        <div class="col-sm-6">{{ form_row(form.debitWalletId) }}</div>
+        <div class="col-sm-6">{{ form_row(form.creditWalletId) }}</div>
+        <div class="col-12">{{ form_row(form.description) }}</div>
+        <div class="col-sm-6">{{ form_row(form.amount) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Add Transfer</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_transfer_order_manage', { id: transferOrder.id }) }}">Cancel</a>
+{% endblock %}

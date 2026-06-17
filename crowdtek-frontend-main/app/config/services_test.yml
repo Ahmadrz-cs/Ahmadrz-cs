@@ -1,0 +1,12 @@
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        public: true
+
+    http.client:
+        class: GuzzleHttp\Client
+        autowire: true
+        factory: ['ClientBundle\Service\Yielders\YieldersClientFactory', "createApiClient"]
+        arguments:
+            $baseUri: "%env(API_ENDPOINT_CORE)%"
+            $config: []

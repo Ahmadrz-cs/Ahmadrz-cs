@@ -1,0 +1,67 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_kolness_ben_1: 1282
+    shares_kolness_ben_2: 1000
+    shares_kolness_ben_3: 1000
+    shares_kolness_freya_1: 1958
+
+App\Entity\TradeOrder:
+    buy_order_kolness_{ben_1} (extends trade_order_invest):
+        asset: "@assetkolness"
+        user: "@userben"
+        numberOfShares: 1282
+        pricePerShare: "@assetkolness->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last thursday of -1 months')>"
+        createdBy: "$user"
+    buy_order_kolness_{ben_2} (extends trade_order_invest):
+        asset: "@assetkolness"
+        user: "@userholly"
+        numberOfShares: 1000
+        pricePerShare: "@assetkolness->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last saturday of -1 months')>"
+        createdBy: "$user"
+    buy_order_kolness_{ben_3} (extends trade_order_invest):
+        asset: "@assetkolness"
+        user: "@userholly"
+        numberOfShares: 1000
+        pricePerShare: "@assetkolness->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last saturday of -1 months')>"
+        createdBy: "$user"
+    buy_order_kolness_{freya_1} (extends trade_order_invest):
+        asset: "@assetkolness"
+        user: "@userfreya"
+        numberOfShares: 1958
+        pricePerShare: "@assetkolness->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -1 months', 'last saturday of -1 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_kolness_{ben_1, ben_2, ben_3, freya_1}:
+        tradeOrder: "@buy_order_kolness_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_kolness_<current()>->createdAt"
+    buy_order_status_completed_kolness_{ben_1, ben_2, ben_3, freya_1}:
+        tradeOrder: "@buy_order_kolness_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_kolness_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_kolness_{ben_1, ben_2, ben_3, freya_1}:
+        buyOrder: "@buy_order_kolness_<current()>"
+        sellOrder: "@sell_order_initial_kolness"
+        numberOfShares: "@buy_order_kolness_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_kolness_<current()>->pricePerShare"
+        createdAt: "@buy_order_kolness_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_kolness_{ben_1, ben_2, ben_3, freya_1}:
+        shareTrade: "@share_trade_kolness_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_kolness_<current()>->createdAt"

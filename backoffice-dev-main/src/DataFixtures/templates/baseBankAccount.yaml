@@ -1,0 +1,18 @@
+App\Entity\BankAccount:
+    bankAccount_base (template):
+        user: "@userA1"
+        status: "pending"
+        country: "GB"
+        accountHolderType: "personal"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    
+    bankAccount_GB (template, extends bankAccount_base):
+        accountType: "GB"
+        accountNumber: "22446688"
+        bankIdentifierCode: "559933"
+        description: "GB account example invalid"
+    bankAccount_IBAN (template, extends bankAccount_base):
+        accountType: "IBAN"
+        accountNumber: "GB32ESSE40486562136016" # GB IBAN example
+        bankIdentifierCode: "ABBYGB2L" # Santander example
+        description: "IBAN GB account example valid"

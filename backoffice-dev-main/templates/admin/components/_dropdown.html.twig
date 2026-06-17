@@ -1,0 +1,43 @@
+{% if standalone|default(false) %}
+	<div class="dropdown">
+{% else %}
+	<li class="dropdown">
+{% endif %}
+
+	<a class="nav-link px-3 fw-medium dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">{{ toggleText|default('Dropdown') }}</a>
+	<nav class="dropdown-menu p-2 {% if align|default('left') == 'right' %}dropdown-menu-end{% endif %} tw-text-sm">
+		<ul class="list-unstyled d-flex flex-column d-grid gap-1">
+			{%- for linkGroup in links -%}
+
+				{% if not loop.first %}
+					<li><hr class="dropdown-divider"></li>
+				{% endif %}
+
+				{% if linkGroup.groupName is defined %}
+				<li><span class="dropdown-header pb-1">{{ linkGroup.groupName }}</span></li>
+				{% endif %}
+
+				{# Remove any links that the logged in user lacks permissions for - default to any staff (permissive) #}
+				{% set linkDefinitions = linkGroup.linkDefinitions|default([])|filter(v => is_granted(v.roleRequired|default('ROLE_ANALYST'), app.user)) %}
+
+				{% for link in linkDefinitions %}
+					{% if link.route is defined %}
+						<li>
+							<a class="dropdown-item rounded-2" href="{{ path(link.route, link.params|default({})) }}">{{ link.text }}</a>
+						</li>
+					{% else %}
+						<li>
+							<div class="dropdown-item rounded-2 text-body-secondary disabled">{{ link.text }}</div>
+						</li>
+					{% endif %}
+				{% endfor %}
+
+			{%- endfor -%}
+		</ul>
+	</nav>
+
+{% if standalone|default(false) %}
+	</div>
+{% else %}
+	</li>
+{% endif %}

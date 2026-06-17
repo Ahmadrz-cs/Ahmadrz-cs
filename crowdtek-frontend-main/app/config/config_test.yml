@@ -1,0 +1,41 @@
+imports:
+    - { resource: config_dev.yml }
+    - { resource: services_test.yml }
+
+framework:
+    test: ~
+    session:
+        handler_id: null
+        storage_factory_id: session.storage.factory.mock_file
+    profiler:
+        collect: false
+    cache:
+        pools:
+            default.app.cache:
+                adapter: cache.adapter.array
+                default_lifetime: 3600 # 1 hour
+
+web_profiler:
+    toolbar: false
+    intercept_redirects: false
+
+monolog:
+    channels: ['crowdtek']
+    handlers:
+        main:
+            type: fingers_crossed
+            action_level: error
+            handler: nested
+            excluded_http_codes: [404, 405]
+            channels: ["!event"]
+        nested:
+            # type: stream
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: debug
+            formatter: crowdtek_log_formatter
+
+services:
+    _defaults:
+        public: true

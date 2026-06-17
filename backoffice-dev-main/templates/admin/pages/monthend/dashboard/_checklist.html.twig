@@ -1,0 +1,267 @@
+{% set statusToColor = {
+    'Completed': 'green',
+    'Pending': 'yellow',
+    'N/A': 'gray',
+} %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "monthend-checklist",
+    "sectionTitle": "Monthend Checklist",
+    "linkActions": [
+        {
+            "text": "Toggle Checklist Mode",
+            "route": "admin_monthend_toggle_auto_checklist",
+            "params": {"id": asset.id},
+            "style": "btn-outline-secondary",
+            "roleRequired": "ROLE_OPERATIONS",
+        },
+        {
+            "text": "Mark All Pending as Skipped",
+            "route": "admin_monthend_update_asset_checklist",
+            "params": {
+                id: asset.id,
+                task: 'remaining',
+                status: constant('App\\Entity\\Enum\\TaskStatus::Skipped').value
+            },
+            "style": "btn-outline-secondary",
+            "roleRequired": "ROLE_OPERATIONS",
+            "render": taskTracker.tasks|filter(p => p.value == constant('App\\Entity\\Enum\\TaskStatus::Pending').value) is not empty,
+        },
+    ]
+} %}
+    {% block sectionContent %}
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Current Monthend',
+            value: 'now'|date('Y F'),
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Covering Period Between',
+            value: 'now'|date_modify('-1 month')|date('01 F Y') 
+                ~ ' - ' 
+                ~ 'now'|date_modify('-1 month')|date('t F Y'),
+            className: 'col-md-6',
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Checklist Mode',
+            value: taskTracker.metadata.autoUpdate ? 'Auto' : 'Manual',
+        }) }}
+    </div>
+    
+    {# <p class="bg-light p-3">Activities that are not tracked must be manually marked as "Skipped" or "Completed"</p> #}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Activity</th>
+                    <th style="width: 40%;">Progress</th>
+                    <th>Email Notifications</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-activity-name="income-transfer">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/dashboard/_checklist_status.html.twig', {
+                            taskName: 'incomeTransfer',
+                        }) }}
+                    </td>
+                    <td>Income Transfers</td>
+                    <td>
+                        {% if currentIncomeTransfer %}
+                            {{ include('admin/pages/monthend/dashboard/_order_progress.html.twig', {
+                                originalList: currentIncomeTransfer.transfers|default([]),
+                                orderType: 'transfer',
+                            }) }}
+                        {% endif %}
+                    </td>
+                    <td>N/A</td>
+                    <td>
+                        {% if currentIncomeTransfer %}
+                            <a class="btn btn-outline-primary text-nowrap"
+                                href="{{ path('admin_monthend_income_transfer_manage', {
+                                    id: currentIncomeTransfer.id
+                                }) }}">View Income Transfers</a>
+                        {% else %}
+                            <a class="btn btn-outline-success text-nowrap"
+                                href="{{ path('admin_monthend_income_transfer_create_monthend', {
+                                    id: asset.id
+                                }) }}">Create Income Transfer</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr data-activity-name="dividends">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/dashboard/_checklist_status.html.twig', {
+                            taskName: 'dividends',
+                        }) }}
+                    </td>
+                    <td>Dividends</td>
+                    <td>
+                        {% if currentDividend %}
+                            {{ include('admin/pages/monthend/dashboard/_order_progress.html.twig', {
+                                originalList: currentDividend.payments|default([]),
+                                orderType: 'payment',
+                            }) }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set notificationsToSend = currentDividend.payments|default([])|filter(v => v.status == 'paid' and v.payeeNotifiedAt is null)|length %}
+                        {% set notificationsSent = currentDividend.payments|default([])|filter(v => v.payeeNotifiedAt is not null)|length %}
+                        {% set notificationStatus = 'N/A' %}
+                        {% if currentDividend.payments|default([])|length > 0 %}
+                            {% if notificationsToSend > 0 %}
+                                {% set notificationStatus = 'Pending' %}
+                            {% elseif notificationsSent == currentDividend.payments|default([])|length %}
+                                {% set notificationStatus = 'Completed' %}
+                            {% endif %}
+                        {% endif %}
+                        <span class="d-flex gap-2 align-items-center">
+                            {{ include('admin/components/_indicator.html.twig', {color: statusToColor[notificationStatus]|default('gray') }) }}
+                            {{ notificationStatus }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if currentDividend %}
+                            <a class="btn btn-outline-primary text-nowrap"
+                                href="{{ path('admin_monthend_dividend_manage', {
+                                    id: currentDividend.id
+                                }) }}">View Dividend Payments</a>
+                        {% else %}
+                            <a class="btn btn-outline-success text-nowrap"
+                                href="{{ path('admin_monthend_dividend_create_monthend', {
+                                    id: asset.id
+                                }) }}">Create Dividend</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr data-activity-name="settlements">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/dashboard/_checklist_status.html.twig', {
+                            taskName: 'settlements',
+                        }) }}
+                    </td>
+                    <td>Settlements</td>
+                    <td>
+                        {% if currentSettlement %}
+                            {{ include('admin/pages/monthend/dashboard/_order_progress.html.twig', {
+                                originalList: currentSettlement.transfers|default([]),
+                                orderType: 'transfer',
+                            }) }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set settlementTransfers = currentSettlement.transfers|default([])|filter(t => t.description == constant('App\\Service\\MonthEndService::DESCRIPTION_PRESETS')['settlement']) %}
+
+                        {% set notificationsToSend = settlementTransfers|filter(v => v.status == 'complete' and v.userNotifiedAt is null)|length %}
+                        {% set notificationsSent = settlementTransfers|filter(v => v.userNotifiedAt is not null)|length %}
+                        {% set notificationStatus = 'N/A' %}
+
+                        {% if settlementTransfers|length > 0 %}
+                            {% if notificationsToSend > 0 %}
+                                {% set notificationStatus = 'Pending' %}
+                            {% elseif notificationsSent == settlementTransfers|length %}
+                                {% set notificationStatus = 'Completed' %}
+                            {% endif %}
+                        {% endif %}
+                        <span class="d-flex gap-2 align-items-center">
+                            {{ include('admin/components/_indicator.html.twig', {color: statusToColor[notificationStatus]|default('gray') }) }}
+                            {{ notificationStatus }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if currentSettlement %}
+                            <a class="btn btn-outline-primary text-nowrap"
+                                href="{{ path('admin_monthend_settlement_manage', {
+                                    id: currentSettlement.id
+                                }) }}">View Settlements</a>
+                        {% else %}
+                            <a class="btn btn-outline-success text-nowrap"
+                                href="{{ path('admin_monthend_settlement_create_monthend', {
+                                    id: asset.id
+                                }) }}">Create Settlement</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr data-activity-name="repayments">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/dashboard/_checklist_status.html.twig', {
+                            taskName: 'repayments',
+                        }) }}
+                    </td>
+                    <td>Prefunder Repayments</td>
+                    <td>
+                        {% if currentRepayment %}
+                            {{ include('admin/pages/monthend/dashboard/_order_progress.html.twig', {
+                                originalList: currentRepayment.payments|default([]),
+                                orderType: 'payment',
+                            }) }}
+                        {% endif %}    
+                    </td>
+                    <td>N/A</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if currentRepayment %}
+                                <a class="btn btn-outline-primary text-nowrap"
+                                    href="{{ path('admin_monthend_repayment_manage', {
+                                        id: currentRepayment.id
+                                    }) }}">View Repayment</a>
+                            {% else %}
+                                <a class="btn btn-outline-success text-nowrap"
+                                    href="{{ path('admin_monthend_repayment_transfer_create', {
+                                        id: asset.id
+                                    }) }}">Transfer Repayment Funds</a>
+                                <a class="btn btn-outline-success text-nowrap"
+                                    href="{{ path('admin_monthend_repayment_create_monthend', {
+                                        id: asset.id
+                                    }) }}">Create Repayment</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                <tr data-activity-name="share-transfers">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/dashboard/_checklist_status.html.twig', {
+                            taskName: 'shareTransfers',
+                        }) }}
+                    </td>
+                    <td>Share Transfers</td>
+                    <td>
+                        {% if currentShareTransfer %}
+                            {{ include('admin/pages/monthend/dashboard/_order_progress.html.twig', {
+                                originalList: currentShareTransfer.shareTransfers|default([]),
+                                orderType: 'shareTransfer',
+                            }) }}
+                        {% endif %}
+                    </td>
+                    <td>N/A</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if currentShareTransfer %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "View Share Transfer",
+                                        "route": "admin_monthend_share_transfers_manage",
+                                        "params": { id: currentShareTransfer.id },
+                                        "style": "btn-outline-primary",
+                                    },
+                                }) }}
+                            {% else %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Create Share Transfer",
+                                        "route": "admin_monthend_share_transfers_create_monthend",
+                                        "params": { id: asset.id },
+                                        "style": "btn-outline-success",
+                                    },
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}

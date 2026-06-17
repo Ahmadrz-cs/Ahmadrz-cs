@@ -1,0 +1,100 @@
+{% set statusToColor = statusToColor|default({
+    'Yes': 'green',
+    'No': 'red',
+    'Pending': 'gray',
+    'Set': 'blue',
+    'Due': 'yellow',
+}) %}
+
+{% set obp = user.onboardingProfile %}
+{% set cooloff = obp.cooloffAccepted is not null ? (obp.cooloffAccepted ? 'Yes' : 'No') : 'Pending' %}
+{% set cooloff_end = obp.cooloffEnd ? obp.cooloffEnd|date('Y-m-d H:i:s') : 'Pending' %}
+{% set risk_warning = obp.riskWarningAccepted is not null ? (obp.riskWarningAccepted ? 'Yes' : 'No') : 'Pending' %}
+{% set assessment = obp.assessmentPassed is not null ? (obp.assessmentPassed ? 'Yes' : 'No') : 'Pending' %}
+{% set categoryReviewedAt = obp.categoryReviewedAt ? obp.categoryReviewedAt|date('Y-m-d H:i:s') : 'Pending' %}
+
+
+{% set has_category = obp.category ? 'Set' : 'Pending' %}
+{% set has_obp = obp.id is not null ? 'Yes' : 'Pending' %}
+{% set has_cooloff_end = cooloff_end == 'Pending' ? 'Pending' : 'Set' %}
+
+{% if obp.categoryReviewedAt %}
+    {% set reviewDateDiff = obp.categoryReviewedAt.diff(date('now')).y %}
+{% else %}
+    {% set reviewDateDiff = 1 %}
+{% endif %}
+
+{% set categoryReview = reviewDateDiff > 0 ? 'Due' : 'Set' %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "onboarding-profile",
+    "sectionTitle": "Onboarding Profile",
+    "linkActions": linkActions|default([]),
+} %}
+    {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            title: "PS22/10 full enforcement from 2023-02-01",
+            message: "Users registered before the full enforcement date do NOT need to retake the assessment, so they are automatically marked as passed",
+        }) }}
+        {{ include('admin/components/_kv_table.html.twig', {
+            keyColumnWidth: 50,
+            kv: {
+                "Has Onboarding Profile": {
+                    value: has_obp,
+                    indicator: statusToColor[has_obp],
+                },
+                "Cool Off End": {
+                    value: cooloff_end,
+                    indicator: statusToColor[has_cooloff_end],
+                },
+                "Cool Off Accepted": {
+                    value: cooloff,
+                    indicator: statusToColor[cooloff],
+                },
+                "Risk Warning Accepted": {
+                    value: risk_warning,
+                    indicator: statusToColor[risk_warning],
+                },
+                "Assessment Passed": {
+                    value: assessment,
+                    indicator: statusToColor[assessment],
+                },
+                "Categorisation": {
+                    value: obp.category ? obp.category.name|humanize : 'Pending',
+                    indicator: statusToColor[has_category],
+                },
+                "Categorisation Last Reviewed": {
+                    value: categoryReviewedAt,
+                    indicator: statusToColor[categoryReview],
+                },
+            }
+        }) }}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            title: "Work-in-Progress",
+            message: "Unlocking access to additional features is work-in-progress. In future it will be used to restrict access to new product classes beyond the rental-income default.",
+        }) }}
+        {% set reDevPlanUnlocked = obp.realEstatePlanAccess ? "Yes" : "No" %}
+        {% set reDevBuildUnlocked = obp.realEstateBuildAccess ? "Yes" : "No" %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            title: "Addition Features Unlocked",
+            keyColumnWidth: 50,
+            kv: {
+                "Real Estate Development - Plan": {
+                    value: reDevPlanUnlocked,
+                    indicator: statusToColor[reDevPlanUnlocked],
+                },
+                "Real Estate Development - Build": {
+                    value: reDevBuildUnlocked,
+                    indicator: statusToColor[reDevBuildUnlocked],
+                },
+            }
+        }) }}
+
+        {{ include('admin/components/blame-timestamp.html.twig', {
+            object: profile,
+        }) }}
+    {% endblock %}
+{% endembed %}

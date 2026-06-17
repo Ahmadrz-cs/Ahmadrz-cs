@@ -1,0 +1,53 @@
+{% extends "@AppBundle/onboarding-base.html.twig" %}
+
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block body %}
+
+    <section class="wrap">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/errorflash.html.twig' %}
+            <div class="row">
+
+                {% if authenticated %}
+
+                    <div class="form-step js-form-step" id="completion-message">
+                        <div class="pdg_20">
+                            <div class="successfull">
+                                <img src="{{ asset('bundles/app/images/onboarding/icons/sml.png') }}" loading="lazy" alt="success indicator">
+                                <h3>Congratulations!</h3>
+                                <p>Your information has been submitted.</p>
+                                <p>To start investing you will need to setup Strong Customer Authentication (SCA) for your wallet.</p>
+                                <p>Strong customer authentication (SCA) is part of the revised EU Payment Services Directive (<a target="_blank" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex%3A32015L2366">PSD2</a>) affecting our wallet provider <a target="_blank" href="https://mangopay.com/">Mangopay</a> who are a regulated electronic money institution (EMI). </p>
+                                <p>It aims to better protect your wallet funds and payment activity by requiring multi-factor authentication (MFA) with our wallet provider when moving funds out of your wallet.</p>
+                                {# <p>Read more about this in <a target="_blank" href="https://help.yielders.co.uk/en">our help centre</a>.</p> #}
+                                <a class="btntest" href="{{ path('sca_enrollment', {'flow': 'onboarding'}) }}">Start SCA Setup</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

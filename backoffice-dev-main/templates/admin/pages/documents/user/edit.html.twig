@@ -1,0 +1,53 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% if userdocument.id %}
+	{% set titleText = 'Edit User Document' %}
+{% else %}
+	{% set titleText = 'Add User Document' %}
+{% endif %}
+
+{% set backToRoute = 'admin_userdocument_index' %}
+{% set areaHeading = 'Documents' %}
+{% set mainHeading = titleText %}
+
+{% block page_content %}
+
+	<div class="d-flex flex-wrap gap-2">
+		<a href="{{ path('admin_userdocument_index') }}" class="btn btn-secondary">Cancel</a>
+		{% if userdocument.id > 0 %}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "Download",
+					"route": 'admin_document_download',
+					"params": {
+						'id': userdocument.document.id,
+						'type':'private',
+					},
+					"style": "btn-outline-dark text-nowrap",
+				},
+			}) }}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "View",
+					"route": 'admin_document_download',
+					"params": {
+						'id': userdocument.document.id,
+						'type':'private',
+						'preview': 1,
+					},
+					"style": "btn-outline-dark text-nowrap",
+					"newTab": true,
+				},
+			}) }}
+		{% endif %}
+	</div>
+
+	{{ form_start(form, {attr:{'ng-non-bindable': 'ng-non-bindable'}}) }}
+	{{ form_row(form.user, {attr: {'class': 'searchable'}}) }}
+	{{ form_row(form.document) }}
+
+	{% include 'admin/components/blame-timestamp.html.twig' with {'object': userdocument} only %}
+	{{ form_widget(form.submit) }}
+	{{ form_end(form) }}
+
+{% endblock page_content %}

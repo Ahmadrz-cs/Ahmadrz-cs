@@ -1,0 +1,5 @@
+aws:
+    version: latest
+    region: eu-west-2
+    use_aws_shared_config_files: false
+    use_dual_stack_endpoint: true

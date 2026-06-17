@@ -1,0 +1,12 @@
+{% extends 'admin/pages/question/new.html.twig' %}
+
+{% set backToRoute = 'admin_question_show' %}
+{% set backToRouteParams = { id: question.id } %}
+{% set mainHeading = 'Edit Question #' ~ question.id|default() %}
+{% set htmlTitle = 'Edit Question' %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_question_show', { id:  question.id }) }}">Discard
+        Changes</a>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'admin/pages/payment_order/new.html.twig' %}
+
+{% set backToRoute = 'admin_payment_order_manage' %}
+{% set backToRouteParams = { id: paymentOrder.id } %}
+{% set mainHeading = 'Edit Payment Order #' ~ paymentOrder.id|default() %}
+{% set htmlTitle = 'Edit Payment Order' %}
+
+{% block notices %}
+{% if not workflow_can(paymentOrder, 'approve') %}
+<div class="alert alert-warning" role="alert">
+    Editing is restricted outside draft mode
+</div>
+{% endif %}
+{% endblock %}
+
+{% block formSubmit %}
+<button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+<a class="btn btn-outline-secondary" href="{{ path('admin_payment_order_manage', { id:  paymentOrder.id }) }}">Discard
+    Changes</a>
+{% endblock %}

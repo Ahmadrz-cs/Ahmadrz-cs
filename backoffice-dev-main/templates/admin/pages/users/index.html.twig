@@ -1,0 +1,60 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_user_index' %}
+{% set areaHeading = 'Users' %}
+{% set mainHeading = 'User list' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+	{% if form is defined%}
+		{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+		{{ form_start(form, {'attr': {'class': 'mb-3'}}) }}
+		<div class="row">
+			<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.limit) }}</div>
+		</div>
+		{{ form_rest(form) }}
+		<button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+		<a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset Filters</a>
+		{{ form_end(form) }}
+	{% endif %}
+
+	<div class="table-responsive">
+		<table class="table table-striped datatable " id="userlist">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Contact Email</th>
+					<th>Join Date (d/m/Y)</th>
+					<th>Account Status</th>
+					<th>Other Statuses</th>
+					{% if is_granted('CAN_EDIT_USER', app.user) %}
+						<th>Actions</th>
+					{% endif %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for user in users %}
+					<tr>
+						<td>{{ user.id }}</td>
+						<td>
+							<a href="{{ path('admin_user_edit', { id: user.id }) }}">{{ user.fullname }}</a>
+							{% if user.managedUsers|length %}
+								<span class="badge text-bg-dark ms-1">Managing Users</span>
+							{% endif %}
+						</td>
+						<td title="Username: {{ user.username }}">{{ user.email }}</td>
+						<td>{{ user.createdAt|date("d/m/Y", false) }}</td>
+						<td data-column="account-status">{{ user.currentStatus.value|capitalize }}</td>
+            			<td data-column="other-statuses"  data-kyc-status="{{ user.kycProfile.verified ? 1 : 0 }}">{% include 'admin/pages/users/_status.html.twig' %}</td>
+						{% if is_granted('CAN_EDIT_USER_STATUS', app.user) %}
+							<td>{% include 'admin/pages/users/_actions.html.twig' %}</td>
+						{% endif %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+{% endblock page_content %}

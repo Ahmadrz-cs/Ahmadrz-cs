@@ -1,0 +1,97 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Investor Categorisation
+{% endblock %}
+
+{% block body %}
+
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div
+                            class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+
+                            <div class="tab-pane fade show active" id="investorCategorisation" role="tabpanel" aria-labelledby="investorCategorisation-tab">
+                                <h4>Investor Type Confirmation</h4>
+                                <h5>
+                                    <b>
+                                        <u>High Net Worth Investor</u>
+                                    </b>
+                                </h5>
+                                <div class="border rounded p-3 mb-3 mt-2 text-left">
+                                    <p>You must confirm that you qualify as a high-net-worth investor on the basis that A
+                                        <span class="font-medium">or</span>
+                                        B apply to you. If not, you must choose a different investor type.</p>
+                                    <p>In the last financial year did you have:</p>
+                                    <ul>
+                                        <li>
+                                            <p>
+                                                (A) an annual
+                                                <b>income of £100,000 or more?</b>
+                                                Income does NOT include any one off pension withdrawals.
+                                            </p>
+                                        </li>
+                                        <li>
+                                            <p>
+                                                (B)
+                                                <b>net assets of £250,000 or more?</b>
+                                                Net assets do NOT include: your home (primary residence), your pension (or any pension withdrawals) or any rights under qualifying contracts of insurance.
+                                            </p>
+                                        </li>
+                                    </ul>
+                                    <p>Please confirm that either A<span class="font-medium">
+                                            or
+                                        </span>B apply to you by answering the following:</p>
+                                    {{ form_start(form) }}
+                                    {{ form_row(form.hnwType) }}
+                                    {{ form_row(form.amount) }}
+                                    <div
+                                        class="d-flex justify-content-center" style="gap: 0.5rem;">
+                                        {# <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Update Later</a> #}
+                                        <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('profile_categorisation') }} role="button">Choose a Different Type</a>
+                                        <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Confirm Investor Type</button>
+                                    </div>
+                                    {{ form_rest(form) }}
+                                    {{ form_end(form) }}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock %}

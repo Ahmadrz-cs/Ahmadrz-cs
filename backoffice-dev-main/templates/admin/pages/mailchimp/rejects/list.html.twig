@@ -1,0 +1,57 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Transactional Email Management' %}
+{% set mainHeading = 'Mandrill Rejection Denylist' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "rejection-denylist",
+        "sectionTitle": "Reject Denylist",
+        "linkActions": []
+    } %}
+		{% block sectionContent %}
+			<div class="table-responsive">
+				<table class="table datatable" id="mandrill-rejection-denylist">
+					<thead>
+						<tr>
+							<th>Actions</th>
+							<th>Email</th>
+                            <th>Reason</th>
+                            <th>Detail</th>
+                            <th>Created At</th>
+                            <th>Last Event At</th>
+                            <th>Expires At</th>
+                            <th>Expired</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for reject in results %}
+							<tr>
+								<td>
+									{{ include('admin/components/button_link.html.twig', {
+										linkProps: {
+											"text": "See Options",
+											"route": "admin_mailchimp_rejectlist_delete",
+											"params": { email: reject.email },
+											"style": "btn-outline-dark",
+										},
+									}) }}
+								</td>
+								<td>{{ reject.email }}</td>
+                                <td>{{ reject.reason|capitalize }}</td>
+                                <td>{{ reject.detail }}</td>
+                                <td>{{ reject.created_at ? reject.created_at|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td>{{ reject.last_event_at ? reject.last_event_at|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td>{{ reject.expires_at ? reject.expires_at|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td>{{ reject.expired ? 'Expired' : 'Not yet expired' }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

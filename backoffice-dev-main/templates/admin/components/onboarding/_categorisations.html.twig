@@ -1,0 +1,70 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "self-categorisation",
+        "sectionTitle": "Self Categorisation History",
+        "linkActions": linkActions|default([]),
+} %}
+    {% block sectionContent %}
+        {% set profile = user.onboardingProfile %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Times Categorised',
+                value: profile.categorisations|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Last Reviewed At',
+                value: profile.categoryReviewedAt ? profile.categoryReviewedAt|date('Y-m-d H:i:s') : "Never"
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "If a user self categorises as 'sophisticated' staff should perform some verification on the details provided by the user.",
+        }) }}
+        <div class="table-responsive">
+            <h4 class="fw-bold fs-5">Categorisations</h3>
+            <table class="table" id="categorisations-history">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Category</th>
+                        <th>Details</th>
+                        <th>Staff Notes</th>
+                        <th>Manually Verified?</th>
+                        <th>Verified By</th>
+                        <th>Created By</th>
+                        <th>Created</th>
+                        <th>Last Updated</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ctg in profile.categorisations %}
+                        <tr>
+                             <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Edit",
+                                            "route": 'admin_onboarding_categorisation_edit',
+                                            "params": {id: ctg.id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                                </div>
+                            </td>
+                            <td data-field="id">{{ ctg.Id }}</td>
+                            <td data-field="category">{{ ctg.category.name|humanize }}</td>
+                            <td data-field="details">{{ ctg.details|json_encode }}</td>
+                            <td data-field="notes">{{ ctg.notes }}</td>
+                            <td data-field="is-verified">{{ ctg.verified ? 'Yes' : 'No' }}</td>
+                            <td data-field="verified-by">{{ ctg.verifiedBy|default('-') }}</td>
+                            <td data-field="created-by">{{ ctg.createdBy }}</td>
+                            <td>{{ ctg.createdAt ? ctg.createdAt|date('Y-m-d H:i:s') : '-' }}</td>
+                            <td>{{ ctg.updatedAt ? ctg.updatedAt|date('Y-m-d H:i:s') : '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endblock %}
+{% endembed %}

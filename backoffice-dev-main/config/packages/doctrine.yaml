@@ -1,0 +1,111 @@
+doctrine:
+    dbal:
+        # Set this to to see all doctrine sql statements under doctrine.DEBUG
+        logging: false
+        types:
+            json: Doctrine\DBAL\Types\JsonType
+            array: Doctrine\DBAL\Types\JsonType
+            # enum: Doctrine\DBAL\Types\StringType # commented due to deprecation notice
+        url: "%env(resolve:DATABASE_URL)%"
+        # only needed for MySQL - consider migrating to utf8mb4
+        charset: utf8
+        # charset: utf8mb4
+        # default_table_options:
+        #     collate: utf8mb4_unicode_ci
+        mapping_types:
+            # enum: string # commented due to deprecation notice
+        # backtrace queries in profiler (increases memory usage per request)
+        # profiling_collect_backtrace: '%kernel.debug%'
+        # if using pdo_sqlite as your database driver:
+        #   1. add the path in parameters.yml
+        #     e.g. database_path: "%kernel.root_dir%/data/data.db3"
+        #   2. Uncomment database_path in parameters.yml.dist
+        #   3. Uncomment next line:
+        #     path:     "%database_path%"
+        # if doctrine is used as the message queue transport, ignore schema changes to that table
+        schema_filter: "~^(?!messenger_messages)~"
+        options:
+            !php/const 'PDO::MYSQL_ATTR_SSL_CA': '%env(resolve:MYSQL_SSL_CA)%'
+            !php/const 'PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT': '%env(bool:MYSQL_SSL_VERIFY_SERVER_CERT)%'
+    orm:
+        # naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        # auto_mapping: true
+        # mappings:
+        #     App:
+        #         is_bundle: false
+        #         type: attribute
+        #         dir: '%kernel.project_dir%/src/Entity'
+        #         prefix: 'App\Entity'
+        #         alias: App
+        # consider flattening this
+        # https://symfony.com/doc/current/reference/configuration/doctrine.html#shortened-configuration-syntax
+        entity_managers:
+            default:
+                # naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                naming_strategy: App\Service\NamingStrategy\UnderscoreTableNamingStrategy
+                dql:
+                    string_functions:
+                        regexp: DoctrineExtensions\Query\Mysql\Regexp
+                        MONTH: DoctrineExtensions\Query\Mysql\Month
+                        DAY: DoctrineExtensions\Query\Mysql\Day
+                        YEAR: DoctrineExtensions\Query\Mysql\Year
+                        REPLACE: DoctrineExtensions\Query\Mysql\Replace
+                mappings:
+                    App:
+                        is_bundle: false
+                        dir: "%kernel.project_dir%/src/Entity"
+                        prefix: 'App\Entity'
+                        alias: App
+                    gedmo_loggable:
+                        type: attribute
+                        prefix: Gedmo\Loggable\Entity
+                        dir: "%kernel.project_dir%/vendor/gedmo/doctrine-extensions/src/Loggable/Entity"
+                        alias: GedmoLoggable # (optional) it will default to the name set for the mappingmapping
+                        #is_bundle: false
+                filters:
+                    softdeleteable:
+                        class: Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter
+                        enabled: true
+
+when@test:
+    doctrine:
+        dbal:
+            # Clear out the url config so that regular
+            # This is required for liuggio fastest to work
+            url: ~
+            driver: pdo_sqlite
+            path: "%kernel.cache_dir%/__DBNAME__.db"
+            dbname: "yielderverse"
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: "_test%env(default::TEST_TOKEN)%"
+            options: ~
+        orm:
+            entity_managers:
+                default:
+                    dql:
+                        string_functions:
+                            MONTH: DoctrineExtensions\Query\Sqlite\Month
+                            DAY: DoctrineExtensions\Query\Sqlite\Day
+                            YEAR: DoctrineExtensions\Query\Sqlite\Year
+                            REPLACE: DoctrineExtensions\Query\Sqlite\Replace
+
+# when@dev:
+#     doctrine:
+
+when@prod:
+    doctrine:
+        # orm:
+        #     query_cache_driver:
+        #         type: pool
+        #         pool: doctrine.system_cache_pool
+        #     result_cache_driver:
+        #         type: pool
+        #         pool: doctrine.result_cache_pool
+
+    framework:
+        # cache:
+        #     pools:
+        #         doctrine.result_cache_pool:
+        #             adapter: cache.app
+        #         doctrine.system_cache_pool:
+        #             adapter: cache.system

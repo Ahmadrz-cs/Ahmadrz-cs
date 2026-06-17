@@ -1,0 +1,62 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_reports_mangopay_index' %}
+{% set areaHeading = 'Reports' %}
+{% set mainHeading = 'Mangopay Report Merger Tool' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "merge-mangopay-reports",
+        "sectionTitle": "Merge Reports from Urls",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+            title: "Report Requirements"
+        } %}
+            {% block message %}
+                <p>Both reports must:</p>
+                <ul class="mb-0">
+                    <li>Be of the same type (both transaction reports or both wallet reports)</li>
+                    <li>Have the same columns</li>
+                    <li>Have the following columns:
+                        <ul class="fw-bold font-monospace">
+                            <li>Id</li>
+                            <li>DebitedFundsAmount</li>
+                            <li>CreditedFundsAmount</li>
+                            <li>ExecutionDate</li>
+                            {# <li>CreditedWalletId</li>
+                            <li>DebitedWalletId</li> #}
+                        </ul>
+                    </li>
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+        <section>
+            <p>The merger will do the following:</p>
+            <ul>
+                <li>Combine the data from the 2 reports together</li>
+                <li>Sorts it into reverse chronoical order (newest first) by <span class="fw-bold font-monospace">ExecutionDate</span></li>
+                <li>Remove any duplicates based on the <span class="fw-bold font-monospace">Id</span></li>
+                <li>Add 2 new columns <span class="fw-bold font-monospace">DebitedAmountUnit</span> and <span class="fw-bold font-monospace">CreditedAmountUnit</span> which is the debited and credited amount in £s rather than pennies.</li>
+            </ul>
+        </section>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "You can get the urls from Mangopay dashboard reporting page. Right-click on the download button and choose 'copy link address' or the equivalent in your browser. Or you can find the download URL from the Mangopay Reports Browser.",
+        }) }}
+        {{ form_start(form, { attr: {class: "d-flex flex-column gap-2"} }) }}
+        {{ form_row(form.reportUrl1) }}
+        {{ form_row(form.reportUrl2) }}
+        {{ form_row(form.submit) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

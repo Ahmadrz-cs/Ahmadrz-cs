@@ -1,0 +1,134 @@
+@config "../../tailwind.admin.config.js";
+
+/* Customisations - place before tailwind, so tailwind can override */
+
+.select2-container .select2-selection--single {
+    height: auto;
+    padding: .2rem .6rem;
+}
+
+.form-check+.form-check {
+    margin-top: .5rem;
+}
+
+.col-form-label,
+.form-label,
+.form-group label:not(.form-check-label) {
+    font-weight: bold;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+dl,
+ol,
+ul,
+table {
+    margin-bottom: 0;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn,
+.nav-link,
+.page-link,
+.dropdown-item {
+    transition-duration: 120ms;
+    font-weight: 500;
+}
+
+table,
+.btn,
+.nav-link,
+.page-link,
+.form-control,
+.form-select,
+.form-check,
+.select2-container {
+    font-size: 0.875rem;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    background-color: #e9ecef;
+    background-color: var(--main-brand-offwhite);
+}
+
+.nav-link:not(.active):hover,
+.nav-link:not(.active):focus {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.navbar-brand:not(img) {
+    color: var(--main-brand-color1);
+}
+
+.navbar-brand:hover {
+    background-image: linear-gradient(60deg, #0C6953 80%, #B3E67D);
+    background-image: linear-gradient(60deg, var(--main-brand-color1) 80%, var(--main-brand-color2));
+    background-clip: text;
+    color: transparent;
+    transition: color 250ms;
+}
+
+.app-grid {
+    display: grid;
+    grid-template-rows: min-content 1fr min-content;
+    min-height: 100vh;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+	font-family: "DM Sans";
+	src: url("../fonts/DMSans-VariableFont_opsz,wght.woff2") format("woff2");
+	font-display: swap;
+}
+@font-face {
+	font-family: "DM Sans Italic";
+	src: url("../fonts/DMSans-Italic-VariableFont_opsz,wght.woff2") format("woff2");
+	font-display: swap;
+}
+
+:root {
+    --main-brand-color1: #0C6953;
+    --main-brand-color2: #B3E67D;
+    --main-brand-offwhite: #F6F3ED;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Responsive customisations */
+
+@media (min-width: 992px) {
+    .navbar-nav .dropdown-menu {
+        overflow-y: auto;
+        max-height: calc(100vh - 56px);
+    }
+}
+
+@media (min-width: 1200px) {
+
+    .container,
+    .container-fluid,
+    .container-lg,
+    .container-md,
+    .container-sm,
+    .container-xl,
+    .container-xxl {
+        --bs-gutter-x: 3rem;
+    }
+}

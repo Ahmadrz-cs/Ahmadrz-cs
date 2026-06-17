@@ -1,0 +1,47 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_webhooks_mangopay_index' %}
+{% set areaHeading = 'Platform Configuration' %}
+{% set mainHeading = 'Webhook Events' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": 'recent-webhook-events',
+		"sectionTitle": 'Recent Webhook Events',
+	} %}
+		{% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "As part of garbage collection, events older than 60 seconds are deleted when a new event comes in. The events log is primarily for handling duplicate events rather than acting like an event log.",
+            }) }}
+            {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+				list: results
+			}) }}
+			<div class="table-responsive">
+				<table class="table" id="webhook-events-list">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Fingerprint</th>
+							<th>Event Type</th>
+							<th>Resource Id</th>
+							<th>Last Received</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for event in results %}
+							<tr>
+								<td>{{ event.id }}</td>
+								<td>{{ event.fingerprint }}</td>
+								<td>{{ event.eventType }}</td>
+								<td>{{ event.resourceId }}</td>
+								<td>{{ event.lastReceived|date() }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+{% endblock page_content %}

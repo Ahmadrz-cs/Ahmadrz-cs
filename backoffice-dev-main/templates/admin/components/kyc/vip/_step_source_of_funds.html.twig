@@ -1,0 +1,62 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "source-of-funds",
+    "sectionTitle": "Source of Funds",
+} %}
+    {% block sectionContent %}
+
+    <section class="d-flex flex-column gap-2">
+        <h5 class="fw-bold fs-6 mb-0">Source of fund requirements:</h5>
+        <ul class="mb-0">
+            <li>3 bank statements from the past 3 consecutive months</li>
+            <li>Available funds meet requirements outlined in process documents, e.g. £50,000</li>
+            <li>Address on bank statement matches user profile and previous proof of address documents</li>
+            <li>Check your process documents for any additional or detailed instructions for verifying source of funds</li>
+        </ul>
+    </section>
+
+    <section class="d-flex flex-column gap-3">
+        <h5 class="fw-bold fs-6 mb-0">Supporting Information</h5>
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Main Address',
+                value: user.getMainAddress.formatWithLinebreak|default('-'),
+                className: 'col-xl-6',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Company Address',
+                value: user.company.formatAddressWithLinebreak|default('-'),
+                className: 'col-xl-6',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Application Statement (words of own)',
+                value: user.investor.wordsOfOwn|default('-'),
+                className: 'col-12',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Only proof of funds documents are shown here. You can find the all user documents in the 'Supporting Info' tab.",
+        }) }}
+
+        {% set proofOfFundDocs = user.documents|filter(d => d.document.tag in ['proof_of_funds']) %}
+
+        {% if proofOfFundDocs|length < 3 %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "This user does not have at least 3 proof of fund documents required for Top Yielder approval. Ensure documents are tagged correctly or request additional files from the applicant.",
+            }) }}
+
+        {% endif %}
+
+        {{ include('admin/components/users/_doc_list.html.twig', {
+            tableId: 'user-vip-docs-list',
+            userdocs: proofOfFundDocs,
+        }) }}
+
+    </section>
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,97 @@
+{
+    "name": "symfony/framework-standard-edition",
+    "license": "MIT",
+    "type": "project",
+    "description": "The \"Symfony Standard Edition\" distribution",
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        },
+        "files": [
+            "app/AppKernel.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "repositories": [],
+    "require": {
+        "php": "^8.3",
+        "bramus/monolog-colored-line-formatter": "~3.1",
+        "cmixin/business-time": "^1.7",
+        "craue/formflow-bundle": "~3.0",
+        "doctrine/annotations": "^1.14",
+        "gregwar/captcha-bundle": "^2.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "lcobucci/jwt": "^4.0",
+        "mpdf/mpdf": "^8.2",
+        "nesbot/carbon": "^2.37",
+        "sameer-shelavale/php-countries-array": "*",
+        "sonata-project/exporter": "^3.4",
+        "symfony/asset": "*",
+        "symfony/console": "*",
+        "symfony/dotenv": "*",
+        "symfony/flex": "^1.4",
+        "symfony/form": "*",
+        "symfony/framework-bundle": "*",
+        "symfony/intl": "*",
+        "symfony/mime": "*",
+        "symfony/monolog-bundle": "~3.0",
+        "symfony/property-access": "*",
+        "symfony/runtime": "*",
+        "symfony/security-bundle": "*",
+        "symfony/serializer": "6.4.*",
+        "symfony/twig-bundle": "*",
+        "symfony/uid": "6.4.*",
+        "symfony/validator": "*",
+        "tattali/mobile-detect-bundle": "2.2.*",
+        "twig/extra-bundle": "^3.7",
+        "twig/intl-extra": "^3.7"
+    },
+    "require-dev": {
+        "codeception/codeception": "^5.0",
+        "codeception/module-asserts": "*",
+        "codeception/module-db": "*",
+        "codeception/module-phpbrowser": "*",
+        "codeception/module-sequence": "*",
+        "codeception/module-webdriver": "*",
+        "phpunit/phpunit": "^9.0",
+        "symfony/debug-bundle": "*",
+        "symfony/maker-bundle": "^1.0",
+        "symfony/phpunit-bridge": "*",
+        "symfony/web-profiler-bundle": "*",
+        "symplify/easy-coding-standard": "^12"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@auto-scripts"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ],
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        }
+    },
+    "config": {
+        "prepend-autoloader": false,
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/runtime": true,
+            "symfony/flex": true
+        }
+    },
+    "extra": {
+        "public-dir": "public",
+        "symfony": {
+            "allow-contrib": false,
+            "require": "6.4.*"
+        }
+    }
+}

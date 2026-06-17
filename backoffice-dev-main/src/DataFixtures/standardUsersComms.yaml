@@ -1,0 +1,27 @@
+include:
+    - templates/baseUsers.yaml
+
+App\Entity\Communication:
+    communication_fill_logins{0..73} (extends communication_login_code):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_fill_logins_failed{0..5} (extends communication_login_code):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+        status: 0
+    communication_fill_dividends{0..104} (extends communication_dividend_payment):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_fill_registrations{0..56} (extends communication_user_registration):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_admin_fill_registration{0..56} (extends communication_admin_user_registration):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_fill_onboarding_finish{0..19} (extends communication_onboarding_complete):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_fill_bankwire{0..13} (extends communication_bankwire_deposit):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_admin_fill_bankwire{0..13} (extends communication_admin_bankwire_deposit):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_fill_investment{0..82} (extends communication_investment_confirmation):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_admin_fill_investment{0..82} (extends communication_admin_investment_confirmation):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"
+    communication_fill_password_reset{0..38} (extends communication_password_reset):
+        createdAt: "<(new DateTime('-' . $current . 'month'))>"

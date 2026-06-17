@@ -1,0 +1,72 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+
+    <!-- main body -->
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4">
+                            <h4>View Pay In</h4>
+
+                            <div class="d-flex justify-content-start my-2" style="gap: 0.5rem;">
+                                <a class="btn btn-primary rounded-pill px-1 px-sm-2"
+                                    href={{ path('product_properties_current') }} role="button">View Opportunities</a>
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2"
+                                    href={{ path('add_fund_new') }} role="button">Add Funds</a>
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2"
+                                    href={{ path('transactions_list') }} role="button">View Transactions</a>
+                            </div>
+
+                            {{ include('@AppBundle/Common/_kv_table.html.twig', {
+                                tableId: "payin-info",
+                                tableStyle: "mt-3",
+                                valueDefaultStyle: "text-monospace",
+                                kv: {
+                                    "Completed At": payin.execution_date|date('Y-m-d H:i:s'),
+                                    "Pay In Type": payin.payment_type|lower|capitalize,
+                                    "Status": payin.status|lower|capitalize,
+                                    "Amount": (payin.amount / 100)|default(0)|number_format(2),
+                                    "Currency": payin.currency|default("N/A"),
+                                }
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+{% endblock %}

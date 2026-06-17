@@ -1,0 +1,57 @@
+# This is in-progress
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{notts} (extends asset_base):
+        name: Knapp Avenue - Nottingham 
+        briefDescription: A free-hold HMO property located in the scenic Nottingham, with already long-term lease agreements in place.
+        pricePerShare: 1.28
+        amountOfShares: 100000
+        companyNumber: SPVDM00024
+        investmentTerm: 36
+        netProjectedYield: '0.0517'
+        netProjectedIncome: '6622'
+        featured: 1
+        termStart: "@self->createdAt"
+        createdAt: "<dateTimeBetween('-24 months', '-22 months')>"
+
+App\Entity\AssetAddress:
+    assetaddress{notts} (extends assetaddress_base):
+        address1: Knapp Avenue
+        city: Nottingham
+        postCode: NG16 3JW
+        longitude: -1.308170
+        latitude: 53.012790
+
+App\Entity\AssetMember:
+    assetmember{notts} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc_notts_{AoA, IM, Cover, Financials, photo1, photo2, photo3}:
+        asset: "@assetnotts"
+        document: "@doc_notts_<current()>"
+
+App\Entity\Document:
+    doc_notts_{AoA} (extends doc_aoa):
+        filename: "<('SPVY00012_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_notts_{IM} (extends doc_im):
+        filename: "<('SPVY00012_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_notts_{Cover} (extends doc_logo):
+        filename: "<('SPVY00012_' . $current . '.jpg')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_notts_{Financials} (extends doc_calculations):
+        filename: "<('SPVY00012_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_notts_{photo1, photo2, photo3} (extends doc_property_photo):
+        filename: "<('SPVY00012_' . $current . '.jpg')>"
+        documentUrl: "<('demo/' . $filename)>"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{notts} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>
+        occuredAt: "@asset<current()>->termStart"

@@ -1,0 +1,379 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}About us{% endblock %}
+
+
+{% block body %}
+
+  <main role="main">
+    <!-- hero banner -->
+		<div class="hero-banner about banner-medium bg-fixed bg-overlay">
+			<div class="container pt-6 pt-md-8 position-relative layer-z-1">
+
+            <!-- breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <h3 class="sr-only">Breadcrumb</h3>
+                        <ol class="breadcrumb text-sm bg-transparent px-0">
+                            <li class="breadcrumb-item"><a href="/">Home</a></li>
+                            <li class="breadcrumb-item"><a href="/about-us">About</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">About Us</li>
+                        </ol>
+                    </nav>
+				<div class="hero-banner-content pr-2 py-4 text-center">
+					<div class="row">
+						<div class="col-lg-9 mx-auto">
+							<h2 class="h1 hero-banner-hd text-light mb-3">
+								About Us
+							</h2>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+   
+    {# <div class="description-block">
+        <div class="container">
+            <div class="row two-col">
+                <div class="col-sm-5 info-left">
+                    <h3>Pre-funded investments. Immediate returns.</h3>
+                </div>
+                <div class="col-sm-7 info-right">
+                    <p>Yielders UK is a crowdfunding property investment platform that puts UK property investment within your reach. Our assets are already funded and provide pre-defined rental incomes, which means our investors have the potential to start earning returns almost immediately.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div> #}
+
+    <!-- team -->
+        <div class="container">
+            {# <div class="py-5 teams d-flex flex-column flex-md-row">
+                {{ include('@AppBundle/Default/_classic_team.html.twig') }}
+            </div> #}
+            <section class="py-5 row" id="team">
+                <h3 class="h2 mb-4 col-12">Our Team</h3>
+                {% for item in team_members %}
+                <div class="col-sm-6 col-md-4 col-lg-3 mb-3 team-card">
+                    {# <img class="rounded-circle w-75 mb-2" src="{{asset('bundles/app/img/')}}{{ item.photo }}" loading="lazy" alt=""> #}
+                    <p class="h3">{{ item.name }}</p>
+                    <p class="font-medium mb-1">{{ item.position }}</p>
+                    {% if item.bio|default(false) %}<p>{{ item.bio }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            </section>
+        </div>
+
+    <!-- story -->
+    <div class="storywrap mb-4">
+        <div class="container">
+            <h3 class="h2 mb-4">Our Story</h3>
+        </div>
+        <div class="story-block pt-3 pt-md-0">
+            <div class="container">
+                <div class="story">
+
+                    <span class="path"><img src="{{asset('bundles/app/images/path.svg') }}" loading="lazy" alt="path"/></span>
+                    <div class="story-1 story-item">
+                        <div class="s-info">
+                            <p>Property investment options were so 
+                                <strong>limited</strong>;
+                                 we wanted to help 
+                                <strong>change</strong> 
+                                 this!
+                            </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-1.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>November</h4>
+                    <p>2014</p>
+                </div>
+            </div>
+
+            <div class="story-2 story-item">
+                <div class="s-info">
+                    <p>After some thought, we had our eureka moment –<br>
+                        <strong>Yielders, the crowd investment platform.</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-2.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>January</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-3 story-item">
+                <div class="s-info">
+                    <p>We quit our jobs and started doing some
+                        <strong>serious research.</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-3.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>March</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-4 story-item">
+                <div class="s-info">
+                    <p>
+                        <strong>We met a co-founder</strong>
+                        who believed in us, and in what we were doing.
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-4.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>April</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-5 story-item">
+                <div class="s-info">
+                    <p>After countless late nights and coffees, we had our
+                        <strong>business model.</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-5.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>May</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-6 story-item">
+
+                <div class="s-info">
+                    <p>Building the<strong>Team</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-6.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>June</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-7 story-item">
+
+                <div class="s-info">
+                    <p>We spent more<br>
+                        late nights (and coffees)<br><strong>
+                            developing our product.</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-7.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>July</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-8 story-item">
+
+                <div class="s-info">
+                    <p>We moved into our new offices:<br>
+                        Level 39 in
+                        <strong>
+                            Canary Wharf.</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-8.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>November</h4>
+                    <p>2015</p>
+                </div>
+            </div>
+
+            <div class="story-9 story-item">
+
+                <div class="s-info">
+                    <p>We launched April
+                        <strong>2016.</strong>
+                    </p>
+                </div>
+                <div class="year">
+                    <span class="s-icon"><img src="{{asset('bundles/app/images/s-icon-9.svg') }}" loading="lazy" alt="icon"/></span>
+                    <h4>Q2</h4>
+                    <p>2016</p>
+                </div>
+            </div>
+        </div>
+    </div></div></div>
+
+    {# <div class="about-offer become-yielder-block">
+            <div class="container">
+                <div class=" card become-yielderUp">
+                    <div class="row p-2">
+                        <div class="col-sm-6 left">
+                            <div class="item text-md-right px-2 px-md-7 py-2 mb-3 mb-md-0">
+                                <h4 class="font-light">Looking for a career in Fintech?</h4>
+                                <h3></h3>
+                                <p>From internships to full-time positions, we offer you rewarding and challenging opportunities that will give you a platform for continued success.</p>
+                                <a href="{{ path('careers') }}" class="btn btn-outline-primary rounded-pill px-2">See Vacancies</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 fadeInRight">
+                            <div class="item bg-dark rounded-medium p-3">
+                                <h4 class="text-light font-light">Trusted in</h4>
+                                <h3 class="text-light font-light">Ethical & Shariah</h3>
+                                <p class="text-light">No debt, no interest, full voting rights, full financial rights make us a fully sharia compliant offering.</p>
+                                <a href="{{ path('ethical_sharia') }}" class="btn btn-outline-light rounded-pill px-2">Learn more</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> #}
+
+    {# <div class="client-slider">
+        <div class="container">
+            <h2>Partners and Affiliates</h2>
+            <div class="client">
+
+                <a><img src="{{ asset('bundles/app/images/c-2.png') }}" loading="lazy" alt="logo"/></a>
+                <a><img src="{{ asset('bundles/app/images/c-1.png') }}" loading="lazy" alt="logo"/></a>
+                <a><img src="{{ asset('bundles/app/images/c-3.png') }}" loading="lazy" alt="logo"/></a>
+
+            </div>
+        </div>
+    </div> #}
+    {# <!-- Irfan Khan modal-->
+    <div class="modal fade" id="irfankhan" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4 pb-3">
+                    <h3 class="text-center mb-3">
+                        Irfan Khan – Founder
+                    </h3>
+                    <p class="font-medium">Qualified Chartered Accountant & Financial Transformation Specialist</p>
+                    <p>Irfan Khan, ACMA, is the founder of Yielders, the UK’s first Islamic FinTech crowdfunding platform to be
+                        directly regulated by the FCA. With over 17 years’ experience in financial services, he has
+                        delivered multiple large-scale technology transformation projects at top-tier financial
+                        institutions. Irfan is a tireless advocate for the industry, sitting on both the All Party
+                        Parliamentary Group on Islamic Finance and the UK Islamic Fintech Panel, as well as representing
+                        the industry as part of government delegations to Malaysia, Turkey and Brunei. </p>
+                    <p>The inspiration for founding Yielders came when Irfan tried to invest his own money as a young
+                        professional, yet could not find investment opportunities that offered competitive returns
+                        without ethical compromise. Finally, in 2015, people could become part-owners of UK real estate
+                        from as little as £100. </p>
+                    <p>Rewarded for his efforts, he was recognised as a ‘business big shot’ by the Times in 2017 and
+                        most recently named by the FT ‘Top 100 most influential BAME leaders in UK Tech’. Never one to
+                        rest on his laurels, Irfan capitalised on his earlier entrepreneurial success, guiding Yielders
+                        from bootstrapped startup to revenue-generating SME. The product of many late nights and
+                        weekends, the company successfully scaled and closed its Series A funding round in 2019, making
+                        it one of the largest Islamic FinTechs in the world. </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abdul modal-->
+    <div class="modal fade" id="abdhul" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4 pb-3">
+                    <h3 class="text-center mb-3">
+                        Abdul Haseeb Basit – Senior Non Executive Director
+                    </h3>
+                    <p class="font-medium">Specialist in Digital Finance</p>
+                    <p>Abdul Haseeb is a digital finance specialist and has over 17 years' experience working at the
+                        intersection of finance, technology and strategy. He is a Co-Founder and Principal of Elipses.
+                    </p>
+                    <p>He is also the former CFO of Innovate Finance, the UK not-for-profit FinTech members association;
+                        Director of Yielders, a crowdinvesting platform and the first regulated Islamic FinTech in the
+                        UK; and a board member of Global Digital Finance, a not-for-profit promoting fair and
+                        transparent market for digital and crypto assets. </p>
+                    <p>He has previously worked in tier-1 banks in technology transformation and strategy with a private
+                        wealth and asset management focus. He is a qualified management accountant and has an MBA (with
+                        distinction) from Imperial College Business School. Abdul Haseeb is an Islamic & ethical finance
+                        advocate and promotes the transformational impact of technology on the industry.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zeehsan modal-->
+    <div class="modal fade" id="zeeshan" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4 pb-3">
+                    <h3 class="text-center mb-3">
+                        Zeeshan Uppal – Co-Founder & COO
+                    </h3>
+                    <p class="font-medium">KYC/AML specialist & Financial services compliance consultant</p>
+                    <p>Zeeshan began his career in financial crime working on one of the largest transformation projects
+                        in the city. Zeeshan is a strategic thinker with proven ability to deliver innovative and
+                        effective solutions that positively impact business performance. He has designed and
+                        implemented, process improvements, strategies, operating models and governance on a number of
+                        global investment banking projects.
+                    </p>
+                    <p>As part of his roles within global banks, he was able to study for his ACAMS making him a
+                        Certified Anti-Money Laundering Specialist. With this very unique skill set he was able to
+                        encompass all he had learned within the banking sector and ensure Yielders minimises its risk
+                        profile and aligns to all FCA requirements. </p>
+                    <p>A keen interest in property development, has ensured he was able to develop stringent and
+                        compliant processes within the Yielders operating model. His overall objective is to ensure
+                        continued development of the platform and aid in identifying investment opportunities for all
+                        Yielders!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abid modal-->
+    <div class="modal fade" id="abid" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body px-4 pb-3">
+                    <h3 class="text-center mb-3">
+                        Abid Karim – Co-Founder & CIO
+                    </h3>
+                    <p class="font-medium">Expert in Real Estate acquisition, development/management & Tax Consultant
+                    </p>
+                    <p>Abid started his business career in 2005 and has been active in the fields of e-commerce, retail
+                        and property for over 15 years. He has been involved in buying, developing and consulting on a
+                        number of property deals and has delivered a strong track record of returns for investors.
+                        Yielders is the scaling up of what he has been doing for years. Part of Generation X he has seen
+                        the impact technology has had on the lives of everyone and strongly believes crowdfunding will
+                        change the way many of us invest. He believes in ethical investment in which risk and reward are
+                        shared and this underpins his investment philosophy.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div> #}
+
+    {% include('@AppBundle/Common/social-feed-links.html.twig') %}
+
+</main>
+
+
+{% endblock %}
+

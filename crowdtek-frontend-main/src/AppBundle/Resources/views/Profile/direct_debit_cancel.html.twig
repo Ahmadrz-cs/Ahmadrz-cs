@@ -1,0 +1,341 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{% block title %}
+    My Wallet
+{% endblock %}
+{% block body %}
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<!-- profile detail -->
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{% include('@AppBundle/Common/profilenav.html.twig')%}
+					</div>
+					<div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<!-- add new fund -->
+							<div class="tab-pane fade show active">
+								<div class="row mt-3">
+
+									<!-- status -->
+									<div class="col-lg-12">
+										{# <div class="profile-banner portfolio-head wallet-profile">
+
+											<div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+												<div class="row">
+													<div class="col-md-6 u-name">
+														<h3>Hi
+															{{ userInfo.given_name }}
+														</h3>
+													</div>
+													<div class="col-md-6 p-wal">
+														<ul class="list-inline mb-0">
+															<li>
+																<p class="h3 mb-0">£
+																	<span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+																</p>in my wallet
+															</li>
+															{% if wallet.id|default() %}
+																<li class="">
+																	<a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+																	<a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+																</li>
+															{% endif %}
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div> #}
+									</div>
+
+									<!-- add dettails -->
+									<div class="col-lg-12">
+										<div class="transaction-history-block t-history">
+											<div class="com-block">
+												<section id="profile">
+													<h4 class="mb-3">Direct Debit Settings</h4>
+                                                    <hr class="mb-4">
+
+													<div class="page-inner">
+													<!-- .page-title-bar -->
+													<header class="page-title-bar">
+													</header>
+													<!-- /.page-title-bar -->
+													<!-- .page-section -->
+													<div class="page-section">
+														<!-- grid row -->
+														<div class="flex-row mb-2 d-none d-lg-block">
+															<!-- .card -->
+															<div class="card card-fluid" id="links-card">
+															<h6 class="card-header"> Your Details </h6>
+															<!-- .nav -->
+															<nav class="nav nav-tabs">
+																<a href="{{ path('direct_debit_summary') }}" id="summaryLink" class="col nav-link">Summary</a>
+																<a href="{{ path('direct_debit_details') }}" id="detailsLink" class="col nav-link">Billing Details</a>
+																<a href="{{ path('direct_debit_cancel') }}" id="cancelLink" class="col nav-link active">Cancel Direct Debit</a>
+															</nav>
+															<!-- /.nav -->
+															</div>
+															<!-- /.card -->
+														</div>
+														<!-- /.grid row -->
+														<!-- grid row -->
+														<div class="row mb-2 d-lg-none">
+															<div class="col-lg-4">
+																<!-- .card -->
+																<div class="card card-fluid" id="links-card">
+																<h6 class="card-header"> Your Details </h6>
+																<!-- .nav -->
+																<nav class="nav nav-tabs flex-column">
+																	<a href="{{ path('direct_debit_summary') }}" id="mobileSummaryLink" class="nav-link">Summary</a>
+																	<a href="{{ path('direct_debit_details') }}" id="mobileDetailsLink" class="nav-link">Billing Details</a>
+																	<a href="{{ path('direct_debit_cancel') }}" id="mobileCancelLink" class="nav-link active">Cancel Direct Debit</a>
+																</nav>
+																<!-- /.nav -->
+																</div>
+																<!-- /.card -->
+															</div>
+														</div>
+														<!-- /grid column -->
+														<!-- grid column -->
+														<div class="flex-row">
+															<!-- Direct Debit Amount -->
+															<!-- .card -->
+															<div class="card card-fluid mb-3">
+															<h6 class="card-header">Cancel Direct Debit</h6>
+															<!-- .card-body -->
+															<div class="card-body text-center">
+
+																	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmModal">
+																	Cancel Direct Debit
+																	</button>
+
+																	<!-- Modal -->
+																	<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+																	<div class="modal-dialog" role="document">
+																		<div class="modal-content">
+																		<div class="modal-header">
+																			<h5 class="modal-title" id="confirmModalLabel">Cancel Direct Debit?</h5>
+																			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+																			<span aria-hidden="true">&times;</span>
+																			</button>
+																		</div>
+																		<p class="modal-dialog">
+																			Automatic monthly top-ups to your Yielders wallet will stop. You can re-enable this in the direct debit section of your profile.
+																		</p>
+																		<div class="modal-footer">
+																			<button type="button" class="btn btn-light" data-dismiss="modal">Keep Direct Debit</button>
+																			{{ form_start(form) }}
+																			{{ form_widget(form.cancel, {'attr': {'class': 'btn btn-danger btn-block' }}) }}
+																			{{ form_end(form) }}
+																		</div>
+																		</div>
+																	</div>
+																	</div>
+
+																	{% if warningMessage == true %}
+																	<div class="shadow">
+																		<div class="note-box">
+																			<p><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> We are currently processing a direct debit payment from your account, which may still be taken. If you wish to request a refund please contact  <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a> when the amount appears in your account.</p>
+																		</div>
+																	</div>
+																	{% endif %}
+															<!-- /.card-body -->
+															</div>
+															<!-- /.card -->
+															</div>
+
+														</div>
+														<!-- /grid row -->
+														</div>
+														<!-- /grid row -->
+													</div>
+													<!-- /.page-section -->
+													</div>
+
+												</section>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<style>
+
+	.nav-tabs.flex-column .nav-link {
+		border-width: 0 0 0 3px;
+		border-radius: 0;
+	}
+
+	.nav-tabs .nav-link {
+		padding: 1rem;
+		border-width: 0 0 3px;
+	}
+
+	#links-card .nav-link {
+		outline: 0;
+    	color: #686f76;
+	}
+
+	.active> .nav-link, .nav-link.active, .nav-link:focus, .nav-link:hover {
+		color: #6cbcb6;
+	}
+
+	.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+		color: #28313b;
+    	background-color: transparent;
+    	border-color: #6cbcb6;
+	}
+
+	.nav-tabs {
+		border-bottom: transparent;
+	}
+
+	.card-header:first-child {
+		border-radius: 0 0;
+	}
+
+	.card {
+		border-radius: 0 0;
+	}
+
+	.col-lg-12 {
+		padding-left: 10px;
+	}
+
+	.badge-secondary {
+		    color: #fff;
+			background-color: #28a745;
+	}
+
+	div.custom-control-right {
+		padding-right: 24px;
+		padding-left: 0;
+		margin-left: 0;
+		margin-right: 0;
+
+	}
+	div.custom-control-right .custom-control-label::after{
+		right: -1.5rem;
+		left: auto;
+	}
+	div.custom-control-right .custom-control-label::before {
+		right: -2.35rem;
+		left: auto;
+	}
+
+	.color-box {
+		margin: 15px 0;
+	}
+
+	.shadow {
+		background: #F7F8F9;
+		padding: 3px;
+		margin: 10px 0;
+	}
+
+	.info-tab {
+		width: 40px;
+		height: 40px;
+		display: inline-block;
+		position: relative;
+		top: 8px;
+	}
+
+	.info-tab {
+		float: left;
+		margin-left: -23px;
+	}
+
+	.note-icon {
+		background: #47ADE0;
+	}
+
+	.note-box {
+		color: rgba(63, 110, 106, 0.9376);
+		background-color: #d6eceb;
+		padding: 8px 8px 3px 14px;
+	}
+	.note-box a {
+		color: #337ab7;
+	}
+
+	.note-box a:hover {
+		background-color: transparent;
+		text-decoration: underline;
+	}
+
+	</style>
+
+{% endblock %}
+
+{% block pagejs %}
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+<!-- Include Font Awesome -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"/>
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+
+			$('#direct_debit_active_type_active').click(function() {
+
+				$('#active_form').submit();
+			});
+
+			$('#active_form').submit(function(e) {
+				e.preventDefault();
+				var url = "{{ path('direct_debit_summary') }}";
+				var formSerialize = $('#active_form').serialize();
+				console.log('Posting the following: ', formSerialize);
+
+				$.post(url, formSerialize, function(response) {
+					//your callback here
+
+					for(var property in response) {
+						alert(property + "=" + response[property]);
+					}
+					}, 'JSON');
+			});
+
+			/* $.ajax({
+				url: '/someurl',
+				data: formData,
+				type: 'post',
+				dataType: 'json',
+				success: function(data) {
+				//  ... do something with the data...
+			}
+		}); */
+	});
+
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set areaHeading = 'Events' %}
+{% set mainHeading = 'Mangopay Events Browser' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'mangopay-events',
+        "sectionTitle": 'All Mangopay events',
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            title: "45 day limit",
+            message: "Mangopay only allows retrieval of events that are from the last 45 days",
+        }) }}
+        {{ form_start(form) }}
+            <div class="row">
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.perPage) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.EventType) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.AfterDate) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.BeforeDate) }}</div>
+            </div>
+            {{ form_rest(form) }}
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+                <a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset to Defaults</a>
+            </div>
+        {{ form_end(form) }}
+        {{ include('admin/components/_mangopay_pagination.html.twig') }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Timestamp</th>
+                        <th>Date</th>
+                        <th>Event Type</th>
+                        <th>Resource Id</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in results %}
+                    <tr>
+                        <td>
+                            {% if event.EventType == 'TRANSFER_NORMAL_SUCCEEDED' %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "More Info",
+                                        "route": "admin_transactions_mangopay_transfer",
+                                        "params": {transferId: event.ResourceId},
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                            {% elseif event.EventType == 'TRANSFER_REFUND_SUCCEEDED' %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "More Info",
+                                        "route": "admin_transactions_mangopay_refund",
+                                        "params": {refundId: event.ResourceId},
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                            {% else %}-
+                            {% endif %}
+                        </td>
+                        <td class="tw-tabular-nums" data-field="timestamp">{{ event.Date }}</td>
+                        <td data-field="date">{{ event.Date|date() }}</td>
+                        <td data-field="event-type">{{ event.EventType }}</td>
+                        <td class="tw-font-mono" data-field="resource-id">{{ event.ResourceId }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

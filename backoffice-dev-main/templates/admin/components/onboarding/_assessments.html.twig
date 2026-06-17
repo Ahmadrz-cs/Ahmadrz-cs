@@ -1,0 +1,97 @@
+{% set statusToColor = statusToColor|default({
+    'Pass': 'green',
+    'Fail': 'red',
+    'No': 'gray',
+    'Yes': 'blue',
+    'Pending': 'gray',
+}) %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "assessments",
+        "sectionTitle": "Appropriateness Assessments",
+        "linkActions": linkActions|default([]),
+} %}
+    {% block sectionContent %}
+        {% set profile = user.onboardingProfile %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assessments Taken',
+                value: profile.assessments|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Attempts Completed',
+                value: profile.assessments|filter(a => a.complete)|length
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Once an assessment is complete (all applicable questions answered), it can be submitted for marking to get a result. The criteria for completion is arbitrary. Completed assessments count as an attempt.",
+        }) }}
+        <div class="table-responsive">
+            <h4 class="fw-bold fs-5">Assessments</h3>
+            <table class="table" id="assessments-history">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Complete</th>
+                        <th>Result</th>
+                        <th>Responses</th>
+                        <th>Expiry</th>
+                        <th>Notes</th>
+                        <th>Created By</th>
+                        <th>Created</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asmt in profile.assessments %}
+                        {% set isCompleted = asmt.complete ? 'Yes' : 'No' %}
+                        {% set isPassed = asmt.passed is not null ? (asmt.passed ? 'Pass' : 'Fail') : 'Pending' %}
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Edit",
+                                            "route": 'admin_onboarding_assessment_edit',
+                                            "params": {id: asmt.id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Simulate",
+                                            "route": 'admin_onboarding_assessment_simulate',
+                                            "params": {id: asmt.id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                                </div>
+                            </td>
+                            <td data-field="id">{{ asmt.Id }}</td>
+                            <td data-field="complete">
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: statusToColor[isCompleted],
+                                    value: isCompleted
+                                }) }}
+                            </td>
+                            <td data-field="result">
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: statusToColor[isPassed],
+                                    value: isPassed
+                                }) }}
+                            </td>
+                            <td data-field="responses">{{ asmt.responses|length }}</td>
+                            <td data-field="expiry">{{ asmt.expiry ? asmt.expiry : 'N/A' }}</td>
+                            <td data-field="notes">{{ asmt.notes }}</td>
+                            <td data-field="created-by">{{ asmt.createdBy }}</td>
+                            <td>{{ asmt.createdAt ? asmt.createdAt|date('Y-m-d H:i:s') : '-' }}</td>
+                            <td>{{ asmt.updatedAt ? asmt.updatedAt|date('Y-m-d H:i:s') : '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endblock %}
+{% endembed %}

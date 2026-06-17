@@ -1,0 +1,17 @@
+{% extends "@FOSUser/layout.html.twig" %}
+
+{% block html_title %} Reset Password {% endblock html_title %}
+
+{% block pageclass %}login-page{% endblock pageclass %}
+
+{% block fos_user_content %}
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="#"><b>{{ app_name }}</b></a>
+        </div><!-- /.login-logo -->
+        <div class="login-box-body">
+            <p class="login-box-msg">Reset your password</p>
+            {% include "@FOSUser/Resetting/request_content.html.twig" %}
+        </div><!-- /.login-box-body -->
+    </div><!-- /.login-box -->
+{% endblock fos_user_content %}

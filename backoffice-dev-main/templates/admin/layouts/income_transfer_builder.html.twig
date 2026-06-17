@@ -1,0 +1,21 @@
+{% extends 'admin/layouts/col_2_med_right.html.twig' %}
+
+{% set backToRoute = backToRoute|default('admin_monthend_income_transfer_manage') %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Income Transfer Builder' %}
+{% set mainHeading = transferOrder.asset.name %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_header %}
+	{{ include('admin/components/nav_menus/income_transfer_builder.html.twig') }}
+{% endblock page_header %}
+
+{% block side_content %}
+
+    <div class="xl:tw-sticky xl:tw-top-20">
+        {{ include('admin/components/monthend/transfers_table_compact.html.twig') }}
+    </div>
+
+{% endblock side_content %}
+
+{% block page_content %}{% endblock %}

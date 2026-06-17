@@ -1,0 +1,145 @@
+<div class="d-grid lg:tw-grid-cols-2 gap-3">
+                    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'transaction-metadata',
+        "sectionTitle": 'Metadata',
+        "linkActions": [
+            {
+                "text": "View Initial Transaction",
+                "route": "admin_transactions_mangopay_transfer",
+                "params": {transferId: transaction.InitialTransactionId|default(1)},
+                "style": "btn-outline-dark",
+                "render": transaction.InitialTransactionId is defined,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Transaction Id',
+                    value: transaction.Id,
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Type',
+                    value: transaction.Type|capitalize,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Nature',
+                    value: transaction.Nature|capitalize,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: transaction.Status|capitalize,
+                    indicator: statusToColor[transaction.Status]|default('gray')
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Tag/Description',
+                    value: transaction.Tag,
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-3 p-3 tw-text-sm',
+                }) }}
+            </div>
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Created At',
+                    value: transaction.CreationDate|date('Y-m-d H:i:s'),
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Executed At',
+                    value: transaction.ExecutionDate ? transaction.ExecutionDate|date('Y-m-d H:i:s') : 'N/A',
+                    className: 'col-md-6',
+                }) }}
+            </div>
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Result Message',
+                    value: transaction.ResultMessage,
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Result Code',
+                    value: transaction.ResultCode,
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Pending User Action',
+                    value: transaction.PendingUserAction|default([])|json_encode,
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-3 p-3 tw-text-sm',
+                }) }}
+            </div>
+            {% if transaction.InitialTransactionId is defined %}
+                <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Initial Transaction Id',
+                    value: transaction.InitialTransactionId,
+                    className: 'col-12',
+                }) }}
+            </div>
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'transaction-outline',
+        "sectionTitle": 'Outline',
+        "linkActions": [
+            {
+                "text": "View Debited Wallet Transactions",
+                "route": "admin_wallet_transactions",
+                "params": {walletId: transaction.DebitedWalletId},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "View Credited Wallet Transactions",
+                "route": "admin_wallet_transactions",
+                "params": {walletId: transaction.CreditedWalletId},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Author (Debit)',
+                    value: transaction.AuthorId,
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Credit User',
+                    value: transaction.CreditedUserId,
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'From Wallet (Debit)',
+                    value: transaction.DebitedWalletId,
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'To Wallet (Credit)',
+                    value: transaction.CreditedWalletId,
+                    className: 'col-12',
+                }) }}
+            </div>
+            <div class="d-flex justify-content-between g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Debit Amount (£)',
+                    value: (transaction.DebitedFunds.Amount / 100)|number_format(2,'.'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Fees (£)',
+                    value: (transaction.Fees.Amount / 100)|number_format(2,'.'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Credit Amount (£)',
+                    value: (transaction.CreditedFunds.Amount / 100)|number_format(2,'.'),
+                    className: 'text-end'
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+</div>

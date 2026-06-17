@@ -1,0 +1,48 @@
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+
+App\Entity\Asset:
+    asset_volume_{1..1000} (extends asset_base):
+        createdAt: "<dateTimeBetween('-28 months', '-24 months')>"
+        companyNumber (unique): "<numerify('SPVHVT00#####')>"
+
+App\Entity\AssetAddress:
+    assetaddress_volume_{1..1000} (extends assetaddress_base):
+        asset: "@asset_volume_<current()>"
+
+App\Entity\AssetMember:
+    assetmember_volume_{1..1000} (extends assetmember_base):
+        asset: "@asset_volume_<current()>"
+
+App\Entity\Offering:
+    offering_volume_{1..1000} (extends offering_base):
+        asset: "@asset_volume_<current()>"
+        name: "@asset_volume_<current()>->name"
+        pricePerShare: "@asset_volume_<current()>->pricePerShare"
+        noOfShares: "@asset_volume_<current()>->amountOfShares"
+        createdAt: "<dateTimeBetween('now', 'now')>"
+        updatedAt: "<dateTimeBetween($createdAt, 'now')>"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_volume_base (template, extends assetstatuslog_base):
+        asset: "@asset_volume_<current()>"
+    # All will have the starting/initial status
+    assetstatuslog_init_volume_{1..1000} (extends assetstatuslog_volume_base):
+        status: <(App\Entity\Enum\AssetStatus::Draft)>
+        occuredAt: "@asset_volume_<current()>->createdAt"
+    assetstatuslog_acquiring_volume_{1..120} (extends assetstatuslog_volume_base):
+        status: <(App\Entity\Enum\AssetStatus::Acquiring)>
+        occuredAt: "<dateTimeBetween('-24 months', '-22 months')>"
+    assetstatuslog_active_volume_{1..800} (extends assetstatuslog_volume_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>
+        occuredAt: "<dateTimeBetween('-19 months', '-18 months')>"
+    assetstatuslog_closing_volume_{100..360} (extends assetstatuslog_volume_base):
+        status: <(App\Entity\Enum\AssetStatus::Closing)>
+        occuredAt: "<dateTimeBetween('-3 months', '-1 months')>"
+    assetstatuslog_archived_volume_{200..225} (extends assetstatuslog_volume_base):
+        status: <(App\Entity\Enum\AssetStatus::Archived)>
+        occuredAt: "<dateTimeBetween('-3 months', '-1 months')>"
+    assetstatuslog_cancelled_volume_{900..950} (extends assetstatuslog_volume_base):
+        status: <(App\Entity\Enum\AssetStatus::Cancelled)>
+        occuredAt: "<dateTimeBetween('-24 months', '-4 months')>"

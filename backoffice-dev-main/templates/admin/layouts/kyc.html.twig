@@ -1,0 +1,10 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{# {% set backToRoute = 'admin_monthend_assets' %} #}
+{% set areaHeading = areaHeading|default('KYC') %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+	{{ include('admin/components/nav_menus/kyc.html.twig') }}
+	{% block dashboard_content %}{% endblock dashboard_content %}
+{% endblock page_content %}

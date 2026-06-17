@@ -1,0 +1,134 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_reports_mangopay_set_view' %}
+{% set backToRouteParams = {id: reportSet.id} %}
+{% set areaHeading = 'Mangopay Reports' %}
+{% set mainHeading = 'Transaction Report Builder' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'report-config',
+        "sectionTitle": 'Configure Report',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Period Start',
+                    value: reportSet.periodStart ? reportSet.periodStart|date('Y-m-d') : 'N/A',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Period End',
+                    value: reportSet.periodEnd ? reportSet.periodEnd|date('Y-m-d') : 'N/A',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Mangopay Reports to Create',
+                    value: max(0, dateCheckpoints|length - 1),
+                }) }}
+            </div>
+
+            {{ form_start(form, { attr: { class: "d-flex flex-column gap-4" } } ) }}
+            <div>
+                <button class="btn btn-success" id="submit" type="submit">Create Mangopay Reports</button>
+                <a class="btn btn-outline-secondary" href="{{ path('admin_reports_mangopay_set_view', {
+                    id: reportSet.id
+                }) }}">Cancel</a>
+            </div>
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "You can optionally customise the Mangopay reports to be generated below. For standard transaction reports, the defaults should be suitable.",
+            }) }}
+
+            <div class="row ">
+                <div class="col-md-6">{{ form_row(form.Tag) }}</div>
+                <div class="col-md-6">{{ form_row(form.Filters.WalletId) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Sort) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.AuthorId) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.ResultCode) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.Status) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.Type) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.Nature) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.MinDebitedFundsAmount) }}</div>
+                <div class="col-md-6 col-xl-3">{{ form_row(form.Filters.MaxDebitedFundsAmount) }}</div>
+
+                <div class="col-12 mb-3">
+                    {% embed 'admin/components/_alert.html.twig' with {
+                        variant: "warning",
+                        title: "Required Columns for Merging",
+                    } %}
+                        {% block message %}
+                        <p>Note that the following columns are always included (even if you don't select them) as they are required for merging and subsequent processing:</p>
+                        <ul>
+                            {% for col in constant('\\App\\Service\\MangopayReportService::REPORT_COLUMNS_REQUIRED') %}
+                                <li>{{ col }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endblock message %}
+                    {% endembed %}
+                </div>
+
+                <div class="col-12 mb-4">
+                    {{ form_label(form.Columns) }}
+                    <div class="d-grid tw-gap-x-4 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 2xl:lg:tw-grid-cols-5">
+                        {% for columnChoice in form.Columns %}
+                            {{ form_widget(columnChoice) }}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <p class="fw-bold">Other Options</p>
+                    {{ form_rest(form) }}
+                </div>
+                
+            </div>
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'date-ranges',
+        "sectionTitle": 'Date Ranges',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "Mangopay reports have a maximum reporting period of 6 months. This section identifies the number of Mangopay reports required to covered the full reporting period defined in the configuration.",
+            }) }}
+
+            {% if dateCheckpoints|length > 1 %}
+            
+            <div class="table-responsive">
+                <table class="table" id="date-checkpoint-list">
+                    <thead>
+                        <tr>
+                            <th>Report Number</th>
+                            <th>Date Range Start</th>
+                            <th>Date Range End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reportNumber in range(0, dateCheckpoints|length - 2) %}
+                        <tr>
+                            <td>{{ reportNumber + 1 }}</td>
+                            <td class="tw-tabular-nums">{{ dateCheckpoints[reportNumber]|date('Y-m-d') }}</td>
+                            <td class="tw-tabular-nums">{{ dateCheckpoints[reportNumber + 1]|date('Y-m-d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

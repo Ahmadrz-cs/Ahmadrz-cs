@@ -1,0 +1,458 @@
+stages:
+  - build
+  - test
+  - pageLoadPerformance
+  - deploy
+
+variables:
+  PHP_VERSION: "8.5"
+  FRANKENPHP_VERSION: "1.11"
+  BASE_FRANKENPHP_TAG: "$FRANKENPHP_VERSION-php$PHP_VERSION-alpine"
+  VALKEY_VERSION: "8-alpine"
+  MARIADB_VERSION: "11.8.3"
+  DOCKER_VERSION: "28"
+
+  REGISTRY_NAME: 376373716954.dkr.ecr.eu-west-2.amazonaws.com
+  FRANKENPHP_IMAGE_REPO_NAME: yielderverse/frontend-frankenphp
+  FRANKENPHP_IMAGE_NAME: $REGISTRY_NAME/$FRANKENPHP_IMAGE_REPO_NAME
+  # MYSQL prefixed vars are used by the mariadb service only
+  MYSQL_ROOT_PASSWORD: RomeoOscar1520
+  MYSQL_DATABASE: crowddb
+  MYSQL_USER: ydev
+  MYSQL_PASSWORD: YankeeDelta522
+  # Gitlab GUI variables are not available in services
+  # Only CI variables in the .gitlab-ci.yml file are available
+  # Must reassign with different name
+  MANGOPAY_PASSWORD: $CI_MANGOPAY_PASSWORD
+  MANGOPAY_MTLS_CERT: $CI_MANGOPAY_MTLS_CERT
+  MANGOPAY_MTLS_KEY: $CI_MANGOPAY_MTLS_KEY 
+  # CI_DEBUG_SERVICES: "true" # Toggle logging for job services (like backoffice)
+  # Version of backoffice to use for tests
+  # For release branches, the release-candidate tag is usually used instead
+  BACKOFFICE_VERSION_TAG: main
+
+################################################################################
+# Build-Tag-Push container image
+################################################################################
+
+.build-images:
+  stage: build
+  image: docker:$DOCKER_VERSION
+  interruptible: true
+  variables:
+    AWS_ACCESS_KEY_ID: $GL_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $GL_AWS_SECRET_ACCESS_KEY
+    TAG_PREFIX: build
+    BUILD_IMAGE_TAG: $TAG_PREFIX-$PLATFORM_NAME-$CI_COMMIT_SHORT_SHA
+    FINAL_IMAGE_TAG: $TAG_PREFIX-$CI_COMMIT_SHORT_SHA
+  before_script:
+    - apk update
+    - apk add --no-cache aws-cli
+    - aws --version
+    - docker --version
+    - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $REGISTRY_NAME
+  script:
+    # Check if the image tag already exists
+    - IMAGE_META="$( aws ecr batch-get-image --repository-name=$FRANKENPHP_IMAGE_REPO_NAME --image-ids=imageTag=$BUILD_IMAGE_TAG --query 'images[].imageId.imageTag' --output text )"
+    - if [ $IMAGE_META == $BUILD_IMAGE_TAG ]; then echo "$BUILD_IMAGE_TAG found skipping build"; exit 0; fi;
+    # Pull the latest image as a cache
+    - docker pull $FRANKENPHP_IMAGE_NAME:latest
+    # Build and push to AWS ECR
+    - docker build --target frankenphp_prod --cache-from $FRANKENPHP_IMAGE_REPO_NAME:latest --platform linux/$PLATFORM_NAME --build-arg BASE_FRANKENPHP_TAG=$BASE_FRANKENPHP_TAG -t $FRANKENPHP_IMAGE_NAME:$BUILD_IMAGE_TAG  .
+    - docker push $FRANKENPHP_IMAGE_NAME:$BUILD_IMAGE_TAG
+  rules:
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      variables:
+        TAG_PREFIX: dev
+    - if: '$CI_COMMIT_REF_NAME =~ /^release\S*/'
+      variables:
+        TAG_PREFIX: rc
+    - if: $CI_COMMIT_TAG
+      variables:
+        TAG_PREFIX: release
+        FINAL_IMAGE_TAG: release-$CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
+    
+build-arm64:
+  extends: .build-images
+  tags:
+    - arm
+  variables:
+    PLATFORM_NAME: arm64
+
+build-amd64:
+  extends: .build-images
+  tags:
+    - x86
+  variables:
+    PLATFORM_NAME: amd64
+
+build-manifest:
+  tags:
+    - quick-start
+  extends: .build-images
+  needs:
+    - build-arm64
+    - build-amd64
+  script:
+    - docker manifest create $FRANKENPHP_IMAGE_NAME:$FINAL_IMAGE_TAG --amend $FRANKENPHP_IMAGE_NAME:$TAG_PREFIX-arm64-$CI_COMMIT_SHORT_SHA --amend $FRANKENPHP_IMAGE_NAME:$TAG_PREFIX-amd64-$CI_COMMIT_SHORT_SHA
+    - docker manifest annotate $FRANKENPHP_IMAGE_NAME:$FINAL_IMAGE_TAG $FRANKENPHP_IMAGE_NAME:$TAG_PREFIX-arm64-$CI_COMMIT_SHORT_SHA --arch arm64 --os linux
+    - docker manifest annotate $FRANKENPHP_IMAGE_NAME:$FINAL_IMAGE_TAG $FRANKENPHP_IMAGE_NAME:$TAG_PREFIX-amd64-$CI_COMMIT_SHORT_SHA --arch amd64 --os linux
+    - docker manifest push --purge $FRANKENPHP_IMAGE_NAME:$FINAL_IMAGE_TAG
+
+# build-manifest-main/rc/latest are static tags
+# That are in additional to the regular commit-hash suffixed tags
+build-manifest-main:
+  extends: build-manifest
+  variables:
+    # `TAG_PREFIX`` must be set again as the rules block here overwrites the one in .build-images
+    # So the `TAG_PREFIX` would have been set back to the default `build`
+    TAG_PREFIX: dev
+    FINAL_IMAGE_TAG: main
+  rules:
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+
+build-manifest-rc:
+  extends: build-manifest
+  variables:
+    TAG_PREFIX: rc 
+    FINAL_IMAGE_TAG: release-candidate
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ /^release\S*/'
+
+build-manifest-latest:
+  extends: build-manifest
+  variables:
+    TAG_PREFIX: release
+    FINAL_IMAGE_TAG: latest
+  rules:
+    - if: $CI_COMMIT_TAG
+
+ecr-auth:
+  stage: build
+  tags:
+    - quick-start
+  image:
+    name: amazon/aws-cli
+    entrypoint: [""]
+  variables:
+    AWS_ACCESS_KEY_ID: $GL_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $GL_AWS_SECRET_ACCESS_KEY
+  script:
+    - USER=AWS
+    - TOKEN=$(aws ecr get-login-password --region eu-west-2)
+    - ECR_AUTH=$(echo "$USER:$TOKEN" | base64 | tr -d "\n")
+    # - echo $DOCKER_AUTH_CONFIG
+    - echo "ECR_AUTH=$ECR_AUTH" >> build.env
+  interruptible: true
+  artifacts:
+    expire_in: 12 hours
+    reports:
+      dotenv: build.env
+  except:
+    - tags
+
+################################################################################
+# Tests
+################################################################################
+
+.test-rules:
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    # Don't run if there are no changes to core Symfony files or select config files
+    # Note that if you create a new branch, tests still always run:
+    # https://docs.gitlab.com/ee/ci/yaml/#ruleschanges
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - app/**/*
+        - bin/**/*
+        - config/**/*
+        - src/**/*
+        - templates/**/*
+        - tests/**/*
+        - public/**/*
+        - phpunit.xml.dist
+        - codeception.yml
+        - composer.json
+        - composer.lock
+        - .gitlab-ci.yml
+
+.php:
+  stage: test
+  image: php:$PHP_VERSION-alpine
+  cache:
+    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - vendor/
+  interruptible: true
+  before_script:
+    - echo $CI_COMMIT_REF_NAME
+    - echo $CI_COMMIT_BRANCH
+    # Set the memory limit to 512MB - which seems to be the minimum to not crash during cache clearing
+    - echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/docker-php-mem-limit.ini
+    # Install dependencies
+    # libjpeg-turbo-dev libpng-dev libwebp-dev freetype-dev, these are required for gd
+    # libzip-dev is required to for zip
+    # mariadb-client is required for the codeception tests
+    - apk add --no-cache libjpeg-turbo-dev libpng-dev libwebp-dev freetype-dev libzip-dev mariadb-client
+    # Install php extensions
+    # pdo is required for database access
+    # Note that opcache is a default extension as of PHP 8.5
+    - docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp
+    - docker-php-ext-install bcmath pdo pdo_mysql calendar gd zip > /dev/null
+    - curl --silent --show-error https://getcomposer.org/installer | php
+    # Install symfony dependencies
+    - php composer.phar install --prefer-dist
+    # Configure codeception
+    - php vendor/bin/codecept build
+
+.e2e:
+  extends: .php
+  tags:
+    - autoscale
+  needs:
+    - ecr-auth
+    - build-manifest
+  variables:
+    FF_NETWORK_PER_BUILD: "true"
+    TAG_PREFIX: build
+    FINAL_IMAGE_TAG: $TAG_PREFIX-$CI_COMMIT_SHORT_SHA
+  services:
+    - name: selenium/standalone-chromium:136.0
+      alias: selenium-chrome
+      variables:
+        SCREEN_WIDTH: 1680
+        SCREEN_HEIGHT: 1050
+        SCREEN_DPI: 96
+        SE_NODE_MAX_SESSIONS: 2
+    - name: sj26/mailcatcher:$CI_MAILCATCHER_VERSION
+      alias: mailer
+    - name: mariadb:$MARIADB_VERSION
+      alias: citestdb
+    - name: valkey/valkey:$VALKEY_VERSION
+      alias: valkey
+    - name: $REGISTRY_NAME/yielderverse/backoffice-frankenphp:$BACKOFFICE_VERSION_TAG
+      alias: backoffice
+      variables:
+        SERVER_NAME: ":80"
+        DATABASE_HOST: citestdb
+        DATABASE_URL: "mysql://$MYSQL_USER:$MYSQL_PASSWORD@$DATABASE_HOST:3306/$MYSQL_DATABASE?serverVersion=$MARIADB_VERSION-MariaDB"
+        MYSQL_SSL_VERIFY_SERVER_CERT: false
+        CONTEGO_TRANSACTION_REF: cpd-1
+        MAILER_DSN: "smtp://mailer:1025"
+        APP_FRONTEND_URL: http://front-ci.dev
+        VALKEY_DSN: redis://valkey:6379
+    - name: $FRANKENPHP_IMAGE_NAME:$FINAL_IMAGE_TAG
+      alias: front-ci.dev
+      variables:
+        SERVER_NAME: ":80"
+        API_ENDPOINT_CORE: "http://backoffice"
+        API_ENDPOINT_ACCOUNT: "http://backoffice"
+        MAILCATCHER_URL: "http://mailer:1080" # Not used yet
+        VALKEY_DSN: redis://valkey:6379
+  script:
+    - vendor/bin/codecept run $CODECEPTION_TEST_SUITE --env ci-independent-chrome
+  artifacts:
+    paths:
+      - tests/_output/
+      # - var/log/crowdtek.log
+    when: on_failure
+    expire_in: 3 hrs
+  retry:
+    max: 1
+    when: script_failure
+  rules:
+    # Note that tests will always run on the main branch
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      variables:
+        TAG_PREFIX: dev
+    - if: '$CI_COMMIT_REF_NAME =~ /^release\S*/'
+      variables:
+        TAG_PREFIX: rc
+        BACKOFFICE_VERSION_TAG: release-candidate
+    - !reference [.test-rules, rules]
+
+.e2e-retry-fail:
+  extends: .e2e
+  retry:
+    max: 0
+  script:
+    - vendor/bin/codecept run $CODECEPTION_TEST_SUITE --env ci-independent-chrome || vendor/bin/codecept run -g failed --env ci-independent-chrome
+
+e2e:onboarding:
+  extends: .e2e
+  variables:
+    CODECEPTION_TEST_SUITE: tests/acceptance/commit/001onboarding
+
+e2e:Investments:
+  extends: .e2e
+  resource_group: mangopay-test
+  variables:
+    CODECEPTION_TEST_SUITE: tests/acceptance/commit/002investments
+
+e2e:userOther:
+  extends: .e2e-retry-fail
+  variables:
+    CODECEPTION_TEST_SUITE: tests/acceptance/commit/user-tests/regular-user-tests
+
+e2e:publicPages:
+  extends: .e2e-retry-fail
+  variables:
+    CODECEPTION_TEST_SUITE: tests/acceptance/commit/public-page-testing
+  rules:
+    # Only run public page tests on default branch
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      variables:
+        TAG_PREFIX: dev
+    - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
+      when: never
+
+unit:
+  extends: .php
+  tags:
+    - quick-start
+  stage: test
+  script:
+    - php bin/console cache:clear --env=test
+    - vendor/bin/phpunit
+  interruptible: true
+  rules:
+    - !reference [.test-rules, rules]
+
+# performancetest:
+#   image:
+#     name: loadimpact/k6:latest
+#     entrypoint: [""]
+#   tags:
+#     - autoscale
+#   stage: pageLoadPerformance
+#   script:
+#     - k6 run ./tests/performance/pageload.js
+#     - k6 run ./tests/performance/onboarding.js
+#   allow_failure: true
+#   except:
+#     - tags
+
+# coding-standards:
+#   extends: .php
+#   stage: test
+#   tags:
+#     - autoscale
+#     - arm
+#   script:
+#     - vendor/bin/ecs check | tee tests/_output/cs_report.log
+#   artifacts:
+#     paths:
+#       - tests/_output/
+#     when: on_failure
+#     expire_in: 3 hrs
+#   interruptible: true
+#   allow_failure: true
+#   rules:
+#     - !reference [.test-rules, rules]
+
+################################################################################
+# Deployments
+################################################################################
+
+.ecs-deploy:
+  stage: deploy
+  interruptible: true
+  tags:
+    - deploy
+  # https://github.com/fabfuel/ecs-deploy
+  image: fabfuel/ecs-deploy:1.14.1
+  variables:
+    AWS_ACCESS_KEY_ID: $GL_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $GL_AWS_SECRET_ACCESS_KEY
+    # build- prefixed images are kept for 24 hours (see AWS ECR lifecycle policy)
+    # Note that as we manually create the manifest, there are 3 "images" per build (manifest-index, ARM64, AMD64)
+    # https://eu-west-2.console.aws.amazon.com/ecr/repositories/private/376373716954/yielderverse/frontend-frankenphp/_/lifecycle-policy?region=eu-west-2
+    TAG_PREFIX: build 
+    TAG_TO_DEPLOY: "$TAG_PREFIX-$CI_COMMIT_SHORT_SHA"
+    # Set DEPLOY_TIMEOUT to -1 if you don't want ecs-deploy to wait for ECS steady state
+    DEPLOY_TIMEOUT: 720 
+  before_script:
+    - echo $TAG_TO_DEPLOY
+  script:
+    # Speed up deployments by shutting down containers, deploying, then starting back up
+    # This is for non-prod envs only, prod should let AWS ECS deal with the managed deploy
+    - ecs scale yielderverse-core frontend-$ECS_DEPLOYMENT_ENV 0
+    - sleep 15 # Give an opportunity for any existing tasks to drain
+    - ecs deploy yielderverse-core frontend-$ECS_DEPLOYMENT_ENV --tag $TAG_TO_DEPLOY --task phpfrontend-$ECS_DEPLOYMENT_ENV --timeout $DEPLOY_TIMEOUT
+    - ecs scale yielderverse-core frontend-$ECS_DEPLOYMENT_ENV 1
+  dependencies: [] # Clear any dependencies on earlier jobs and artifacts
+  when: manual
+
+deploy-ecs-dev:
+  extends: .ecs-deploy
+  variables:
+    ECS_DEPLOYMENT_ENV: "dev"
+  rules:
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      when: on_success
+      variables:
+        TAG_PREFIX: dev # There should always be a dev- prefixed image available
+    # Available for manual deployment from other commits (requires you to have manually triggered build jobs)       
+    - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
+      when: manual
+
+deploy-ecs-release-candidate:
+  extends: .ecs-deploy
+  variables:
+    TAG_PREFIX: rc
+    ECS_DEPLOYMENT_ENV: "rc"
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ /^release\S*/'
+      when: on_success
+
+deploy-ecs-staging:
+  extends: .ecs-deploy
+  variables:
+    TAG_PREFIX: rc
+    ECS_DEPLOYMENT_ENV: "staging"
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ /^release\S*/'
+      when: on_success
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      when: manual
+      variables:
+        TAG_PREFIX: dev
+
+deploy-ecs-demo:
+  extends: .ecs-deploy
+  variables:
+    TAG_TO_DEPLOY: "main"
+    ECS_DEPLOYMENT_ENV: "demo"
+  rules:
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      when: manual
+      variables:
+        TAG_PREFIX: dev # Similar to deploy to dev
+
+deploy-ecs-prod-beta:
+  extends: .ecs-deploy
+  script:
+    - ecs deploy yielderverse-core frontend-beta --tag $TAG_TO_DEPLOY --task phpfrontend-beta --timeout $DEPLOY_TIMEOUT --account $AWS_ACCOUNT_ID_PROD --assume-role CI_ECSDeployer
+    # - ecs scale yielderverse-core frontend-beta 1 --account $AWS_ACCOUNT_ID_PROD --assume-role CI_ECSDeployer
+  rules:
+    # Allow manual deploys to prod beta from main branch (might be unstable code)
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      when: manual
+      variables:
+        TAG_TO_DEPLOY: main
+    - if: $CI_COMMIT_TAG
+      when: on_success
+      variables:
+        TAG_TO_DEPLOY: release-$CI_COMMIT_TAG
+
+deploy-ecs-prod-live:
+  extends: .ecs-deploy
+  variables:
+    TAG_TO_DEPLOY: release-$CI_COMMIT_TAG
+  script:
+    - ecs deploy yielderverse-core frontend-prod --tag $TAG_TO_DEPLOY --task phpfrontend-prod --timeout $DEPLOY_TIMEOUT --account $AWS_ACCOUNT_ID_PROD --assume-role CI_ECSDeployer
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual

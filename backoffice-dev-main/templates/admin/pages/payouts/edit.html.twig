@@ -1,0 +1,95 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+	{% if payout.id %}
+		{% set titleText = 'Edit Payout' %}
+	{% else %}
+		{% set titleText = 'Add Retrospective Payout' %}
+	{% endif %}
+{% else %}
+	{% set titleText = 'View Payout' %}
+{% endif %}
+
+{% set backToRoute = 'admin_payout_index' %}
+{% set areaHeading = 'Payouts' %}
+{% set mainHeading = titleText %}
+{% set htmlTitle = titleText %}
+
+{% block page_content %}
+
+	<div class="d-flex flex-wrap gap-2">
+		<a href="{{ path('admin_payout_index') }}" class="btn btn-secondary">Cancel</a>
+		{% if payout.transactionId is not empty %}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "View Transaction",
+					"route": "admin_transactions_mangopay_transfer",
+					"params": {transferId: payout.transactionId},
+					"style": "btn-outline-dark text-nowrap",
+				},
+			}) }}
+		{% endif %}
+	</div>
+
+	{% if payout.id is empty %}
+		{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "new-payout-guidelines",
+        "sectionTitle": "Retrospective Payout Guidelines",
+        "sectionStyle": "border rounded-3 p-3 p-lg-4 border-info",
+        "linkActions": []
+    } %}
+			{% block sectionContent %}
+				<p>When adding a retrospective payout, please consider the following:</p>
+				<ul class="mb-0">
+					<li>Creating a payout here is only for record keeping. It does NOT make an actual payment to the user!</li>
+					<li>Only create payouts this way when a payment has already been made separately, e.g. through Mangopay dashboard</li>
+					<li>Transaction id should be filled with the external mangopay transaction id</li>
+					<li>Payout type:
+						<ul>
+							<li>Dividend: if the payout did NOT involve shares being sold or liquidated, e.g. monthly dividends</li>
+							<li>Divestment: if the payout involved shares being sold or liquidated, e.g. capital repayments, asset exit</li>
+						</ul>
+					</li>
+					<li>Shareholding (depending on the payout type) should reflect:
+						<ul>
+							<li>For Dividends: the basis on which a dividend was paid</li>
+							<li>For Divestments: the number of shares being divested</li>
+						</ul>
+					</li>
+				</ul>
+			{% endblock %}
+		{% endembed %}
+	{% endif %}
+
+	{{ form_start (form, {attr:{'ng-non-bindable': 'ng-non-bindable'}}) }}
+	<div class="nav-tabs-custom ">
+		<ul class="nav nav-tabs">
+			<li class="nav-item">
+				<a class="nav-link active" href="#main" data-bs-toggle="tab">Basic Details</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="main">
+				{{ form_row( form.asset, {attr: {'class': 'searchable'}}
+				) }}
+				{{ form_row( form.creditedUser, {attr: {'class': 'searchable'}}
+				) }}
+				{{ form_row( form.payoutType ) }}
+				{{ form_row( form.dueDate ) }}
+				{{ form_row( form.currency ) }}
+				{{ form_row( form.payoutAmount ) }}
+				{{ form_row( form.shareholding ) }}
+				{{ form_row( form.transactionId ) }}
+				{{ form_row( form.additionalType ) }}
+				{{ form_row( form.investment ) }}
+			</div>
+			{% include 'admin/components/blame-timestamp.html.twig' with {'object': payout} only %}
+
+			{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+				{{ form_widget(form.submit) }}
+				{{ form_end(form) }}
+			{% endif %}
+		</div>
+	</div>
+
+{% endblock page_content %}

@@ -1,0 +1,9 @@
+<span class="d-flex gap-2 align-items-center {{ appendStyle|default("") }}">
+    {% if indicatorPosition|default('left') == 'right' %}
+    <span class="text-nowrap">{{ value }}</span>
+    {% endif %}
+    {{ include('admin/components/_indicator.html.twig', {color: color }) }}
+    {% if indicatorPosition|default('left') == 'left' %}
+    <span class="text-nowrap">{{ value }}</span>
+    {% endif %}
+</span>

@@ -1,0 +1,337 @@
+framework:
+    workflows:
+        payment_order:
+            type: "state_machine"
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: "method"
+                property: "status"
+            supports:
+                - App\Entity\PaymentOrder
+            initial_marking: draft
+            places:
+                - draft
+                - approved
+                - in_progress
+                - completed
+                - closed
+                - abandoned
+            transitions:
+                approve:
+                    from: draft
+                    to: approved
+                request_change:
+                    from: approved
+                    to: draft
+                run:
+                    from: [approved, in_progress]
+                    to: in_progress
+                complete:
+                    from: in_progress
+                    to: completed
+                reopen:
+                    from: closed
+                    to: draft
+                reject:
+                    from: [draft, approved]
+                    to: closed
+                abandon:
+                    from: in_progress
+                    to: abandoned
+        payment_request:
+            type: "state_machine"
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: "method"
+                property: "status"
+            supports:
+                - App\Entity\PaymentRequest
+            initial_marking: pending
+            places:
+                - pending
+                - failed
+                - paid
+            transitions:
+                fail:
+                    from: [pending, failed]
+                    to: failed
+                pay:
+                    from: [pending, failed]
+                    to: paid
+        transfer_order:
+            type: "state_machine"
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: "method"
+                property: "status"
+            supports:
+                - App\Entity\TransferOrder
+            initial_marking: draft
+            places:
+                - draft
+                - approved
+                - in_progress
+                - completed
+                - closed
+                - abandoned
+            transitions:
+                approve:
+                    from: draft
+                    to: approved
+                request_change:
+                    from: approved
+                    to: draft
+                run:
+                    from: [approved, in_progress]
+                    to: in_progress
+                complete:
+                    from: [in_progress, abandoned]
+                    to: completed
+                reopen:
+                    from: closed
+                    to: draft
+                reject:
+                    from: [draft, approved]
+                    to: closed
+                abandon:
+                    from: in_progress
+                    to: abandoned
+        transfer_request:
+            type: "state_machine"
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: "method"
+                property: "status"
+            supports:
+                - App\Entity\TransferRequest
+            initial_marking: pending
+            places:
+                - pending
+                - failed
+                - complete
+            transitions:
+                fail:
+                    from: [pending, failed]
+                    to: failed
+                transfer:
+                    from: [pending, failed]
+                    to: complete
+        bank_account:
+            type: "state_machine"
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: "method"
+                property: "statusAsString"
+            supports:
+                - App\Entity\BankAccount
+            initial_marking: pending
+            places:
+                - pending
+                - validated
+                - approved
+                - active
+                - closed
+                - rejected
+            transitions:
+                validate:
+                    from: pending
+                    to: validated
+                approve:
+                    from: [pending, validated]
+                    to: approved
+                unapprove:
+                    from: [validated, approved]
+                    to: pending
+                enable:
+                    from: approved
+                    to: active
+                disable:
+                    from: [pending, validated, approved, active]
+                    to: closed
+                reopen:
+                    from: [closed, rejected]
+                    to: pending
+                reject:
+                    from: [pending, validated]
+                    to: rejected
+        user:
+            type: "state_machine"
+            supports:
+                - App\Entity\User
+            marking_store:
+                type: "method"
+                property: "lifecycleStatus"
+            places:
+                - email_not_verified
+                - email_verified
+                - registration_complete
+                - approved
+                - blocked
+                - mangopay_registered
+            initial_marking: email_not_verified
+            transitions:
+                email_not_verified_to_email_verified:
+                    from: email_not_verified
+                    to: email_verified
+                email_verified_to_registration_complete:
+                    from: email_verified
+                    to: registration_complete
+                registration_complete_to_approve:
+                    from: registration_complete
+                    to: approved
+                registration_to_block:
+                    from: registration_complete
+                    to: blocked
+                approved_to_block:
+                    from: approved
+                    to: blocked
+                mangopay_registration:
+                    from: approved
+                    to: mangopay_registered
+        asset:
+            type: "state_machine"
+            supports:
+                - App\Entity\Asset
+            marking_store:
+                type: "method"
+                property: "lifecycleStatus"
+            places:
+                - draft
+                - archived
+                - cancelled
+                - submitted
+                - rejected
+                - approved
+                - published
+            initial_marking: draft
+            transitions:
+                draft_to_archival:
+                    from: draft
+                    to: archived
+                draft_to_cancelled:
+                    from: draft
+                    to: cancelled
+                draft_to_submit:
+                    from: draft
+                    to: submitted
+                submit_to_archival:
+                    from: submitted
+                    to: archived
+                submit_to_cancel:
+                    from: submitted
+                    to: cancelled
+                submit_to_reject:
+                    from: submitted
+                    to: rejected
+                submit_to_approve:
+                    from: submitted
+                    to: approved
+                approve_to_archieve:
+                    from: approved
+                    to: archived
+                approve_to_cancel:
+                    from: approved
+                    to: cancelled
+                approve_to_reject:
+                    from: approved
+                    to: rejected
+                approve_to_publish:
+                    from: approved
+                    to: published
+                published_to_cancell:
+                    from: published
+                    to: cancelled
+                published_to_archieve:
+                    from: published
+                    to: archived
+        offering:
+            type: "state_machine"
+            supports:
+                - App\Entity\Offering
+            marking_store:
+                type: "method"
+                property: "lifecycleStatus"
+            places:
+                - draft
+                - archived
+                - cancelled
+                - submitted
+                - rejected
+                - approved
+                - published
+                - closed
+                - settled
+                - restricted
+            initial_marking: draft
+            transitions:
+                submit:
+                    from: draft
+                    to: submitted
+                approve:
+                    from: submitted
+                    to: approved
+                publish:
+                    from: approved
+                    to: published
+                cancel:
+                    from: [draft, submitted, approved, closed, published, restricted]
+                    to: cancelled
+                reject:
+                    from: [submitted, approved]
+                    to: rejected
+                close:
+                    from: published
+                    to: closed
+                publish_restrict:
+                    from: approved
+                    to: restricted
+                unrestrict:
+                    from: restricted
+                    to: published
+                settle:
+                    from: closed
+                    to: settled
+                archive:
+                    from: [draft, submitted, approved]
+                    to: archived
+        investment:
+            type: "state_machine"
+            supports:
+                - App\Entity\Investment
+            marking_store:
+                type: "method"
+                property: "lifecycleStatus"
+            places:
+                - open
+                - rejected
+                - approved
+                - withdrawn
+                - settled
+            initial_marking: open
+            transitions:
+                open_to_rejection:
+                    from: open
+                    to: rejected
+                open_to_approval:
+                    from: open
+                    to: approved
+                open_to_withdrawn:
+                    from: open
+                    to: withdrawn
+                approve_to_rejection:
+                    from: approved
+                    to: rejected
+                reject_to_approval:
+                    from: rejected
+                    to: approved
+                approve_to_withdrawn:
+                    from: approved
+                    to: withdrawn
+                approve_to_settled:
+                    from: approved
+                    to: settled

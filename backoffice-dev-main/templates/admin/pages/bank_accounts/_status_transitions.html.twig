@@ -1,0 +1,83 @@
+{% if additionalParams is not defined %}
+{% set additionalParams = {} %}
+{% endif %}
+
+{% if is_granted('ROLE_FINANCIAL_OPS') %}
+    {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Approve').value) %}
+        {# <a class="btn btn-primary"
+            href="{{ path('admin_bank_account_transition_edit', {
+                id: bankAccount.id, transition: constant('App\\Entity\\Enum\\BankAccountTransition::Approve').value
+            }|merge(additionalParams)) }}">
+            Approve Bank Account
+        </a> #}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Request User Actions",
+                "route": "admin_bank_account_request_action",
+                "params": {id: bankAccount.id},
+                "style": "btn-outline-secondary text-nowrap",
+            },
+        }) }}
+    {% endif %}
+    {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Reject').value) %}
+        {# <a class="btn btn-outline-danger"
+            href="{{ path('admin_bank_account_transition_confirm', {
+                id: bankAccount.id, transition: constant('App\\Entity\\Enum\\BankAccountTransition::Reject').value
+            }|merge(additionalParams)) }}">
+            Reject Bank Account
+        </a> #}
+    {% endif %}
+    {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Enable').value) %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Enable Bank Account",
+                "route": "admin_bank_account_enable",
+                "params": {id: bankAccount.id}|merge(additionalParams),
+                "style": "btn-primary",
+                "dangerous": true,
+                "confirmText": "Enabling requires the user to complete SCA verification via a generated link. Are you sure you want to enable?",
+            },
+        }) }}
+    {% endif %}
+    {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Unapprove').value) 
+        and workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Enable').value) %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Unapprove Bank Account",
+                "route": "admin_bank_account_transition_edit",
+                "params": {
+                    id: bankAccount.id,
+                    transition: constant('App\\Entity\\Enum\\BankAccountTransition::Unapprove').value
+                }|merge(additionalParams),
+                "style": "btn-outline-secondary",
+            },
+        }) }}
+    {% endif %}
+    {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Reopen').value) %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Reopen Bank Account",
+                "route": "admin_bank_account_transition_edit",
+                "params": {
+                    id: bankAccount.id,
+                    transition: constant('App\\Entity\\Enum\\BankAccountTransition::Reopen').value
+                }|merge(additionalParams),
+                "style": "btn-outline-secondary",
+            },
+        }) }}
+    {% endif %}
+    {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Disable').value) 
+        and not workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Reject').value) %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Disable Bank Account",
+                "route": "admin_bank_account_transition_confirm",
+                "params": {
+                    id: bankAccount.id,
+                    transition: constant('App\\Entity\\Enum\\BankAccountTransition::Disable').value
+                }|merge(additionalParams),
+                "style": "btn-danger",
+            },
+        }) }}
+    {% endif %}
+{% endif %}

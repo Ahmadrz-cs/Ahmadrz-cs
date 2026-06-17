@@ -1,0 +1,158 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_income_transfer_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Income Order Template' %}
+{% set mainHeading = transferOrder.asset.name %}
+{% set htmlTitle = 'Income Order Template' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% if transferOrder.transfers is not empty %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Existing transfers will be lost!",
+            message: "This transfer order has existing transfers. Applying a template will overwrite them!",
+        }) }}
+
+    {% endif %}
+
+    <div class="row g-3">
+
+        <div class="col-md-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "default-template",
+                "sectionTitle": "Default",
+                "sectionStyle": "border rounded-3 p-4 h-100 d-flex flex-column",
+                "linkActions": [
+                    {
+                        "text": "Build with Default Template",
+                        "route": "admin_monthend_income_transfer_default",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div>
+                    <h5 class="fw-bold fs-6">This template generates the following transfers:</h5>
+                    <table class="table" id="default-transfers">
+                        <thead>
+                            <tr>
+                                <th>Transfer From</th>
+                                <th>Transfer To</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount (£)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transfer in defaultTemplate.transfers %}
+                                <tr>
+                                    <td data-field="debitWalletId">{{ walletIdMap[transfer.debitWalletId]|capitalize }}</td>
+                                    <td data-field="creditWalletId">{{ walletIdMap[transfer.creditWalletId]|capitalize }}</td>
+                                    <td data-field="description">{{ transfer.description }}</td>
+                                    <td class="text-end tw-tabular-nums" data-field="amount">{{ transfer.amount }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% if previousIncomeTransfer is not null %}
+        
+        <div class="col-md-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "last-month-template",
+                "sectionTitle": "Last Month",
+                "sectionStyle": "border rounded-3 p-4 h-100 d-flex flex-column",
+                "linkActions": [
+                    {
+                        "text": "Copy from Last Month",
+                        "route": "admin_monthend_income_transfer_template_existing",
+                        "params": {
+                            id: transferOrder.id,
+                            existing: previousIncomeTransfer.id,
+                        },
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}            
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Copying from Monthend',
+                        value: previousIncomeTransfer.scheduledFor|date('Y-m'),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Copying from Transfer Order Id',
+                        value: previousIncomeTransfer.id,
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                <div>
+                    <h5 class="fw-bold fs-6">This template generates the following transfers:</h5>
+                    <table class="table" id="last-month-transfers">
+                        <thead>
+                            <tr>
+                                <th>Transfer From</th>
+                                <th>Transfer To</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount (£)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transfer in previousIncomeTransfer.transfers %}
+                                <tr>
+                                    <td data-field="debitWalletId">{{ walletIdMap[transfer.debitWalletId]|capitalize }}</td>
+                                    <td data-field="creditWalletId">{{ walletIdMap[transfer.creditWalletId]|capitalize }}</td>
+                                    <td data-field="description">{{ transfer.description }}</td>
+                                    <td class="text-end tw-tabular-nums" data-field="amount">{{ transfer.amount|number_format(2, '.', ',') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        {% if transferOrder.transfers is empty %}
+
+        <div class="col-md-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "blank-template",
+                "sectionTitle": "Blank",
+                "sectionStyle": "border rounded-3 p-3 p-lg-4 h-100",
+                "linkActions": [
+                    {
+                        "text": "Use Blank Template",
+                        "route": "admin_monthend_income_transfer_manage",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <h5 class="fw-bold">About this option:</h5>
+                <ul>
+                    <li>No transfers will be generate</b></li>
+                    <li>You can add transfers in manually</li>
+                    <li>You can still apply a template later</li>
+                </ul>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+    </div>
+
+{% endblock page_content %}

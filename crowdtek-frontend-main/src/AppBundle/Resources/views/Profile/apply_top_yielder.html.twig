@@ -1,0 +1,178 @@
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Apply For Top Yielder{% endblock %}
+
+
+{% block body %}
+
+ <!-- main body -->
+    <main role="main">
+       {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt=""> My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                    {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+                           
+
+                            <!-- top yielders -->
+                            <div class="tab-pane fade show active" id="topYielders" role="tabpanel"
+                                aria-labelledby="topYielders-tab">
+
+                                <h4 class="mb-2">Apply to become a Top Yielder</h4>
+                                <p class="mb-3">
+                                    Our ‘Top Yielder’ opportunities are larger ticket investment opportunities with
+                                    investment terms of about a year, starting at a £50,000 minimum commitment. They are
+                                    typically development deals which are subject to our strict governance process,
+                                    utilising several measures in order to mitigate any risk associated with the project
+                                    as far as possible.
+                                </p>
+                                 <form name="apply-top-yielder" id="apply-top-yielder" method="post" action="" enctype="multipart/form-data">
+                                         {{form_widget(form._token)}}
+                                    <div class="form-row">
+                                        <div class="form-group col-lg-4">
+                                            <label for="">Proﬁle UID</label>
+                                            <input type="text" class="form-control" id="" value="{{ userInfo.id }}" readonly="true" />
+                                        </div>
+                                        <div class="form-group col-lg-4">
+                                            <label for="">First Name</label>
+                                            <input type="text" class="form-control" id="" value="{{ userInfo.given_name }}" readonly="true">
+                                        </div>
+                                        <div class="form-group col-lg-4">
+                                            <label for="">Last Name</label>
+                                            <input type="text" class="form-control" id=""  value="{{ userInfo.family_name }}" readonly="true">
+                                        </div>
+
+                                    </div>
+                                    <div class="form-row">
+
+                                        <div class="form-group col-md-12">
+                                            <label for="">Please write a short paragraph about why you wish to become a
+                                                Top Yielder</label>
+                                            <div class="text-md text-muted">
+                                                <small id="limitNotice">0</small>
+                                                <small> out of {{maxCharacters}} characters</small>
+                                            </div>
+
+                                            {{ form_widget(form.info.words_of_your_own, {'attr': {'rows': '10', 'maxlength': maxCharacters , 'required': 'true' ,'class': 'form-control','id':'exampleFormControlTextarea1'}}) }}
+                                        
+                                        </div>
+                                    </div>
+                                    <p class="mb-3">
+                                        To onboard you, we need proof of funds of £50,000+ (or equivalent in foreign currency), shown through bank statements dated the past three consecutive months. All documents are held in a GDPR-secure manner.
+                                    </p>
+                                    <div class="custom-file mb-1">
+                                        {{ form_widget(form.POIFile1,{'attr':{'class':'custom-file-input','id':'customFile1'}})}}
+                                        <label class="custom-file-label" for="customFile">Month 1</label>
+                                    </div>
+                                    <div class="custom-file mb-1">
+                                        {{ form_widget(form.POIFile2,{'attr':{'class':'custom-file-input','id':'customFile2'}})}}
+                                        <label class="custom-file-label" for="customFile">Month 2</label>
+                                    </div>
+                                    <div class="custom-file mb-1">
+                                        {{ form_widget(form.POIFile3,{'attr':{'class':'custom-file-input','id':'customFile3'}})}}
+                                        <label class="custom-file-label" for="customFile">Month 3</label>
+                                    </div>
+                                   <div class="mb-3 pt-1">
+                                   <a href="#" class="btn-underline font-medium" id="" data-toggle="modal" data-target="#fundsExampleImage">Example</a>
+                                         </div>
+
+                                    <button type="submit"
+                                        class="btn btn-primary rounded-pill px-2">Submit</button>
+                                </form>
+
+                                {# <a href="#" class="btn-underline font-medium">See example</a> #}
+                                 
+
+                                                    <!-- Modal -->
+                                                    <div class="modal fade y-modal y-form form-box" id="fundsExampleImage" tabindex="-1" role="dialog" aria-labelledby="modalAddFunds">
+                                                        <div class="modal-dialog modal-lg" role="document">
+                                                            <div class="modal-content ">
+                                                                <div class="modal-header border-0">
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                </div>
+                                                                <div class="modal-dialog" style="width: 478px">
+                                                                    <img src="{{ asset('bundles/app/images/online_guide.jpg') }}" loading="lazy" alt="transaction history feed example">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+{% endblock %}
+{% block pagejs %}
+    <script src="{{ asset('bundles/app/js/characterCounter.js') }}"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            // Delete poi file
+            $('#pou-area').on('click', '.delete-pou-file', function (e) {
+                e.preventDefault();
+                var $hiddenField = $('#user_form_type_file_proof_of_funds');
+                return deleteFile($(this), $hiddenField);
+            });
+
+            $('#user_form_type_POIFile1').on('change',function(e){
+                //get the file name
+                var fileName = e.target.files[0].name;
+                
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(fileName);
+            });
+            $('#user_form_type_POIFile2').on('change',function(e){
+                //get the file name
+                var fileName = e.target.files[0].name;
+                
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(fileName);
+            });
+            $('#user_form_type_POIFile3').on('change',function(e){
+                //get the file name
+                var fileName = e.target.files[0].name;
+                
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(fileName);
+            });
+        });
+
+        function s3UploadSingleFile(target) {
+            var $this = $(target),
+                    filename = $this.attr('filename'),
+                    s3_url = $this.attr('s3_url');
+            $this.parent().parent().find('.upload_status').append('<a href="javascript:void(0)" class="delete-pou-file">x Delete</a>');
+            var file_json = {"name": filename, "s3_url": s3_url};
+            var str_json = JSON.stringify(file_json);
+            $('#user_form_type_file_proof_of_funds').val(str_json);
+        }
+
+        function deleteFile(el, $hiddenField) {
+            var $parent = el.parent();
+            var $inputFile = $parent.find('.s3_upload');
+            $inputFile.attr('filename', '');
+            $inputFile.attr('s3_url', '');
+            $hiddenField.val('');
+            $parent.find('.upload_status').hide();
+            el.remove();
+
+            return true;
+        }
+    </script>
+{% endblock %}

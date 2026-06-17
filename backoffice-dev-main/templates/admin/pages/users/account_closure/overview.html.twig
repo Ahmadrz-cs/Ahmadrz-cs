@@ -1,0 +1,129 @@
+{% extends 'admin/layouts/col_2_med_right.html.twig' %}
+
+{% set backToRoute = 'admin_user_edit' %}
+{% set backToRouteParams = {id: user.id} %}
+{% set areaHeading = 'Account Closure' %}
+{% set mainHeading = 'Overview' %}
+{% set htmlTitle = 'Account Closure Overview' %}
+{% set maturityLabel = 'alpha' %}
+
+{% set restrictionToColor = {
+    'soft': 'yellow',
+    'hard': 'red',
+} %}
+
+{% block page_aside %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'closure-restrictions',
+        "sectionTitle": 'Account Closure Restrictions',
+        "linkActions": [
+            {
+                "text": "Toggle Account Block",
+                "route": "admin_user_account_closure_toggle_block",
+                "params": { id: user.id},
+                "style": "btn-outline-secondary",
+            },
+            {
+                "text": "Review Deletion Options",
+                "route": "admin_user_account_closure_retention_level",
+                "params": { id: user.id, retentionLevel: retentionLevel.value},
+                "style": "btn-primary",
+                "render": retentionLevel in [enum('App\\Entity\\Enum\\AccountRetentionLevel').None, enum('App\\Entity\\Enum\\AccountRetentionLevel').Wallet] and not user.enabled
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+
+        {% if user.enabled %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "notice",
+                title: "Block User Before Deleting Data",
+                message: "The data deletion and cleanup tools are disabled until the user has been blocked.",
+            }) }}
+        {% endif %}
+
+        {{ include('admin/pages/users/account_closure/_closure_restrictions.html.twig') }}
+        
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Soft vs Hard Restrictions",
+            message: "Hard restrictions completely prevent account closure. They must be cleared before continuing. Soft restrictions indicate additional data that should and will be retained, either by us, or by 3rd party services like Mangopay. Soft restrictions cannot be cleared.",
+        }) }}
+
+        <div class="table-responsive">
+            <h5 class="fw-bold fs-5">Restrictions for this user</h5>
+            <table class="table" id="restrictions-list">
+                <thead>
+                    <tr>
+                        <th>Restriction</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in restrictions %}
+                        <tr class="tw-text-sm">
+                            <td class="tw-font-mono">{{ r.name }}</td>
+                            <td>{{ r.value }}</td>
+                            <td>
+                                {% set rType = r.hardRestriction ? 'hard' : 'soft' %}
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: restrictionToColor[rType],
+                                    value: rType|capitalize
+                                }) }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr class="tw-text-sm text-center">
+                            <td colspan="3">No Restrictions</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_aside %}
+
+{% block page_main %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'account-info',
+        "sectionTitle": 'Account Information',
+        "linkActions": [
+            {
+                "text": "Configure Custom Username",
+                "route": "admin_user_update_username",
+                "params": { id: user.id},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "View Associated User",
+                "route": "admin_user_dashboard_overview",
+                "params": { id: user.id },
+                "style": "btn-outline-dark",
+            }, 
+        ]
+    } %}
+        {% block sectionContent %}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "notice",
+            title: "Retained Data",
+        } %}
+            {% block message %}
+                <p>The following are always retained if they exist:</p>
+                <ul>
+                    <li>Mangopay User Id</li>
+                    <li>Mangopay Wallet Id</li>
+                    <li>Salesforce Id</li>
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+
+        {{ include('admin/pages/users/account_closure/_account_info.html.twig') }}
+        
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_main %}

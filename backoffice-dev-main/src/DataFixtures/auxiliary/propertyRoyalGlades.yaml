@@ -1,0 +1,85 @@
+# This is Royal Eversea Glades
+# Unique traits - has property photos, fully funded
+# Complement to Royal Way Gardens
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{royalglade} (extends asset_base):
+        name: Royal Eversea Glades - Cambridge
+        alternateName: 14 Eversea Glades - Cambridge
+        briefDescription: Contemporary energy efficient homes. Nearby parks and transport links.
+        pricePerShare: 1.13
+        amountOfShares: 25000
+        companyNumber: SPVAF00013
+        netProjectedYield: '0.0517'
+        netProjectedIncome: '1460'
+        minimumInvestment: '64'
+        createdAt: "<dateTimeBetween('-15 months', '-15 months')>"
+        termStart: "<dateTimeBetween('-12 months', '-12 months')>"
+
+App\Entity\AssetAddress:
+    assetaddress{royalglade} (extends assetaddress_base):
+        address1: Royal Eversea Glades
+        address2: 14 Eversea Glades
+        city: Cambridge
+        postCode: CB2 4EG
+        longitude: 0.118148
+        latitude: 52.169434
+
+App\Entity\AssetMember:
+    assetmember{royalglade} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{royalglade_aoa, royalglade_im}:
+        asset: "@assetroyalglade"
+        document: "@doc<current()>"
+    assetdoc{royalglade_logo}:
+        asset: "@assetroyalglade"
+        document: "@doc<current()>"
+    assetgalleryroyalglade{1}:
+        asset: "@assetroyalglade"
+        document: "@galleryroyalglade<current()>"
+    assetdoc{royalglade_calc}:
+        asset: "@assetroyalglade"
+        document: "@doc<current()>" 
+
+App\Entity\Offering:
+    offering{royalglade} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 5.17
+        grossProjectReturn: 29.82
+        createdAt: "<dateTimeBetween('-14 months', '-14 months')>"
+        openDate: "@asset<current()>->termStart"
+        closeDate: "<dateTimeBetween('+48 months', '+48 months')>"
+
+App\Entity\OfferingDocuments:
+    offeringdoc{royalglade_calc}:
+        offering: "@offeringroyalglade"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{royalglade_aoa} (extends doc_aoa):
+    doc{royalglade_im} (extends doc_im):
+    doc{royalglade_logo} (extends doc_logo):
+        description: "Modern eco-homes in terraced arrangement"
+        filename: "royalwayproperty.jpg"
+    doc{royalglade_calc} (extends doc_calculations):
+    galleryroyalglade{1} (extends doc_property_photo):
+        description: "Example property document"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_start_{royalglade} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Draft)>
+        occuredAt: "@asset<current()>->createdAt"
+    assetstatuslog_acquisition_{royalglade} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Acquiring)>
+        occuredAt: "<dateTimeBetween('-20 days', '-15 days')>"
+    assetstatuslog_retail_{royalglade} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

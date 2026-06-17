@@ -1,0 +1,115 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set areaHeading = 'Wallets' %}
+{% set mainHeading = 'Transactions' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set statusToColor = {
+    'SUCCEEDED': 'green',
+    'CREATED': 'gray',
+    'FAILED': 'red',
+} %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'mangopay-transactions',
+        "sectionTitle": 'All Mangopay transactions',
+    } %}
+        {% block sectionContent %}
+        <div class="row">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Wallet Id',
+                value: walletId,
+            }) }}
+        </div>
+        {{ form_start(form) }}
+            <div class="row">
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.perPage) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.Status) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.Type) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.Nature) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.AfterDate) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.BeforeDate) }}</div>
+            </div>
+            {{ form_rest(form) }}
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+                <a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset to Defaults</a>
+            </div>
+        {{ form_end(form) }}
+        {{ include('admin/components/_mangopay_pagination.html.twig') }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>Nature</th>
+                        <th>Author Id</th>
+                        <th>Credited User Id</th>
+                        <th>Debit Wallet</th>
+                        <th>Credit Wallet</th>
+                        <th>Debited Funds (£)</th>
+                        <th>Credited Funds (£)</th>
+                        <th>Fees (£)</th>
+                        <th>Tag/Description</th>
+                        <th>Creation Date</th>
+                        <th>Execution Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in results %}
+                    <tr>
+                        <td>
+                            {% if transaction.Type == 'TRANSFER' and transaction.Nature == 'REGULAR' %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "View",
+                                        "route": "admin_transactions_mangopay_transfer",
+                                        "params": {transferId: transaction.Id},
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                            {% elseif transaction.Type == 'TRANSFER' and transaction.Nature == 'REFUND' %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "View",
+                                        "route": "admin_transactions_mangopay_refund",
+                                        "params": {refundId: transaction.Id},
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                            {% else %}-
+                            {% endif %}
+                        </td>
+                        <td class="tw-font-mono">{{ transaction.Id }}</td>
+                        <td>
+                            <span class="d-flex gap-2 align-items-center">
+                            {{ include('admin/components/_indicator.html.twig', {color: statusToColor[transaction.Status]|default('gray') }) }}
+                            {{ transaction.Status }}
+                            </span>
+                        </td>
+                        <td>{{ transaction.Type }}</td>
+                        <td>{{ transaction.Nature }}</td>
+                        <td>{{ transaction.AuthorId }}</td>
+                        <td>{{ transaction.CreditedUserId }}</td>
+                        <td>{{ transaction.DebitedWalletId }}</td>
+                        <td>{{ transaction.CreditedWalletId }}</td>
+                        <td>{{ (transaction.DebitedFunds.Amount / 100)|number_format(2, '.', ',') }}</td>
+                        <td>{{ (transaction.CreditedFunds.Amount / 100)|number_format(2, '.', ',') }}</td>
+                        <td>{{ (transaction.Fees.Amount / 100)|number_format(2, '.', ',') }}</td>
+                        <td>{{ transaction.Tag }}</td>
+                        <td>{{ transaction.CreationDate|date() }}</td>
+                        <td>{{ transaction.ExecutionDate ? transaction.ExecutionDate|date() : 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

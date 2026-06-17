@@ -1,0 +1,22 @@
+App\Entity\Offering:
+    offering_base (template):
+        externalCommitments: 0
+        isFeatured: 0
+        isSecondaryMrkt: 1
+        offeringTerm: 5
+        netRentProjected: "<randomFloat(2, 3, 8)>"
+        pricePerShare: 1
+        grossProjectReturn: "<identity($netRentProjected * $offeringTerm * 1.025)>"
+        noOfShares: "<regexify('[5-9]{2}00')>"
+        fundingGoal: "<($pricePerShare * $noOfShares)>"
+        minCommitUser: "<(ceil(100 / $pricePerShare) * $pricePerShare)>"
+        maxCommitUser: "$fundingGoal"
+        category: "<colorName()>"
+        offeringType: "retail"
+        # comments: "<sentence()>"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+        updatedAt: "<dateTimeBetween($createdAt, 'now')>"
+        visibility: 0 # "<numberBetween(0,2)>"
+        lifecyclestatus: "published"
+        createdById: 1
+        createdBy: "@userA1"

@@ -1,0 +1,92 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% set unsettledTotal = unsettledInvestments|default([])|reduce((carry, i) => carry + i.tradeValue, 0) %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main role="main">
+        {% include '@AppBundle/Common/portfoliobanner.html.twig' %}
+
+        <section class="mt-4">
+            {% include '@AppBundle/Common/portfolionav.html.twig' %}
+            <div class="container">
+                <h3 class="mb-2">Trade History</h3>
+                <p>Completed trades in the last 12 months. Includes both buys (investments) and sells (either through the secondary market, the prefunding process, or assets reaching maturity).</p>
+                <p>To view trades older than 12 months, you can configure a CSV export of your trade history.</p>
+                <div class="d-flex justify-content-start">
+                    <a class="btn btn-secondary rounded-pill px-2" href="{{ path('portfolio_trade_history_export') }}">Configure Export</a>
+                </div>
+                <div class="row property-content property-all property-gridview mt-2">
+                    <div class="table-responsive">
+                        <table class="grid-table table table-borderless table-custom font-medium gfg" id="trade-history">
+                            <thead>
+                                <th class="table-custom-hd">Direction</th>
+                                <th class="table-custom-hd">Property Name</th>
+                                <th class="table-custom-hd">Price</th>
+                                <th class="table-custom-hd">Shares</th>
+                                <th class="table-custom-hd">Value</th>
+                                <th class="table-custom-hd">Creation Date</th>
+                                <th class="table-custom-hd">Settlement Date</th>
+                                {# <th class="table-custom-hd">Status</th> #}
+                            </thead>
+                            <tbody>
+                                {% for shareTrade in shareTrades|default([]) %}
+                                    <tr class="mb-1 grid-table-4 border" data-uuid="{{ shareTrade.uuid }}" data-asset-id="{{ shareTrade.assetId }}">
+                                        <td class="table-custom-data grid-order-2 grid-text-left show-label mb-1 mb-lg-0" data-label="Direction">
+                                            <span class="table-custom-value">{{ shareTrade.buyerId == userInfo.id|default(0) ? 'Buy' : 'Sell' }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-1 grid-text-left grid-span-3" data-label="Property Name">
+                                            <span class="table-custom-value">{{ shareTrade.assetName }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-3 grid-text-left show-label mb-1 mb-lg-0" data-label="Share Price">
+                                            <span class="table-custom-value">£{{ shareTrade.pricePerShare|number_format(2, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-4 grid-text-left show-label mb-1 mb-lg-0" data-label="Shares Bought">
+                                            <span class="table-custom-value">{{ shareTrade.numberOfShares|number_format(0, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-5 grid-text-left show-label mb-1 mb-lg-0" data-label="Amount Invested">
+                                            <span class="table-custom-value">£{{ shareTrade.tradeValue|number_format(2, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-6 grid-text-left show-label mb-1 mb-lg-0" data-label="Creation Date">
+                                            <span class="table-custom-value">{{ shareTrade.createdAt ? shareTrade.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-7 grid-text-left show-label mb-1 mb-lg-0" data-label="Settlement Date">
+                                            <span class="table-custom-value">{{ shareTrade.statusOccuredAt ? shareTrade.statusOccuredAt|date('Y-m-d H:i:s') : 'N/A' }}</span>
+                                        </td>
+                                        {# <td class="table-custom-data grid-order-5 grid-text-left show-label mb-1 mb-lg-0" data-label="Status">
+                                            <span class="table-custom-value">{{ shareTrade.status.value|capitalize }}</span>
+                                        </td> #}
+                                    </tr>
+                                {% else %}
+                                    <tr class="text-center">
+                                        <td colspan="7">No trades in the last 12 months</td>
+                                    </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock %}

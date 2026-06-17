@@ -1,0 +1,13 @@
+include:
+    - ../templates/baseTransaction.yaml
+
+App\Entity\Transaction:
+    transaction_{1..10} (extends transaction_base):
+    transaction_treasury{1..5} (extends transaction_base):
+        creditResourceId: "wlt_m_01HW3DKQ6D3Y5Z2AM717NBZD6V"
+    transaction_created{1..8} (extends transaction_base):
+        paymentStatus: "CREATED"
+        creditResourceId: "<randomElement(['wlt_m_01HW3DKQ6D3Y5Z2AM717NBZD6V', 'wlt_m_01HW3DJDVMWE4RBH8J1Z5359PK', 'wlt_m_01HW3DD8S6MFPYGVC0FPBHXAF2'])>"
+    transaction_failed{1..3} (extends transaction_base):
+        paymentStatus: "FAILED"
+    

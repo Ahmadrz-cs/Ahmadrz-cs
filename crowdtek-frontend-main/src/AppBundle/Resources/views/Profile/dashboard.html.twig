@@ -1,0 +1,161 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}My Profile
+{% endblock %}
+
+
+{% block body %}
+
+    <!-- main body -->
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div
+                            class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+                            <!-- dasbhoard -->
+                            <div class="tab-pane fade show active">
+                                <h4 class="sr-only">Profile Dashboard</h4>
+
+                                <div class="row">
+                                    {% if needsCheckup %}
+                                        <div class="col-lg-12 mb-3">
+                                            <div class="card p-3 border rounded text-center" id="checkup-prompt">
+                                                <div><span class="badge badge-warning ml-1 ml-lg-0 mb-1">Pending Action</span></div>
+                                                <h4 class="mb-2">Please update your investor profile</h4>
+                                                <p>As part of our regulatory requirements, we need to ensure our products are still suitable for you. You will not be able to invest until your investor profile has been updated.</p>
+                                                <form name="form" method="post" action={{ path('checkup_index') }}>
+                                                    <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                                                        <button type="submit" id="form_submit" name="form[submit]" class="btn btn-primary rounded-pill px-1 px-sm-2 ">Update Now</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if needsVerification %}
+                                        {{ include('@AppBundle/Common/_id_verification_prompt.html.twig') }}
+                                    {% endif %}
+
+                                    {% if canScaEnroll ?? false %}
+                                        {{ include('@AppBundle/Common/_sca_enrollment_prompt.html.twig', {restrictedAction: "start investing"}) }}
+                                    {% endif %}
+
+                                    <div class="col-lg-12 mb-3">
+                                        <div class="card p-3 border-0 bg-info rounded-0 shadow-sm" id="my-wallet">
+                                            <h6 class="mb-2">My Wallet</h6>
+                                            <p class="mb-3 text-sm">
+                                            Here you can view the total of your funds, including any funds added, dividends received and funds withdrawn.
+                                            </p>
+                                            {% if hasUserInfo and userInfo.mangopay_wallet_id %}
+                                                
+                                                {% if hasUserInfo and userInfo.mangopay_wallet_id
+                                                    and userInfo.sca_status == "active"
+                                                    and scaRequired is not null
+                                                    and scaRequired == false
+                                                %}
+                                                    <p class="h3 text-center mb-3">£{{ app.session.get('balance')|default('0.00')|replace({' ':','})|number_format(2, '.', ',') }}</p>
+                                                {% else %}
+                                                    {% if not canScaEnroll %}
+                                                        {{ include('@AppBundle/Common/_sca_wallet_verification_prompt.html.twig') }}
+                                                    {% else %}
+                                                        {{ include('@AppBundle/Common/_sca_enrollment_prompt.html.twig', {
+                                                            restrictedAction: "access your wallet",
+                                                            truncated: true,
+                                                        }) }}
+                                                    {% endif %}
+                                                {% endif %}
+                                                <div class="d-flex justify-content-center mb-2">
+                                                    <a href="{{ path('add_fund_new') }}" class="btn btn-primary rounded-pill px-2 mr-2">Add Funds</a>
+                                                    {# <a href="{{ path('direct_debit_summary') }}" class="btn btn-primary rounded-pill px-2">Direct Debit</a> #}
+                                                    <a href="{{ path('withdraw_funds') }}" class="btn btn-light rounded-pill px-2">Withdraw Funds</a>
+                                                </div>
+                                                <div class="text-right">
+                                                    <a href="{{ path('transactions_list') }}" class="btn-underline font-medium">View transactions</a>
+                                                </div>
+                                            {% else %}
+                                                <p class="mb-3 text-center">Your wallet has not been setup yet. Please complete onboarding or contact us for assistance.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {# {% if userInfo.is_vip|default() %}
+                                    <div class="col-lg-12 mb-3">
+                                    {% else %}
+                                    <div class="col-lg-6 mb-3">
+                                    {% endif %}
+                                        <div class="card p-3 border-0 bg-info rounded-0 shadow-sm">
+                                            <h6 class="mb-2">Refer your friends</h6>
+                                            <p class="mb-1 text-sm">You can now refer people from your network, subject to meeting certain criteria. We have a competitive compensation structure. Enquire now not to miss out.
+                                            </p>
+                                            <div class="mb-3">
+                                                <a href="{{ asset('bundles/app/docs/Yielders_Referral_Program.pdf')}}" class="btn-underline font-medium text-sm
+                                                                                                            ">Learn more</a>
+                                            </div>
+                                            <div class="d-flex justify-content-center">
+
+                                                <a href="#" class="btn btn-primary rounded-pill px-2 mr-2" data-toggle="modal" data-target="#referral-info" id="refer-a-friend">Generate Link</a>
+                                            </div>
+
+                                        </div>
+                                    </div> #}
+                                    {% if userInfo.is_vip|default() %}
+                                    {% else %}
+                                    <div class="col-lg-6 mb-3">
+                                        <div class="card p-3 border-0 bg-info rounded-0 shadow-sm">
+                                            <h6 class="mb-2">Apply to become a Top Yielder</h6>
+                                            <p class="mb-1 text-sm">Top Yielder investments are larger ticket investments, starting at £50,000. These are typically development deals, aiming to maximise returns.
+                                            </p>
+                                            <div class="mb-3">
+                                                <a href="http://help.yielders.co.uk/en/articles/3436148-top-yielder" class="btn-underline font-medium text-sm
+                                                                                                                ">Learn more</a>
+                                            </div>
+                                            <div class="d-flex justify-content-center">
+                                                <a href="{{ path('apply-top-yielder') }}" class="btn btn-primary rounded-pill px-2 mr-2">Apply</a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+{% endblock %}
+{% block pagejs %}
+{% endblock %}

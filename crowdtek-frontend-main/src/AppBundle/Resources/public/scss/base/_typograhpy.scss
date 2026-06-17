@@ -1,0 +1,42 @@
+ body, p {
+   color: $black;
+ }
+ a {
+    text-decoration: none;    
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: $font-heading;
+  color: $black;
+}
+
+h1, .h1 {
+  @include media('<tablet') {
+    font-size: 2.5rem;
+  }
+}
+
+
+.font-light {
+  font-family: $font-body;
+}
+.font-medium {
+  font-family: $font-heading;
+}
+
+.text-md { 
+  font-size: $font-size-base - 0.125rem;
+  line-height: 1.7;
+}
+.text-sm { 
+  font-size: $font-size-base - 0.25rem;
+}
+p small {
+  font-size: $font-size-base - 0.375rem;
+}
+
+.text-white-87 { color: $text-white-87; }
+.text-dark-87 { color: $text-dark-87; }

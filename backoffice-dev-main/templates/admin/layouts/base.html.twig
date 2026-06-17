@@ -1,0 +1,72 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set tw_assetStatusColor = {
+    'cancelled': 'red',
+    'draft': 'gray',
+    'archived': 'gray',
+    'active': 'green',
+    'acquiring': 'yellow',
+    'closing': 'yellow',
+} %}
+
+{% set tw_tradeOrderStatusColor = {
+    'draft': 'gray',
+    'submitted': 'yellow',
+    'active': 'blue',
+    'completed': 'green',
+	'suspended': 'fuchsia',
+	'cancelled': 'red',
+} %}
+
+{% set tw_shareTradeStatusColor = {
+    'draft': 'gray',
+    'reserved': 'yellow',
+    'unsettled': 'blue',
+    'settled': 'green',
+	'suspended': 'fuchsia',
+	'cancelled': 'red',
+} %}
+
+{% set tw_tradingStatusColor = {
+    'Buy Only': 'yellow',
+    'Sell Only': 'yellow',
+    'Open': 'green',
+    'Closed': 'red',
+} %}
+
+{% set tw_userStatusColor = {
+    'pending': 'gray',
+    'active': 'green',
+    'suspended': 'yellow',
+    'closed': 'red',
+} %}
+
+{% set tw_userLifecycleColor = {
+    'email_not_verified': 'gray',
+	'email_verified': 'gray',
+	'registration_complete': 'yellow',
+    'approved': 'green',
+    'blocked': 'red',
+} %}
+
+{% block app_content %}
+	<div class="app-grid">
+		<header class="top-nav">
+			{% block top_nav %}
+				{{ include('admin/components/navbar.html.twig') }}
+			{% endblock top_nav %}
+		</header>
+		<div class="app-main d-grid tw-auto-rows-min">
+			{% block page_common %}
+				{{ include('admin/components/header.html.twig') }}
+				{{ include('admin/components/flash_message.html.twig') }}
+			{% endblock page_common %}
+			{% block page_layout %}{% endblock page_layout %}
+		</div>
+		<footer class="app-footer">
+			{% block footer %}
+				{{ include('admin/components/footer.html.twig') }}
+			{% endblock footer %}
+		</footer>
+	</div>
+{% endblock app_content %}

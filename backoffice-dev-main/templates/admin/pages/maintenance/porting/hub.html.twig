@@ -1,0 +1,157 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Trade System Porting Tools' %}
+{% set mainHeading = 'Porting Hub' %}
+{% set maturityLabel = 'alpha' %}
+
+{% set menuLinks = [
+    {
+        "groupName": "Core Trading",
+        "linkDefinitions": [
+            {
+                route: 'admin_trade_system_port_offerings',
+                text: 'Trade System Offerings Porter',
+            },
+            {
+                route: 'admin_trade_system_port_investments',
+                text: 'Trade System Investments Porter',
+            },
+        ]
+    },
+    {
+        "groupName": "Exits and Repayments",
+        "linkDefinitions": [
+            {
+                route: 'admin_trade_system_port_repayments',
+                text: 'Trade System Repayments Porter',
+            },
+            {
+                route: 'admin_trade_system_port_divestments',
+                text: 'Trade System Divestments Porter',
+            },
+        ]
+    },
+    {
+        "groupName": "Misc",
+        "linkDefinitions": [
+            {
+                route: 'admin_trade_system_port_settlements',
+                text: 'Trade System Settlements Porter',
+            },
+            {
+                route: 'admin_trade_system_port_offering_documents',
+                text: 'Trade System Offering Documents Porter',
+            },
+        ]
+    },
+] %}
+
+{% set viewLinks = [
+    {
+        "groupName": "CMS List Views",
+        "linkDefinitions": [
+            {
+                route: 'admin_trade_order_index',
+                text: 'Trade Orders',
+            },
+            {
+                route: 'admin_share_trade_index',
+                text: 'Trades',
+            },
+        ]
+    },
+    {
+        "groupName": "Aggregate Views",
+        "linkDefinitions": [
+            {
+                route: 'admin_administration_shares_circulation',
+                text: 'Asset Shares Tracker',
+            },
+        ]
+    },
+    {
+        "groupName": "Comparisons",
+        "linkDefinitions": [
+            {
+                route: 'admin_offering_index',
+                params: {compare: true},
+                text: 'Compare Offerings',
+            },
+            {
+                route: 'admin_investment_index',
+                params: {compare: true},
+                text: 'Compare Investments',
+            },
+            {
+                route: 'admin_offeringdocument_index',
+                params: {compare: true},
+                text: 'Compare Offering Documents',
+            },
+        ]
+    },
+] %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "porting-tools",
+        "sectionTitle": "Porting Tools",
+    } %}
+        {% block sectionContent %}
+            {% embed 'admin/components/_alert.html.twig' with {
+                variant: "info",
+                title: "Required Porting Order",
+            } %}
+                {% block message %}
+                    <p>The core trading records must be ported first, after which the porting of other records can be done in any order. Therefore the porting order must be the following:</p>
+                    <ul class="my-2">
+                        <li>Offerings</li>
+                        <li>Investments</li>
+                        <li>Everything else</li>
+                    </ul>
+                    <p>It is recommended to complete repayments before divestments. While the actual createdAt dates are set accordingly anyway, the ID ordering may be strange if done out of order.</p>
+                {% endblock message %}
+            {% endembed %}
+            {{ include('admin/components/' ~ template|default('_vertical_nav') ~'.html.twig', {
+                navId: 'portingToolsNav',
+                toggleText: 'Porting Tools',
+                links: menuLinks,
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "trade-system-views",
+        "sectionTitle": "Trade System Views",
+    } %}
+        {% block sectionContent %}
+
+            {{ include('admin/components/' ~ template|default('_vertical_nav') ~'.html.twig', {
+                navId: 'tradeSystemViewsNav',
+                toggleText: 'Trade System Views',
+                links: viewLinks,
+            }) }}
+
+            {% embed 'admin/components/_alert.html.twig' with {
+                variant: "info",
+                title: "Additional Views",
+            } %}
+                {% block message %}
+                    <ul>
+                        <li>User Dashboard Portfolio</li>
+                        <li>Asset Shareholders</li>
+                    </ul>
+                {% endblock message %}
+            {% endembed %}
+
+            {# {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                title: "Additional Views",
+                message: "If a buy order has not been found, one will be created",
+            }) }} #}
+
+        {% endblock %}
+
+    {% endembed %}
+
+{% endblock page_content %}

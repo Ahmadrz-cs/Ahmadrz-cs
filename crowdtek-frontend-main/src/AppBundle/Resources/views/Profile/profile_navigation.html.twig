@@ -1,0 +1,28 @@
+<div class="submenu-block white">
+    <div class="container">
+        <div class="top-logo">
+            <div class="sub-logo">
+                <div class="logo">
+                    <a href="/"><img src="{{ asset('bundles/app/images/yielders-logo.png') }}" loading="lazy" alt="logo" class="img-responsive"/></a>
+                </div>
+            </div>
+            <span class="fa fa-close"></span>
+        </div>
+        <ul class="list-inline">
+            <li class="{% if active|default() == 'profile' %}active{% endif %}"><a href="{{ path('profile') }}">Profile</a></li>
+            <li class="{% if active|default() == 'password-security' %}active{% endif %}"><a href="{{ path('password_security') }}">Password & Security</a></li>
+            <li class="{% if active|default() == 'registration-compliance' %}active{% endif %}">
+                <a href="{{ path('Onboarding') }}">Registration & Compliance
+                    {# % if userInfo.has_been_approved|default() and userInfo.registration_complete|default() and app.session.get('wallet_id')|default() %}
+                        Registration & Compliance
+                    {% else %}
+                        Registration & Compliance
+                    {% endif % #}
+                </a>
+            </li>
+            <li class="{% if active|default() == 'wallet' %}active{% endif %}"><a href="{{ path('wallet') }}">Wallet</a></li>
+            <li class="{% if active|default() == 'apply-top-yielder' %}active{% endif %}"><a href="{{ path('apply-top-yielder') }}">Top Yielder Application</a></li>
+            <li class="mob-show"> <a href="{{ path('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,77 @@
+{# {% extends 'admin/layouts/trading_hub.html.twig' %} #}
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set baseTemplate = 'col_2_med_left' %}
+{% set contentContainer = 'tw-max-w-5xl' %}
+{# {% set baseTemplate = 'col_1' %} #}
+
+{% set areaHeading = 'Trading' %}
+{% set mainHeading = 'Pending Sell Orders' %}
+
+{% block page_content %}
+
+    {# {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        title: "Guidelines for Processing Secondary Market Sell Orders",
+        message: "Sell orders in 'Draft' state should usually be cancelled. Most commonly caused by relistings where the relisting fee could not be successfully taken.
+        Sell orders in 'Submitted' state should usually accepted (activated) but can be rejected (cancelled) if it's a mistake or the user requests it",
+    }) }} #}
+
+    <section class="d-flex flex-wrap gap-2">
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "View All Relistings",
+                "route": "admin_trade_order_index",
+                "params": { 
+                    direction: [enum('App\\Entity\\Enum\\TradeDirection').Sell.value],
+                    type: [
+                        enum('App\\Entity\\Enum\\TradeOrderType').Market.value,
+                        enum('App\\Entity\\Enum\\TradeOrderType').Limit.value,
+                        enum('App\\Entity\\Enum\\TradeOrderType').StopLoss.value,
+                    ],
+                },
+                "style": "btn-outline-dark",
+            },
+        }) }}
+    </section>
+
+    {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+        list: tradeOrders,
+    }) }}
+
+    {# <div class="tw-grid tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-3" id="pending-sell-orders"> #}
+    {# <div class="tw-grid tw-gap-6 2xl:tw-grid-cols-2" id="pending-sell-orders"> #}
+    <div class="tw-grid tw-gap-6" id="pending-sell-orders">
+        {% for sellOrder in tradeOrders %}
+            {{ include('admin/components/trade_orders/_sell_card.html.twig', {
+                layout: "wide",
+                order: sellOrder,
+                linkActions: [
+                    {
+                        "text": "Publish",
+                        "route": "admin_trade_order_status_log_create_quick",
+                        "params": { 
+                            id: sellOrder.id,
+                            status: enum('App\\Entity\\Enum\\TradeOrderStatus').Active.value,
+                            redirectRoute: app.request.attributes.get('_route'),
+                        },
+                        "style": "tw-bg-green-100 hover:tw-bg-green-200 focus:tw-bg-green-200 focus-visible:tw-bg-green-200 active:!tw-bg-green-300 active:!tw-border-green-300",
+                        "iconStart": "fa-check",
+                    },
+                    {
+                        "text": "Cancel",
+                        "route": "admin_trade_order_status_log_create_quick",
+                        "params": {
+                            id: sellOrder.id,
+                            status: enum('App\\Entity\\Enum\\TradeOrderStatus').Cancelled.value,
+                            redirectRoute: app.request.attributes.get('_route'),
+                        },
+                        "style": "tw-bg-red-100 hover:tw-bg-red-200 focus:tw-bg-red-200 focus-visible:tw-bg-red-200 active:!tw-bg-red-300 active:!tw-border-red-300",
+                        "iconStart": "fa-times",
+                    },
+                ]
+            }) }}
+        {% endfor %}
+    </div>
+
+{% endblock page_content %}

@@ -1,0 +1,144 @@
+
+.rounded-medium { border-radius: 20px; }
+
+.bg-greymedium { background-color: $grey-medium; }
+.bg-greydark { background-color: $grey-dark; }
+.bg-teal { background-color: $primary; }
+
+.layer-z-1 { z-index: 1;}
+
+.bg-fixed { background-attachment: fixed !important; }
+
+.broder-greymedium { border-color: #979797; }
+
+.icon {
+    height: 100px;
+}
+
+
+.w-lg-auto {
+    @include media('>tablet') {
+        width: auto !important;
+    }
+}
+
+.card {
+    &:focus {
+        outline: none;
+    }
+}
+
+.info-kicker {
+    @extend .d-inline-block;
+    @extend .position-relative;
+    top: -20px;
+
+    &-link {
+        background: $primary;
+        color: $white;
+        height: 15px;
+        width: 15px;
+        border-radius: 50%;
+        font-size: 11px;
+        @extend .d-inline-block;
+        @extend .text-center;
+        margin-top: -10px;
+    }
+
+    &:hover {
+        .speech-bubble {
+            display: block;
+            animation: speech-bubble 0.3s ease;
+        }
+    }
+}
+
+
+@keyframes speech-bubble {
+    from {
+        transform: translateY(20px);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+// speech bubble
+.speech-bubble {
+    @extend .bg-light;
+    @extend .text-md;
+    @extend .position-absolute;
+    box-shadow: 10px 0px 35px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    right: 32px;
+    display: none;
+    position: relative;        
+    border-radius: .4em;
+    z-index: 99;  
+    top: -7px;
+
+    @include media('>desktop') {   
+        box-shadow: -5px 0px 35px rgba(0, 0, 0, 0.2);     
+        width:300px;
+        left: 32px;  
+    }
+}
+
+.speech-bubble:after {
+    right: -26px;
+    border-right: 0;
+    border: 13px solid transparent;
+    border-left-color: #f7f7f7;
+    content: '';
+    position: absolute;
+    top: 28px;
+    width: 0;
+    height: 0;
+    margin-top: -22px;
+    margin-left: -12px;
+
+    @include media('>desktop') {        
+        left: 0;   
+        border-right-color: #f7f7f7;
+        border-left: 0;
+    }
+}
+
+// position
+.right-0 {
+    right: 0;
+}
+.left-0 {
+    left: 0;
+}
+
+.input-group-custom {
+    .input-group-text, .form-control {
+        border-radius: 25px;
+    }
+}
+
+.line-height-sm {
+    line-height: 1;
+     
+    @include media('>desktop') {
+        line-height: 0.9;
+    }
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: transparent;
+}
+.table-striped tbody tr:nth-of-type(even) {
+    background-color:$light;
+}
+
+.icon-addminus {
+    height: 18px;
+   
+}
+.investbox .investbox__input .fa {
+    opacity: 0.6;
+    
+    &:hover {
+        opacity: 1;
+    }
+}

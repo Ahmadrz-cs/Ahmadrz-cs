@@ -1,0 +1,256 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set mainHeading = 'Dashboard' %}
+
+{% block dashboard_content %}
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ path('admin_user_index') }}" class="btn btn-outline-dark">Go to Users List</a>
+    </div>
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'kyc-onboarding',
+        "sectionTitle": 'Onboarding',
+        "linkActions": [
+            {
+                "text": "See All Pending Reviews",
+                "route": "admin_kyc_onboarding",
+                "params": {},
+                "style": "btn-outline-primary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: "Pending Manual Review",
+                value: usersToManuallyReview|length,
+                className: "col-sm-6",
+            }) }}
+                {{ include('admin/components/stat.html.twig', {
+                key: "Registered and missing KYC Profile",
+                value: usersWithoutKycProfile|length,
+                className: "col-sm-6",
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Up to 2 pending reviews are shown here. For a full list, go to the onboarding dashboard.",
+        }) }}
+        <div class="table-responsive">
+            <table class="table table-striped" id="kyc-onboarding-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>User Id</th>
+                        <th>Name</th>
+                        <th>Contact Email</th>
+                        <th>Created At</th>
+                        <th>Last Login</th>
+                        <th>User Type</th>
+                        <th>KYC Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in usersToManuallyReview|slice(0,2) %}
+                    <tr data-object-id="{{ user.id }}">
+                        <td><a class="btn btn-outline-primary" href="{{ path('admin_kyc_onboarding_review', { id: user.id }) }}">Review</a></td>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            <a href="{{ path('admin_user_dashboard_overview', { id: user.id }) }}">{{ user.fullname }}</a>
+                        </td>
+                        <td title="Username: {{ user.username }}">{{ user.email }}</td>
+                        <td>{{ user.createdAt ? user.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ user.lastLogin ? user.lastLogin|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ user.investor.corporateInvestor ? 'Organisation' : 'Individual' }}</td>
+                        <td>{{ user.kycProfile.lastReviewedAt is empty
+                                ? 'Unknown'
+                                : user.kycProfile.verified ? 'Verified' : 'Failed' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'kyc-vip',
+        "sectionTitle": 'Top Yielders',
+        "linkActions": [
+            {
+                "text": "See All Applications",
+                "route": "admin_kyc_vip",
+                "params": {},
+                "style": "btn-outline-primary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: "Top Yielder Applications",
+                value: topYielderApplications|length,
+                className: "col-sm-6",
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Up to 2 pending reviews are shown here. For a full list, go to the vip dashboard.",
+        }) }}
+        <div class="table-responsive">
+            <table class="table table-striped" id="kyc-vip-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>User Id</th>
+                        <th>Name</th>
+                        <th>Contact Email</th>
+                        <th>Created At</th>
+                        <th>Last Login</th>
+                        <th>User Type</th>
+                        <th>KYC Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in topYielderApplications|slice(0,2) %}
+                    <tr data-object-id="{{ user.id }}">
+                        <td><a class="btn btn-outline-primary" href="{{ path('admin_kyc_vip_review', { id: user.id }) }}">Review</a></td>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            <a href="{{ path('admin_user_dashboard_overview', { id: user.id }) }}">{{ user.fullname }}</a>
+                        </td>
+                        <td title="Username: {{ user.username }}">{{ user.email }}</td>
+                        <td>{{ user.createdAt ? user.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ user.lastLogin ? user.lastLogin|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ user.investor.corporateInvestor ? 'Organisation' : 'Individual' }}</td>
+                        <td>{{ user.kycProfile.lastReviewedAt is empty
+                                ? 'Unknown'
+                                : user.kycProfile.verified ? 'Verified' : 'Failed' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'recent-kyc-reviews',
+        "sectionTitle": 'Recent Completed KYC Reviews',
+        "linkActions": [
+            {
+                "text": "See All KYC Reviews",
+                "route": "admin_kyc_review_index",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="table-responsive">
+            <table class="table" id="kyc-reviews-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Subject</th>
+                        <th>Review Type</th>
+                        <th>Reviewed By</th>
+                        <th>Decision</th>
+                        <th>Status</th>
+                        <th>Completed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in recentKycReviews %}
+                        <tr data-object-id="{{ review.id }}">
+                            <td>
+                                <a class="btn btn-outline-primary mt-1" href="{{ path('admin_kyc_review_view', { id: review.id }) }}">View</a>
+                            </td>
+                            <td>{{ review.id }}</td>
+                            <td>
+                                <a class="ms-2" href="{{ path('admin_user_edit', { id: review.subject.id }) }}">{{ review.subject.username }}</a>
+                            </td>
+                            <td>{{ review.reviewType.value|capitalize }}</td>
+                            <td>{{ review.decision is null ? 'Pending Review' : review.reviewedBy.userIdentifier|default('System') }}</td>
+                            <td>{{ review.decision is null ? 'No Decision' : review.decision ? 'Pass' : 'Fail' }}</td>
+                            <td>{{ review.status.value|capitalize }}</td>
+                            <td>{{ review.completedAt ? review.completedAt|date("Y-m-d H:i:s") : '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'recent-kyc-reports',
+        "sectionTitle": 'Recent KYC Reports',
+        "linkActions": [
+            {
+                "text": "See All KYC Reports",
+                "route": "admin_kyc_report_index",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "See All Contego Logs",
+                "route": "admin_contegolog_index",
+                "params": {},
+                "style": "btn-outline-secondary",
+            },
+            {
+                "text": "See Refused Mangopay KYC Docs",
+                "route": "admin_kyc_mangopay_docs",
+                "params": {
+                    "filters": { "Status": "REFUSED" }
+                },
+                "style": "btn-outline-secondary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="table-responsive">
+            <table class="table" id="kyc-reports-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Subject</th>
+                        <th>Outcome</th>
+                        <th>KYC Provider</th>
+                        <th>Reference Id</th>
+                        <th>Check Type</th>
+                        <th>Result</th>
+                        <th>Score</th>
+                        <th>Checked At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in recentKycReports %}
+                        <tr data-object-id="{{ report.id }}">
+                            <td>
+                                <a class="btn btn-outline-primary mt-1" href="{{ path('admin_kyc_report_view', { id: report.id }) }}">View</a>
+                            </td>
+                            <td>{{ report.id }}</td>
+                            <td>
+                                <a class="ms-2" href="{{ path('admin_user_edit', { id: report.subject.id }) }}">{{ report.subject.username }}</a>
+                            </td>
+                            <td>{{ report.verified ? 'Verified' : 'Failed' }}</td>
+                            <td>{{ report.providerName }}</td>
+                            <td>{{ report.providerReferenceId }}</td>
+                            <td>{{ report.checkType }}</td>
+                            <td>{{ report.result }}</td>
+                            <td>{{ report.score }}</td>
+                            <td>{{ report.checkedAt|date("Y-m-d") }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

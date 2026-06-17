@@ -1,0 +1,103 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_profile_index' %}
+{% set areaHeading = 'Profile' %}
+{% set mainHeading = 'Two Factor Authentication' %}
+
+{% block page_content %}
+
+	<section class="row g-3">
+
+		<div class="col-md-6" id="mfa-email">
+			<h4 id="mfa-email-state">
+				Email 2FA: <b>{% if not mfaConfig.email %}Not-{% endif %}Enabled</b>
+				{% if not mfaPreference %}
+					<span class="badge text-bg-secondary">Default</span>
+				{% endif %}
+				{% if mfaPreference == "email" %}
+					<span class="badge text-bg-primary">Preferred</span>
+				{% endif %}
+			</h4>
+			{% if not mfaConfig.email %}
+				<p>Turn on Email 2FA: when you log in, you will be sent a 6-digit auth-code by email</p>
+				<a href="{{ path('admin_profile_mfa_setup_email') }}" class="btn btn-success" id="mfa-setup-email">Enable Email 2FA</a>
+			{% else %}
+				<p>If App-code 2FA is not enabled, you will be sent a 6-digit auth-code by email on login</p>
+				<a class="btn btn-danger" href="" id="mfa-email-disable" data-bs-toggle="modal" data-bs-target="#disable-email-modal">Turn Off Email 2FA</a>
+			{% endif %}
+			{% if mfaPreference != "email" %}
+				<a href="{{ path('admin_profile_mfa_preference', {'factor': 'email'}) }}" class="btn btn-light" id="mfa-prefer-email">Set As Preferred</a>
+			{% endif %}
+		</div>
+
+		<div class="col-md-6" id="mfa-totp">
+			<h4 id="mfa-totp-state">
+				App-code (TOTP) 2FA:<b>{% if not mfaConfig.totp %}Not-{% endif %}Enabled</b>
+				{% if mfaPreference == "totp" %}
+					<span class="badge text-bg-primary">Preferred</span>
+				{% endif %}
+			</h4>
+			{% if not mfaConfig.totp %}
+				<p>Setup a time-base one-time passcode (TOTP) on an authenticator app of your choice like Google Authenticator or Microsoft Authenticator.</p>
+				<a href="{{ path('admin_profile_mfa_setup_totp') }}" class="btn btn-success" id="mfa-setup-totp">Setup App-code 2FA</a>
+			{% else %}
+				<p>Feel free to check your 2FA codes here.</p>
+				<a href="{{ path('admin_profile_mfa_check') }}" class="btn btn-success" id="mfa-code-check">Check 2FA Codes</a>
+				<a class="btn btn-danger" id="mfa-totp-disable" data-bs-toggle="modal" data-bs-target="#disable-totp-modal">Turn Off App-code 2FA</a>
+			{% endif %}
+			{% if mfaPreference != "totp" %}
+				<a href="{{ path('admin_profile_mfa_preference', {'factor': 'totp'}) }}" class="btn btn-light" id="mfa-prefer-totp">Set As Preferred</a>
+			{% endif %}
+		</div>
+
+	</section>
+
+{% endblock page_content %}
+
+{% block modal %}
+	<div class="modal fade" tabindex="-1" role="dialog" id="disable-totp-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Are you sure you want to disable App-code 2FA?</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>If you disable App-code 2FA, you will have to go through the setup again to re-enable.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+					<a href="{{ path('admin_profile_mfa_disable', {'factor': 'totp'}) }}" type="button" class="btn btn-danger" id="mfa-disable-totp-confirm">Disable App-code 2FA</a>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+
+	<div class="modal fade" tabindex="-1" role="dialog" id="disable-email-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Are you sure you want to disable Email 2FA?</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>If you disable Email 2FA, you can re-enable it in the 2FA configuration</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+					<a href="{{ path('admin_profile_mfa_disable', {'factor': 'email'}) }}" type="button" class="btn btn-danger" id="mfa-disable-email-confirm">Disable Email 2FA</a>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+{% endblock modal %}

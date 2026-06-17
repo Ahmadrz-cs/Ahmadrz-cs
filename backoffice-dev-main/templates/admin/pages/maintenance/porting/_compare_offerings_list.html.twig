@@ -1,0 +1,66 @@
+<table class="table table-bordered table-striped-columns" id="offering-comparison-list">
+    <thead>
+        <tr>
+            <th colspan="2" class="text-center">Common</th>
+            <th colspan="9" title="offering" class="text-center">Offering</th>
+            <th colspan="10" title="trade-order" class="text-center">Trade Order</th>
+        </tr>
+        <tr>
+            <th>Asset Id</th>
+            <th>Asset Name</th>
+
+            <th>Id</th>
+            <th>Type</th>
+            <th class="text-end">Price (asset)</th>
+            <th class="text-end">Shares</th>
+            <th class="text-end">Value</th>
+            <th>Min-Max Value</th>
+            <th>Seller</th>
+            <th>Status</th>
+            <th>Created</th>
+
+            <th>Id</th>
+            <th>Direction</th>
+            <th>Type</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Shares</th>
+            <th class="text-end">Derived Value</th>
+            <th>Min-Max Shares</th>
+            <th>Seller</th>
+            <th>Status</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for offering in offerings %}
+        <tr>
+            
+            <td><a href="{{ path('admin_product_shareholders', { id: offering.asset.id }) }}">#{{ offering.asset.id }}</a></td>
+            <td>{{ offering.asset.name }}</td>
+
+            <td><a href="{{ path('admin_offering_edit', { id: offering.id }) }}">#{{ offering.id }}</a></td>
+            
+            <td>{{ offering.offeringType|capitalize }}</td>
+            <td class="tw-font-mono text-end">{{ offering.asset.pricePerShare}}</td>
+            <td class="tw-font-mono text-end">{{ offering.noOfShares }}</td>
+            <td class="tw-font-mono text-end">{{ offering.fundingGoal }}</td>
+            <td>{{ offering.minCommitUser is not null ? offering.minCommitUser : 'N/A' }} - {{ offering.maxCommitUser is not null ? offering.maxCommitUser : 'N/A' }}</td>
+            <td>{% if offering.createdById %}<a href="{{ path('admin_user_dashboard_portfolio', { id: offering.createdById }) }}">#{{ offering.createdById }}</a>{% endif %}</td>
+            <td>{{ offering.lifecycleStatus }}</td>
+            <td>{{ offering.createdAt|date('Y-m-d H:i:s') }}</td>
+            
+            <td>{% if offering.tradeOrder %}
+            <a href="{{ path('admin_trade_order_view', { id: offering.tradeOrder.id }) }}">#{{ offering.tradeOrder.id }}</a>{% endif %}</td>
+            <td>{{ offering.tradeOrder?.direction?.name }}</td>
+            <td>{{ offering.tradeOrder?.type?.value|capitalize }}</td>
+            <td class="tw-font-mono text-end">{{ offering.tradeOrder ? offering.tradeOrder.pricePerShare|string|format_currency('GBP') : '' }}</td>
+            <td class="tw-font-mono text-end">{{ offering.tradeOrder ? offering.tradeOrder.numberOfShares|number_format }}</td>
+            <td class="tw-font-mono text-end">{{ offering.tradeOrder ? (offering.tradeOrder.pricePerShare * offering.tradeOrder.numberOfShares)|string|format_currency('GBP') : '' }}</td>
+            <td>{{ offering?.tradeOrder?.minimumShares is not null ? offering.tradeOrder.minimumShares : 'N/A' }} - {{ offering?.tradeOrder?.maximumShares is not null ? offering.tradeOrder.maximumShares : 'N/A' }}</td>
+            <td>{% if offering.tradeOrder %}<a href="{{ path('admin_user_dashboard_portfolio', { id: offering.tradeOrder.user.id }) }}">#{{ offering.tradeOrder.user.id }}</a>{% endif %}</td>
+            <td>{{ offering.tradeOrder?.status?.value }}</td>
+            <td>{{ offering.tradeOrder ? offering.tradeOrder?.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

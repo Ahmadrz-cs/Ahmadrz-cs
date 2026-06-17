@@ -1,0 +1,178 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = exitRoute ?? 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferRequest.transferOrder.id } %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = 'Link Mangopay Transfer' %}
+{% set htmlTitle = 'Link Transfer' %}
+
+{% set statusToColor = {
+    'Yes': 'green',
+    'No': 'red',
+    'Manual Review': 'yellow',
+    'N/A': 'gray',
+} %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfer-field-verification",
+        "sectionTitle": "Transfer Field Verification",
+        "linkActions": [
+            {
+                "text": "Try different Mangopay Transfer",
+                "route": 'admin_transfer_request_search_transfer',
+                "params": {id: transferRequest.id},
+                "style": "btn-outline-dark text-nowrap",
+                "render": form is null
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Order Id',
+                value: transferRequest.transferOrder.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Request Id',
+                value: transferRequest.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Type',
+                value: transferRequest.transferOrder.transferType.value|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled Monthend',
+                value: transferRequest.transferOrder.scheduledFor|date('Y-m'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Covering Period Between',
+                value: transferRequest.transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                    ~ ' - ' 
+                    ~ transferRequest.transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                className: 'col-md-6',
+            }) }}
+        </div>
+
+        <table class="table" >
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Transfer Request</th>
+                    <th>Mangopay Transfer</th>
+                    <th>Requirements</th>
+                    <th>Requirements met?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Id</td>
+                    <td>{{ transferRequest.id }}</td>
+                    <td>{{ walletTransfer.Id }}</td>
+                    <td>Mangopay Transfer must not already be linked.</td>
+                    <td>
+                        {% set match = notAlreadyLinked ? 'Yes' : 'No' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[match],
+                            value: match
+                        }) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Amount</td>
+                    <td>{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                    <td>{{ (walletTransfer.DebitedFunds.Amount / 100)|number_format(2, '.', ',') }}</td>
+                    <td>Must match</td>
+                    <td>
+                        {% set match = (transferRequest.amount * 100)|round == walletTransfer.DebitedFunds.Amount ? 'Yes' : 'No' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[match],
+                            value: match
+                        }) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Debit Wallet Id</td>
+                    <td>{{ transferRequest.debitWalletId }}</td>
+                    <td>{{ walletTransfer.DebitedWalletId }}</td>
+                    <td>Must match</td>
+                    <td>
+                        {% set match = transferRequest.debitWalletId == walletTransfer.DebitedWalletId ? 'Yes' : 'No' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[match],
+                            value: match
+                        }) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Credit Wallet Id</td>
+                    <td>{{ transferRequest.creditWalletId }}</td>
+                    <td>{{ walletTransfer.CreditedWalletId }}</td>
+                    <td>Must match</td>
+                    <td>
+                        {% set match = transferRequest.creditWalletId == walletTransfer.CreditedWalletId ? 'Yes' : 'No' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[match],
+                            value: match
+                        }) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>{{ transferRequest.status|capitalize }}</td>
+                    <td>{{ walletTransfer.Status }}</td>
+                    <td>Request cannot be completed and Mangopay transfer must be succeeded</td>
+                    <td>
+                        {% set match = walletTransfer.Status == constant('\\MangoPay\\TransactionStatus::Succeeded') and transferRequest.status != constant('App\\Entity\\TransferRequest::STATE_COMPLETE') ? 'Yes' : 'No' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[match],
+                            value: match
+                        }) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td>Scheduled Monthend: {{ transferRequest.transferOrder.scheduledFor|date('Y-m') }}</td>
+                    <td>{{ walletTransfer.ExecutionDate|date('Y-m-d H:i:s') }}</td>
+                    <td>Soft Requirement. Check execution date and time is as expected.</td>
+                    <td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor["Manual Review"],
+                            value: "Manual Review"
+                        }) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Description/Tag</td>
+                    <td>{{ transferRequest.description }}</td>
+                    <td>{{ walletTransfer.Tag }}</td>
+                    <td>Soft Requirement. Check tag matches description or contains expected contents.</td>
+                    <td>
+                        {% set match = transferRequest.description == walletTransfer.Tag ? 'Yes' : 'Manual Review' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[match],
+                            value: match
+                        }) }}
+                    </td>
+                </tr>
+            </tbody>
+        </table
+        {% endblock %}
+    {% endembed %}
+
+    {% if form %}
+        {% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+        {{ form_start(form) }}
+            <div class="d-flex flex-wrap gap-2">
+                {{ form_widget(form.submit) }}
+                <a class="btn btn-outline-secondary" href="{{ path(exitRoute ?? 'admin_transfer_order_manage', {
+                    id: transferRequest.transferOrder.id
+                }) }}">Cancel</a>
+            </div>
+            {{ form_rest(form) }}
+        {{ form_end(form) }}
+    {% endif %}
+
+{% endblock page_content %}

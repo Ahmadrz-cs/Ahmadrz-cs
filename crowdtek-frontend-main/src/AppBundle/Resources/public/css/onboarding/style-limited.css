@@ -1,0 +1,401 @@
+@import url("https://fonts.googleapis.com/css?family=Muli:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+.form-progress {
+    position: relative;
+    display: block;
+    margin: 3rem auto;
+    width: 100%;
+    max-width: 400px;
+}
+
+progress {
+    display: block;
+    position: relative;
+    top: 5px;
+    left: 16px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: #43435f;
+    width: 2px;
+    height: 350px;
+    background: none;
+    transition: 1s;
+    will-change: contents;
+}
+
+progress::-webkit-progress-bar {
+    background-color: #43435f !important;
+}
+
+progress::-webkit-progress-value {
+    background-color: #43435f;
+    transition: all 0.5s ease-in-out;
+}
+
+progress::-webkit-progress-value .text-bar {
+    color: #000;
+}
+
+.form-progress-indicator {
+    position: absolute;
+    top: -6px;
+    left: 0;
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    background: #262635;
+    border: 3px solid #4da19a;
+    border-radius: 50%;
+    transition: all .2s ease-in-out;
+    transition-delay: .3s;
+    will-change: transform;
+}
+
+.form-progress-indicator.one {
+    left: 0;
+    margin-top: 80px;
+}
+
+.form-progress-indicator.two {
+    margin-top: 160px;
+}
+
+.form-progress-indicator.three {
+    margin-top: 276px;
+}
+
+.form-progress-indicator.sub_three_1 {
+    margin-top: 210px;
+    margin-left: 35px;
+    width: 8px;
+    height: 8px;
+}
+
+.form-progress-indicator.sub_three_2 {
+    margin-top: 240px;
+    margin-left: 35px;
+    width: 8px;
+    height: 8px;
+}
+
+
+
+.form-progress-indicator.four {
+    margin-top: 350px;
+}
+
+.form-progress-indicator.five {
+    margin-top: 350px;
+}
+
+.form-progress-indicator.six {
+    margin-top: 430px;
+}
+
+
+
+
+.form-progress-indicator.active {
+    -webkit-animation: bounce .5s forwards;
+    animation: bounce .5s forwards;
+    -webkit-animation-delay: .5s;
+    animation-delay: .5s;
+    border-color: #4da19a;
+    background-color: #4da19a;
+}
+
+
+.othr span {
+    margin-left: 9px;
+    margin-top: -10px;
+    color: #fff;
+    position: relative;
+}
+
+.text-bar {
+    font-size: 13px;
+    margin-top: -30px;
+    color: #fff;
+    width: 300px;
+    margin-left: 45px;
+    text-transform: uppercase;
+    text-indent: 0px;
+    letter-spacing: 1px;
+}
+
+.previoustab {
+    background-image: url(../../images/onboarding/icons/tic.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    text-indent: -9999px;
+    background-color: #262635 !important;
+}
+
+.text-bar_1 {
+    font-size: 11px;
+    margin-top: -43px;
+    color: #fff;
+    width: 300px;
+    margin-left: 10px;
+    text-transform: uppercase;
+    text-indent: 0px;
+    letter-spacing: 1px;
+}
+
+.clear {
+    clear: both;
+}
+
+.section_wrap_2 {
+    background-image: none;
+    background-color: #262635;
+}
+
+.left_section {
+    background-color: #262635;
+    min-height: 100vh;
+    padding-bottom: 30px;
+}
+
+.left_section_pdg {
+    padding: 20px 20px;
+}
+
+@media (max-width:1225px) {
+    .left_section_pdg {
+        padding-left: 2px !important;
+    }
+}
+
+.logo_box {
+    border-bottom: solid 2px #43435f;
+    margin-bottom: 35px;
+    padding: 20px 0 45px 0;
+}
+
+.left_section_h4 {
+    text-transform: capitalize;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.right_section {
+    background-color: #fff !important;
+    min-height: 100vh;
+    height: auto;
+    overflow: auto;
+}
+
+.logo-nav {
+    max-height: 48px;
+}
+
+.mob_text-bar {
+    display: none;
+}
+
+@media handheld,
+only screen and (max-width: 960px) {
+    .left_section {
+        background-color: #262635;
+        min-height: auto;
+    }
+
+    .left_section_pdg {
+        padding: 21px 10px;
+        height: 310px;
+    }
+
+    .left_section_h4 {
+        text-transform: capitalize;
+        font-size: 26px;
+        font-weight: normal;
+        color: #fff;
+        padding: 9px 0;
+    }
+
+    .form-progress {
+        position: relative;
+        display: block;
+        margin: 2rem 0;
+        width: 100%;
+        max-width: 75%;
+    }
+
+    progress {
+        display: block;
+        position: relative;
+        top: 12px;
+        left: 36px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background: #43435f;
+        width: 16px;
+        height: 2px;
+        background: none;
+        transition: 1s;
+        will-change: contents;
+        float: left;
+        width: 80%;
+    }
+
+    progress::-webkit-progress-bar {
+        background-color: #43435f !important;
+    }
+
+    progress::-webkit-progress-value {
+        background-color: #43435f;
+        transition: all 0.5s ease-in-out;
+    }
+
+    progress::-webkit-progress-value .text-bar {
+        color: #000;
+    }
+
+    .form-progress-indicator {
+        position: absolute;
+        top: -6px;
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        background: #262635;
+        border: 3px solid #4da19a;
+        border-radius: 50%;
+        transition: all .2s ease-in-out;
+        transition-delay: .3s;
+        will-change: transform;
+        /* float: left !important; */
+    }
+
+    .form-progress-indicator.one {
+        left: 20%;
+        margin-top: 0px;
+    }
+
+    .form-progress-indicator.two {
+        left: 40%;
+        margin-top: 0px;
+    }
+
+
+    .form-progress-indicator.three {
+        margin-top: 0px;
+        margin-left: 9px;
+        left: 56%;
+    }
+
+    .form-progress-indicator.sub_three_1 {
+        margin-top: 90px;
+        width: 8px;
+        height: 8px;
+        float: left;
+    }
+
+    .form-progress-indicator.sub_three_2 {
+        margin-top: 113px;
+        width: 8px;
+        height: 8px;
+    }
+
+
+
+    .form-progress-indicator.four {
+        left: 80%;
+        margin-top: 0px;
+    }
+
+    .form-progress-indicator.five {
+        margin-top: 350px;
+    }
+
+    .form-progress-indicator.six {
+        margin-top: 430px;
+    }
+
+
+
+    .form-progress-indicator.sub_three_1 {
+
+        margin-left: 0;
+        width: 8px;
+        height: 8px;
+    }
+
+    .form-progress-indicator.sub_three_2 {
+
+        margin-left: 0;
+        width: 8px;
+        height: 8px;
+    }
+
+
+    .form-progress-indicator.active {
+        -webkit-animation: bounce .5s forwards;
+        animation: bounce .5s forwards;
+        -webkit-animation-delay: .5s;
+        animation-delay: .5s;
+        border-color: #4da19a;
+        background-color: #4da19a;
+        float: left;
+    }
+
+    .othr span {
+        margin-left: 9px;
+        margin-top: -10px;
+        color: #fff;
+        position: relative;
+    }
+
+    .text-bar {
+        font-size: 13px;
+        margin-top: 3px;
+        color: #fff;
+        width: 0px;
+        margin-left: 57px;
+        text-transform: uppercase;
+        text-indent: 0px;
+        letter-spacing: 1px;
+        text-indent: -9999px;
+    }
+
+    .mobile_step {
+        display: none;
+    }
+
+    .ddl_dob {
+        padding-left: 0px;
+        margin-top: 10px;
+    }
+
+    .previoustab {
+        background-image: url(../../images/onboarding/icons/tic.png);
+        background-position: center;
+        background-repeat: no-repeat;
+        text-indent: -9999px;
+        background-color: #262635 !important;
+    }
+
+    .text-bar_1 {
+        font-size: 11px;
+        margin-top: -45px;
+        color: #fff;
+        width: 300px;
+        margin-left: 19px;
+        text-transform: uppercase;
+        text-indent: 0px;
+        letter-spacing: 1px;
+    }
+
+    .mob_text-bar {
+        font-size: 13px;
+        display: block;
+        color: #fff;
+        text-transform: uppercase;
+        text-indent: 0px;
+        letter-spacing: 1px;
+    }
+}

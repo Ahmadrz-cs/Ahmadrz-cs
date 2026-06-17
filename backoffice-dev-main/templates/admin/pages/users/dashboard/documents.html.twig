@@ -1,0 +1,90 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Documents' %}
+
+{% set statusToColor = {
+	'Missing': 'gray',
+    'Set': 'blue',
+} %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "documents",
+        "sectionTitle": "Documents",
+    } %}
+        {% block sectionContent %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>User doc id</th>
+                        <th>File name</th>
+                        <th>File description</th>
+                        <th>Tag</th>
+                        <th>Has Url</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for userdocument in user.documents %}
+                    <tr>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Download",
+                                        "route": 'admin_document_download',
+                                        "params": {
+                                            id: userdocument.document.id,
+                                            "type": "private",
+                                        },
+                                        "style": "btn-outline-primary text-nowrap",
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "View",
+                                        "route": 'admin_document_download',
+                                        "params": {
+                                            'id': userdocument.document.id,
+                                            'type':'private',
+                                            'preview': 1,
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                        "newTab": true,
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Create Mangopay KYC Check",
+                                        "route": 'admin_kyc_mangopay_check_document',
+                                        "params": {id: userdocument.id},
+                                        "style": "btn-outline-dark text-nowrap",
+                                        "roleRequired": "ROLE_OPERATIONS",
+                                    },
+                                }) }}
+                            </div>
+                        </td>
+                        <td data-field="id"><a href="{{ path('admin_userdocument_edit', { id: userdocument.id }) }}">{{
+                                userdocument.id }}</a></td>
+                        <td data-field="filename"><a href="{{ path('admin_userdocument_edit', { id: userdocument.id }) }}">{{
+                                userdocument.document.filename }}</a></td>
+                        <td data-field="description">{{ userdocument.document.description }}</td>
+                        <td data-field="tag">{{ userdocument.document.tag }}</td>
+                        <td data-field="url">
+                            {% set has_url = userdocument.document.documentUrl ? 'Set' : 'Missing' %}
+                            {{ include('admin/components/_indicator_with_text.html.twig', {
+                                color: statusToColor[has_url],
+                                value: has_url
+                            }) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

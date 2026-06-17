@@ -1,0 +1,33 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_recurring' %}
+{% set areaHeading = 'Recurring KYC' %}
+{% set mainHeading = 'Create KYC Review' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-review-configuration",
+        "sectionTitle": "KYC Review Configuration",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form, {attr: {class:"d-flex flex-column gap-4"}}) }}
+                <div class="row">
+                    <div class="col-md-6">{{ form_row(form.preset) }}</div>
+                    <div class="col-md-6">{{ form_row(form.subject, {attr: {'class': 'searchable'}}) }}</div>
+                    <div class="col-12">{{ form_row(form.notes) }}</div>
+                </div>
+                {{ form_row(form.skipDuplicateCheck) }}
+                <div
+                    class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success text-nowrap" id="submit" type="submit">Create KYC Review</button>
+                    <a class="btn btn-outline-secondary text-nowrap" href="{{ path('admin_kyc_recurring') }}">Abandon</a>
+                </div>
+            {{ form_rest(form) }}
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+{% endblock %}

@@ -1,0 +1,103 @@
+include:
+    - templates/baseUsers.yaml
+    - templates/baseDocument.yaml
+
+# dynamic parameters require Alice V3 (currently broken)
+parameters:
+    walletUser_admin: "user_m_01HW3E0JWXCSNK856X9ZETKKPJ"
+    wallet_admin: "wlt_m_01HW3E2FBKJ5R1QWKWR4K6ZETP"
+    walletUser_operations: "user_m_01HW3ECPAJCCZCXP2P6WQ5XW5H"
+    wallet_operations: "wlt_m_01HW3EDJ2GAYC531PZ6VPQA1AG"
+    walletUser_analyst: "user_m_01HW3EF0GMCSYHYNC3Y8B5GY59"
+    wallet_analyst: "wlt_m_01HW3EFRH8GM978NHCM8ZGGXGV"
+
+App\Entity\User:
+    user{admin} (extends user_random):
+        roles: ["ROLE_ADMIN"]
+        lastname: "<ucfirst($current)>"
+        mangoPayUserId: "user_m_01HW3E0JWXCSNK856X9ZETKKPJ"
+        mangoPayWalletId: "wlt_m_01HW3E2FBKJ5R1QWKWR4K6ZETP"
+        contego_score: "@contegoscore<current()>"
+        scaStatus: "active"
+        # Note that on Mangopay, the admin users were enrolled with SCA around Late-June 2025
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{finops} (extends user_random):
+        roles: ["ROLE_FINANCIAL_OPS"]
+        lastname: "<ucfirst($current)>"
+        mangoPayUserId: "user_m_01HW3E64T4SM75XAP2NAB9295S"
+        mangoPayWalletId: "wlt_m_01HW3E6QSH42ZR2M04HTRGG9TC"
+        contego_score: "@contegoscore<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{techops} (extends user_random):
+        roles: ["ROLE_TECH_OPS"]
+        lastname: "<ucfirst($current)>"
+        mangoPayUserId: "user_m_01HW3E64T4SM75XAP2NAB9295S"
+        mangoPayWalletId: "wlt_m_01HW3E6QSH42ZR2M04HTRGG9TC"
+        contego_score: "@contegoscore<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{operations} (extends user_random):
+        roles: ["ROLE_OPERATIONS"]
+        lastname: "<ucfirst($current)>"
+        mangoPayUserId: "user_m_01HW3ECPAJCCZCXP2P6WQ5XW5H"
+        mangoPayWalletId: "wlt_m_01HW3EDJ2GAYC531PZ6VPQA1AG"
+        contego_score: "@contegoscore<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{analyst} (extends user_random):
+        roles: ["ROLE_ANALYST"]
+        lastname: "<ucfirst($current)>"
+        mangoPayUserId: "user_m_01HW3EF0GMCSYHYNC3Y8B5GY59"
+        mangoPayWalletId: "wlt_m_01HW3EFRH8GM978NHCM8ZGGXGV"
+        contego_score: "@contegoscore<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    user{engineering} (extends user_random):
+        roles: ["ROLE_ADMIN"]
+        lastname: "<ucfirst($current)>"
+        mangoPayUserId: "user_m_01HW3EF0GMCSYHYNC3Y8B5GY59"
+        mangoPayWalletId: "wlt_m_01HW3EFRH8GM978NHCM8ZGGXGV"
+        contego_score: "@contegoscore<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+App\Entity\Investor:
+    userinvestor{admin, analyst, operations, finops, techops, engineering} (extends investors_base):
+
+App\Entity\Status:
+    userstatus{admin, analyst, operations, finops, techops, engineering} (extends userstatus_base):
+
+App\Entity\UserSecurity:
+    usersecurity{admin, analyst, operations, finops, techops, engineering} (extends usersecurity_base):
+
+App\Entity\Address:
+    useraddress{admin, analyst, operations, finops, techops, engineering}:
+        user: "@user<current()>"
+        address1: "<numberBetween(1,128)> <streetName()>"
+        city: "<city()>"
+        postCode: "<postcode()>"
+        country: "GB"
+
+App\Entity\UserDocument:
+    userdoc{admin, operations, analyst, finops, techops, engineering}:
+        user: "@user<current()>"
+        document: "@doc_poi<current()>"
+    userdoc_{poa, poc}:
+        user: "@useradmin"
+        document: "@doc_<current()>"
+
+App\Entity\Document:
+    doc_poi{admin, operations, analyst, finops, techops, engineering} (extends doc_poi):
+
+App\Entity\ContegoScore:
+    contegoscore{admin, operations, analyst, finops, techops, engineering} (extends contegoscore_base):
+
+App\Entity\UserStatusLog:
+    userstatuslog_active_{admin, operations, analyst, finops, techops, engineering} (extends userstatuslog_active):
+        occuredAt: "@userstatus<current()>->emailValidatedOn"

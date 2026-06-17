@@ -1,0 +1,118 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_asset_index' %}
+{% set areaHeading = 'Assets' %}
+{% set mainHeading = '#' ~ asset.id ~ ' // ' ~ asset.name %}
+{% set htmlTitle = 'Asset View' %}
+
+{% block page_content %}
+
+	<div class="nav-tabs-custom">
+		<ul class="nav nav-tabs">
+			<li class="active">
+				<a href="#asset" data-bs-toggle="tab" aria-expanded="true">Asset</a>
+			</li>
+			<li class="">
+				<a href="#assetAddress" data-bs-toggle="tab" aria-expanded="false">Address</a>
+			</li>
+			<li class="">
+				<a href="#assetDocument" data-bs-toggle="tab" aria-expanded="false">Documets</a>
+			</li>
+			<li class="">
+				<a href="#addFields" data-bs-toggle="tab" aria-expanded="false">Additional Fields</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="asset">
+				<p>Name :
+					{{ asset.name }}</p>
+				<p>Additional Type :
+					{{ asset.additionalType }}</p>
+				<p>Alternate Name :
+					{{ asset.alternateName }}</p>
+				<p>Brief Description :
+					{{ asset.briefDescription }}</p>
+				<p>Company Number :
+					{{ asset.companyNumber }}</p>
+				<p>Detailed Description :
+					{{ asset.detailedDesc }}</p>
+				<p>Display Name :
+					{{ asset.displayName }}</p>
+				<p>Organization Email :
+					{{ asset.orgEmail }}</p>
+				<p>Sector :
+					{{ asset.sector }}</p>
+				<p>Tax Id :
+					{{ asset.taxId }}</p>
+				<p>Telephone :
+					{{ asset.telephone }}</p>
+				<p>Funding Goal :
+					{{ asset.fundingGoal }}</p>
+				<p>Amount Of Shares :
+					{{ asset.amountOfShares }}</p>
+				<p>Setup Fee :
+					{{ asset.setupFee }}</p>
+				<p>Admin Fee :
+					{{ asset.adminFee }}</p>
+				<p>Management Fee :
+					{{ asset.managementFee }}</p>
+				<p>Profit Share :
+					{{ asset.profitShare }}</p>
+				<p>Stamp Duty User :
+					{{ asset.stampDutyUser }}</p>
+				<p>Asset Type :
+					{{ asset.assetType }}</p>
+				<p>Investment Term :
+					{{ asset.investmentTerm }}</p>
+				<p>Gross Rental Return PA :
+					{{ asset.grossRentalReturnPA }}</p>
+				<p>Net Rental Return PA :
+					{{ asset.netRentalReturnPA }}</p>
+				<p>Gross Capital Appreciation :
+					{{ asset.grossCapitalAppreciation }}</p>
+				<p>Net Capital Appreciation :
+					{{ asset.netCapitalAppreciation }}</p>
+				<p>Net Capital Appreciation Yield :
+					{{ asset.netCapitalAppreciationYield }}</p>
+				<p>Points Of Interest :
+					{{ asset.pointsOfInterest }}</p>
+
+
+				{% if asset.blockedForSale == 0  %}
+					<p>Blocked For Sale:No</p>
+				{% else %}
+					<p>Blocked For Sale:Yes</p>
+				{% endif %}
+
+				<p>Price Per Share :
+					{{ asset.pricePerShare }}</p>
+				{% if asset.visibility == 0  %}
+					<p>Visibility : Open</p>
+				{% elseif (asset.visibility == 1 ) %}
+					<p>Visibility : Hidden</p>
+				{% else %}
+					<p>Visibility : Public</p>
+				{% endif %}
+				<p>Asset Status :<td>{% include 'admin/pages/assets/_status.html.twig' %}</td>
+				</p>
+
+			</div>
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="assetAddress"></div>
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="addFields">
+				<dl class="dl-horizontal">
+					{% for field in asset.addFields %}
+						<dt>{{ field.fieldKey }}</dt>
+						<dd>{{ field.value }}</dd>
+					{% endfor %}
+				</dl>
+			</div>
+			<!-- /.tab-pane -->
+
+			<!-- /.tab-pane -->
+		</div>
+		<!-- /.tab-content -->
+	</div>
+
+{% endblock page_content %}

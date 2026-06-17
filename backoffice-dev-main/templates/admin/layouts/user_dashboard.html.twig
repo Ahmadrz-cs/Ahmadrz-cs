@@ -1,0 +1,12 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_user_edit' %}
+{% set backToRouteParams = { id: user.id } %}
+{% set htmlTitle = 'User Dashboard' %}
+{% set areaHeading = 'User Dashboard' %}
+{% set mainHeading = mainHeading|default('User Dashboard') %}
+
+{% block page_header %}
+	{{ include('admin/components/nav_menus/user_dashboard.html.twig') }}
+    {{ include('admin/components/users/_basic_info.html.twig') }}
+{% endblock page_header %}

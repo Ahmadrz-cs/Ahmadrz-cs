@@ -1,0 +1,9 @@
+app_modern:
+    resource:
+      path: ../../src/AppBundle/Controller/CheckupController.php
+      namespace: AppBundle\Controller
+    type: attribute
+
+app:
+    resource: "@AppBundle/Controller/"
+    type:     annotation

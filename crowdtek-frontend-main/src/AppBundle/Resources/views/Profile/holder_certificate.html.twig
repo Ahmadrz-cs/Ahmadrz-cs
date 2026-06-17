@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Share Holder Certificate</title>
+    <!-- Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,400italic,300italic,500italic,500,700,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body style="font-family: 'Roboto', sans-serif;
+            font-size: 12px;
+            color: #4e4e4e;
+            background-color: #efefef;">
+    <div style="border: 1px solid #ccc;
+            margin: 15px;
+            padding: 15px 30px;">
+        <div style="text-align: center;">
+            <img style="height:50px; padding: 8px;" src="bundles/app/images/yielders-logo-final.png" loading="lazy" alt="Yielders logo" title="Yielders logo" />
+        </div>
+
+        <div style="float: left; width: 30%;">
+            Customer Number
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                YC{{ data.user.id }}
+            </div>
+            SPV Account
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                SPV{{ data.offering.id }}
+            </div>
+        </div>
+        <div style="float: right; width: 30%;">
+            <br>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                &nbsp;
+            </div>
+            Certificate Number
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                {% set lastItem = data.invested|last %}
+                SC{{ lastItem.id|default('N/A') }}
+            </div>  
+        </div>
+        <div style="clear: both;"></div>
+
+        <h2 style="text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            line-height: 1em;
+            margin: 10px 0 8px;">Share CERTIFICATE</h2>
+        {% set user_title = '' %}
+        {% if data.user.honorific_prefix is defined and data.user.honorific_prefix is not empty %}
+            {% set user_title = data.user.honorific_prefix %}
+        {% else %}
+            {% if data.user.gender == 'Male' %}
+                {% set user_title = 'Mr' %}
+            {% else %}
+                {% set user_title = 'Ms' %}
+            {% endif %}
+        {% endif %}
+        <div style="text-align: center;">
+            <i>For</i>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                
+                {{ user_title }}. {{ data.user.given_name }} {{ data.user.family_name }}                
+            </div>
+            <i>Registered Number</i>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                YC{{ data.user.id }}
+            </div>
+            <i>Security Title</i>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                {{ data.offering.name }}
+            </div>
+            <i>Number of Shares</i>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                {{ data.offering.number_of_shares|default(0) }}
+            </div>
+            <i>Nominal Value</i>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                {% set total_investment_amount = 0 %}
+                {% for invested in data.invested %}
+                    {% set total_investment_amount = total_investment_amount + invested.investment_amount %}
+                {% endfor %}                
+                £{{ total_investment_amount|number_format|default(0) }}
+            </div>
+            <div style="text-align: left;">
+                <i>THIS DOCUMENT IS TO CERTIFY THAT</i>
+            </div>
+            <div style="display: block;
+                        text-align: center;
+                        border: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                
+                {{ user_title }}.{{ data.user.given_name|default('') }} {{ data.user.family_name|default('') }}
+                <br>
+                {{ data.user.address.street_address|default('') }}<br>
+                {{ data.user.address.postal_code|default('') }}<br>
+                {{ data.user.address.city|default('') }}<br>
+                {{ data.user.address.region|default('') }}<br>
+                {{ data.user.address.country|default('') }}
+            </div>
+            <div style="text-align: left;">
+                IS/ARE REGISTERED HOLDER(S) OF THE WITHIN MENTIONED SHARES IN THE COMPANY, SUBJECT TO THE ARTICLES OF ASSOCIATION OF THE COMPANY.<br>
+                THE COMMON SEAL OF THE COMPANY WAS AFFIXED TO THIS CERTIFICATE IN THE PRESENCE OF/THIS CERTIFICATE IS EXECUTED BY THE COMPANY.
+            </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+            <div style="width: 50%;">
+                FOUNDER
+                <div style="display: block;
+                            border-bottom: 2px solid #e8e8e8;
+                            background-color: #fff;
+                            padding: 10px 8px 8px;
+                            margin-bottom: 10px;">
+                    &nbsp;
+                </div>
+            </div>
+        </div><!-- /.mt-24 -->
+
+        <div style="margin-top: 24px;">
+            <div style="float: left; width: 40%;">
+                DIRECTOR/SECRETARY/WITNESS
+                <div style="display: block;
+                            border-bottom: 2px solid #e8e8e8;
+                            background-color: #fff;
+                            padding: 10px 8px 8px;
+                            margin-bottom: 18px;" >
+                    &nbsp;
+                </div>
+                ON
+                <div style="display: block;
+                            border-bottom: 2px solid #e8e8e8;
+                            background-color: #fff;
+                            padding: 10px 8px 8px;
+                            margin-bottom: 18px;">
+                    {{ "now"|date("d/m/Y") }}
+                </div>
+            </div>
+            <div style="float: right; width: 50%;">
+                TO BE COMPLETED BY WITNESS (IF ANY):
+                <div style="margin-top: 14px;">
+                    <div style="float: left;
+                        width: 30%;
+                        padding-top: 5px;">
+                        NAME
+                    </div>
+                    <div style="float: right; width: 70%;">
+                        <div style="display: block;
+                            border-bottom: 2px solid #e8e8e8;
+                            background-color: #fff;
+                            padding: 4px 8px 2px;
+                            margin-bottom: 12px;">
+                            &nbsp;
+                        </div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+
+                <div style="float: left;
+                        width: 30%;
+                        padding-top: 5px;">
+                    ADDRESS
+                </div>
+                <div style="float: right; width: 70%;">
+                    <div style="display: block;
+                        border-bottom: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                        &nbsp;
+                    </div>
+                </div>
+                <div style="clear: both;"></div>
+
+                <div style="float: left;
+                        width: 30%;
+                        padding-top: 5px;">
+                    OCCUPATION
+                </div>
+                <div style="float: right; width: 70%;">
+                    <div style="display: block;
+                        border-bottom: 2px solid #e8e8e8;
+                        background-color: #fff;
+                        padding: 4px 8px 2px;
+                        margin-bottom: 12px;">
+                        &nbsp;
+                    </div>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+
+        <div class=" mt-24">
+            <i>NO TRANSFER OF ANY OF THE ABOVE SHARES CAN BE REGISTERED UNLESS ACCOMPANIED BY THIS CERTIFICATE</i>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_clarence_ben_1: 500
+    shares_clarence_holly_1: 250
+    shares_clarence_holly_2: 140
+
+App\Entity\TradeOrder:
+    buy_order_clarence_{ben_1} (extends trade_order_invest):
+        asset: "@assetclarence"
+        user: "@userben"
+        numberOfShares: 500
+        pricePerShare: "@assetclarence->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last thursday of -1 months')>"
+        createdBy: "$user"
+    buy_order_clarence_{ben_2} (extends trade_order_invest):
+        asset: "@assetclarence"
+        user: "@userben"
+        numberOfShares: 148
+        pricePerShare: "@assetclarence->pricePerShare"
+        createdAt: "<dateTimeBetween('midnight first day of this month', 'noon first day of this month')>"
+        createdBy: "$user"
+    buy_order_clarence_{holly_1} (extends trade_order_invest):
+        asset: "@assetclarence"
+        user: "@userholly"
+        numberOfShares: 250
+        pricePerShare: "@assetclarence->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -7 months', 'last saturday of -7 months')>"
+        createdBy: "$user"
+    buy_order_clarence_{holly_2} (extends trade_order_invest):
+        asset: "@assetclarence"
+        user: "@userholly"
+        numberOfShares: 140
+        pricePerShare: "@assetclarence->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last saturday of -1 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_clarence_{ben_1, ben_2, holly_1, holly_2}:
+        tradeOrder: "@buy_order_clarence_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_clarence_<current()>->createdAt"
+    buy_order_status_completed_clarence_{ben_1, ben_2, holly_1, holly_2}:
+        tradeOrder: "@buy_order_clarence_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_clarence_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_clarence_{ben_1, ben_2, holly_1, holly_2}:
+        buyOrder: "@buy_order_clarence_<current()>"
+        sellOrder: "@sell_order_initial_clarence"
+        numberOfShares: "@buy_order_clarence_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_clarence_<current()>->pricePerShare"
+        createdAt: "@buy_order_clarence_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_clarence_{ben_1, ben_2, holly_1, holly_2}:
+        shareTrade: "@share_trade_clarence_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_clarence_<current()>->createdAt"
+    trade_status_settled_clarence_{holly_1}:
+        shareTrade: "@share_trade_clarence_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -6 months 17:31:11'))>"

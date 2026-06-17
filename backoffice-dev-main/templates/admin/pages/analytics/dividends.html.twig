@@ -1,0 +1,180 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_analytics_dashboard' %}
+{% set areaHeading = 'Analytics' %}
+{% set mainHeading = 'Dividends' %}
+{% set maturityLabel = 'beta' %}
+
+{% set totalAssetValue = dividends
+    |reduce((carry, v) => carry + v.assetValue)
+    |default('0') %}
+{% set totalLifetime = dividends
+    |reduce((carry, v) => carry + v.dividendsTotal)
+    |default('0') %}
+{% set totalThisMonth = dividends
+    |reduce((carry, v) => carry + v.dividendsThisMonth)
+    |default('0') %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "asset-dividends",
+        "sectionTitle": "Asset Dividends",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Mean monthly dividend only includes months where a dividend was paid, so unpaid months don't affect the average",
+        }) }}
+
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Asset Value',
+                value: '£' ~ totalAssetValue|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Lifetime Dividends',
+                value: '£' ~ totalLifetime|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Dividends this month',
+                value: '£' ~ totalThisMonth|number_format(2, '.', ','),
+            }) }}
+        </div>
+
+         <table class="table table-striped table-bordered mt-3 mb-0">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Asset Value (£)</th>
+                    <th>Lifetime Dividends (£)</th>
+                    <th>Dividends this month (£)</th>
+                    <th>Months with Dividends</th>
+                    <th>Mean Monthly Dividend (£)</th>
+                    <th>Most Recent Dividend</th>
+                    <th>Dividend First Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in dividends %}
+                    <tr>
+                        <td>
+                            <a target="_blank" href="{{ path('admin_asset_edit', { id: item.assetId }) }}">#{{ item.assetId }}
+                                //
+                                {{ item.assetName }}
+                                ({{ item.assetSpvId|default('-') }})
+                            </a>
+                        </td>
+                        <td>{{ item.assetValue|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.dividendsTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.dividendsThisMonth|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.paymentPeriods }}</td>
+                        <td>{{ (item.dividendsTotal / item.paymentPeriods)|number_format(2, '.', ',') }}</td>
+                        <td>
+                            <a target="_blank" href="{{ path('admin_payout_index', { assetId: item.assetId }) }}">{{ item.lastDividendPaidAt }}</a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="{{ path('admin_payout_index', { assetId: item.assetId, orderDirection: 'ASC' }) }}">{{ item.firstDividendPaidAt }}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "dividend-performance",
+        "sectionTitle": "Asset Dividend Performance",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Show the dividend performance of assets dividends compared to original projections. Includes number of subsequent dividends since the first one.",
+        }) }}
+
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assets With Dividends',
+                value: dividends|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assets With Dividends This month',
+                value: dividends|filter(v => v.dividendsThisMonth > 0 )|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Overall This Month',
+                value: (totalThisMonth * 100 * 12 / totalAssetValue)|number_format(2, '.', ',') ~ '%',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Overall Running Total',
+                value: (totalLifetime * 100 / totalAssetValue)|number_format(2, '.', ',') ~ '%',
+            }) }}
+        </div>
+
+        <table class="table table-striped table-bordered mt-3 mb-0">
+            <thead>
+                <tr>
+                    <th colspan="2">Asset Information</th>
+                    <th colspan="3" title="mangopayWalletId">This Month</th>
+                    <th colspan="3" title="additionalWallet">Running Total</th>
+                    <th colspan="2" title="additionalWallet">Consistency</th>
+                </tr>
+                <tr>
+                    <th>Name</th>
+                    <th>Value (£)</th>
+                    <th>Projected</th>
+                    <th>Actual</th>
+                    <th>Performance</th>
+                    <th>Projected</th>
+                    <th>Actual</th>
+                    <th>Performance</th>
+                    <th>Actual/ Expected/ Offering Age</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in dividends %}
+                    {% set timeDiff = date(item.lastDividendPaidAt|date("Y-m-01")).diff(date(item.firstDividendPaidAt|date("Y-m-01")).setTime(0,0)) %}
+                    {% set timeDiff = max(timeDiff.m + (timeDiff.y * 12) + 1, item.paymentPeriods) %}
+                    {% set offeringAge = date().diff(date(assetMap[item.assetId].status.publishedOn)) %}
+                    {% set offeringAge = offeringAge.m + (offeringAge.y * 12) + 1 %}
+                    {% set projectedYield = assetMap[item.assetId].getNetProjectedYield|default(1) %}
+                    <tr>
+                        <td>
+                            <a target="_blank" href="{{ path('admin_asset_edit', { id: item.assetId }) }}">#{{ item.assetId }}
+                                //
+                                {{ item.assetName }}
+                                ({{ item.assetSpvId|default('-') }})
+                            </a>
+                        </td>
+                        <td>{{ item.assetValue|number_format(2, '.', ',') }}</td>
+
+                        <td>£
+                            {{ (projectedYield * 100 * item.assetValue / 1200)|number_format(2, '.', ',') }}
+                            ({{ projectedYield * 100 }}%)</td>
+                        <td>£{{ item.dividendsThisMonth|number_format(2, '.', ',') }}
+                            ({{ (item.dividendsThisMonth * 1200  / item.assetValue)|number_format(2, '.', ',') }}%)</td>
+                        <td>{{ (item.dividendsThisMonth / (projectedYield * 100 * item.assetValue / 120000))|number_format(2, '.', ',') }}%</td>
+
+                        <td>£{{ (timeDiff * projectedYield * 100 / 1200 * item.assetValue)|number_format(2, '.', ',') }}
+                            ({{ (timeDiff * projectedYield * 100 / 12)|number_format(2, '.', ',') }}%)</td>
+                        <td>£{{ item.dividendsTotal|number_format(2, '.', ',') }}
+                            ({{ (item.dividendsTotal * 100  / item.assetValue)|number_format(2, '.', ',') }}%)
+                        </td>
+                        <td>{{ (item.dividendsTotal / (timeDiff * projectedYield * 100 / 120000 * item.assetValue))|number_format(2, '.', ',') }}%</td>
+                        <td title="First Paid: {{ item.firstDividendPaidAt }} // Last Paid: {{ item.lastDividendPaidAt }}">{{ item.paymentPeriods }}/{{ timeDiff }}/{{ offeringAge }}
+                            months</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

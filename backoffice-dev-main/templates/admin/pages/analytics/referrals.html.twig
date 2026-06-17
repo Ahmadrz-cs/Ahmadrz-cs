@@ -1,0 +1,42 @@
+{% extends 'admin/layouts/analytics.html.twig' %}
+
+{% set mainHeading = 'Referrals' %}
+
+{% block filters %}
+    {# filters currently just placeholders #}
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock filters %}
+
+{% block graph %}
+    <canvas id="chartArea" data-chart={{ referrals|json_encode }}></canvas>
+{% endblock graph %}
+
+{% block table %}
+    <h4>Top 10 Referral Codes by Number of Investments</h4>
+    <table class="table table-striped table-bordered mb-0">
+        <thead>
+            <tr>
+                <th>Referral Code</th>
+                <th>Investments with code</th>
+                <th>Investors with code</th>
+                <th>Total Value Of Investments Using Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for referral in referrals %}
+                <tr>
+                    <td>{{ referral.referralCode }}</td>
+                    <td>{{ referral.referralCodeCount }}</td>
+                    <td>{{ referral.usersCount }}</td>
+                    <td>£{{ referral.investmentsValue|number_format(2, '.', ',') }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock table %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('analyticsReferralsOverTime') }}
+{% endblock javascripts %}

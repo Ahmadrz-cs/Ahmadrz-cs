@@ -1,0 +1,102 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{# {% set backToRoute = 'admin_webhooks_mangopay_index' %} #}
+{% set areaHeading = 'Transactions' %}
+{% set mainHeading = 'Mangopay ' ~ transaction.Nature|capitalize ~ ' Transfer' %}
+{% set maturityLabel = 'beta' %}
+
+{% set statusToColor = {
+    'SUCCEEDED': 'green',
+    'CREATED': 'gray',
+    'FAILED': 'red',
+} %}
+
+
+{% block page_content %}
+
+    {{ include('admin/pages/transactions/mangopay/_transaction_common.html.twig') }}
+
+    {% if refunds is defined %}
+
+        {% set totalRefunded = refunds|reduce((carry, v) => carry + v.CreditedFunds.Amount) %}
+
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": 'transaction-refunds',
+            "sectionTitle": 'Refunds',
+            "linkActions": [
+                {
+                    "text": "Create Refund",
+                    "route": "admin_transactions_mangopay_transfer_refund",
+                    "params": {transferId: transaction.Id},
+                    "style": "btn-dark",
+                    "roleRequired": "ROLE_FINANCIAL_OPS",
+                    "render": transaction.Status == 'SUCCEEDED' and totalRefunded < transaction.DebitedFunds.Amount,
+                },
+            ]
+        } %}
+            {% block sectionContent %}
+                {% if totalRefunded >= transaction.DebitedFunds.Amount %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "notice",
+                        message: "This transfer has been fully refunded.",
+                    }) }}
+                {% endif %}
+
+                {% if transaction.Status != 'SUCCEEDED' %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "notice",
+                        message: "Refunds can only be made on succeeded transactions",
+                    }) }}
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table" id="refunds-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Id</th>
+                                <th>Status</th>
+                                <th>Debit Amount (£)</th>
+                                <th>Credit Amount (£)</th>
+                                <th>Fees (£)</th>
+                                <th>Tag/Description</th>
+                                <th>Created At</th>
+                                <th>Executed At</th>
+                                {# <th>Result Meta</th> #}
+                            </tr>
+                        </thead>
+                        <tbody class="tw-text-sm">
+                        {% for refund in refunds %}
+                            <tr>
+                                <td>{{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "More Info",
+                                            "route": "admin_transactions_mangopay_refund",
+                                            "params": {refundId: refund.Id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}</td>
+                                <td>{{ refund.Id }}</td>
+                                <td>
+                                    <span class="d-flex gap-2 align-items-center">
+                                    {{ include('admin/components/_indicator.html.twig', {color: statusToColor[refund.Status]|default('gray') }) }}
+                                    {{ refund.Status }}
+                                    </span>
+                                </td>
+                                <td>{{ (refund.DebitedFunds.Amount / 100)|number_format(2,'.')}}</td>
+                                <td>{{ (refund.CreditedFunds.Amount / 100)|number_format(2,'.')}}</td>
+                                <td>{{ (refund.Fees.Amount / 100)|number_format(2,'.')}}</td>
+                                <td>{{ refund.Tag }}</td>
+                                <td>{{ refund.CreationDate|date('Y-m-d H:i:s') }}</td>
+                                <td>{{ refund.ExecutionDate ? refund.ExecutionDate|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                                {# <td>{{ refund.ResultMessage }} ({{ refund.ResultCode }})</td> #}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+{% endblock page_content %}

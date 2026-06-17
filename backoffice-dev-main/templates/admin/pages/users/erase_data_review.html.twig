@@ -1,0 +1,48 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_user_edit' %}
+{% set backToRouteParams = {id: user.id} %}
+{% set areaHeading = 'Users' %}
+{% set mainHeading = 'Erase Data of User #' ~ user.id|default() %}
+{% set htmlTitle = 'Erase User Data' %}
+{% set maturityLabel = 'alpha' %}
+
+{% block page_content %}
+
+	{{ include('admin/components/_alert.html.twig', {
+		role: "alert",
+		variant: "notice",
+		message: "This tool will be expanded to support faster data erasure. Currently it is primarily for clearing the otherwise immutable username.",
+	}) }}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'erase-original-username',
+        "sectionTitle": 'Erase Original Username',
+		"linkActions": [
+            {
+                "text": "View Options",
+                "route": "admin_user_update_username",
+                "params": { id: user.id},
+                "style": "btn-primary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+
+		{{ include('admin/components/_alert.html.twig', {
+			variant: "warning",
+			message: "The username is used to log into an account. We use emails as the format of our usernames.",
+		}) }}
+
+		<div class="row g-3">
+			{{ include('admin/components/stat.html.twig', {
+				key: 'Current Username',
+				value: user.username,
+				className: 'col-12 col-md-6'
+			}) }}
+		</div>
+
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

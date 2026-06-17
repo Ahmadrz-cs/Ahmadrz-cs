@@ -1,0 +1,41 @@
+{% extends 'admin/pages/products/editor/_editor.html.twig' %}
+
+{% block editor_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "financials",
+        "sectionTitle": "Financial Information",
+        "sectionStyle": "pb-3",
+        "linkActions": [
+            {
+                "text": "Open Share Price Suggester in New Tab",
+                "route": "admin_utilities_asset_share_price",
+                "params": {},
+                "style": "btn-outline-dark",
+                "newTab": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form, {attr: {class: "d-flex flex-column gap-3"}}) }}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: '"Net Projected Income" will replace the "Annual Expected Return" field in future. The yield (percentage) will be derived from the income divided by the asset value.',
+            }) }}
+            <div class="row">
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.pricePerShare) }}</div>
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.amountOfShares) }}</div>
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.netProjectedIncome) }}</div>
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.minimumInvestment) }}</div>
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.termStart) }}</div>
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.investmentTerm) }}</div>
+                <div class="col-sm-6 col-lg-4">{{ form_row(form.financialYearStart) }}</div>
+            </div>
+            {{ include('admin/pages/products/editor/_editor_form_actions.html.twig', {
+                routeParams: {id: asset.id}
+            }) }}
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

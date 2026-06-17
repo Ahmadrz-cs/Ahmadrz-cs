@@ -1,0 +1,62 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'User Roles and Permissions' %}
+{% set mainHeading = 'Staff Users' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'staff-users',
+        "sectionTitle": 'Manage Staff Users',
+        "linkActions": [
+            {
+                "text": "View All Users",
+                "route": "admin_user_index",
+                "params": {},
+                "style": "btn-outline-secondary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: users
+        }) }}
+        <div class="table-responsive">
+            <table class="table table-striped" id="userlist">
+                <thead>
+                    <tr>
+                        {% if is_granted('CAN_EDIT_PERMISSION', app.user) %}
+                        <th>Actions</th>
+                        {% endif %}
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>2FA State</th>
+                        <th>Last login (d/m/Y)</th>
+                        <th>Staff Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        {% if is_granted('CAN_EDIT_PERMISSION', app.user) %}
+                        <td>
+                            <a href="{{ path('admin_user_role_edit', { user: user.id }) }}" type="button" class="btn btn-outline-dark">Edit User Role</a>
+                        </td>
+                        {% endif %}
+                        <td>{{ user.id }}</a></td>
+                        <td>
+                            <a href="{{ path('admin_user_edit', { id: user.id }) }}">{{ user.fullname }}</a>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>{% if user.security is defined and (user.security.mfaTotp or user.security.mfaEmail) %}Enabled{% else %}None{% endif %}</td>
+                        <td title="{{ user.lastLogin|date("r", false) }}">{% if user.lastLogin is not null %}{{ user.lastLogin|date("d/m/Y", false) }}{% else %}-{% endif %}</td>
+                        <td>{% include 'admin/pages/users/_roles.html.twig' %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

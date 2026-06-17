@@ -1,0 +1,56 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "payment-orders",
+        "sectionTitle": "Payment Orders",
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payment Orders Made',
+                value: paymentOrders.count|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {% include 'admin/components/pagerfanta_meta_slim.html.twig' with {'list': paymentOrders} only %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Scheduled For</th>
+                        <th>Payments</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paymentOrder in paymentOrders|default([]) %}
+                    <tr>
+                        <td>{{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Manage",
+                                    "route": "admin_payment_order_manage",
+                                    "params": { id: paymentOrder.id },
+                                    "style": "btn-sm btn-outline-dark",
+                                },
+                            }) }}
+                        </td>
+                        <td>{{ paymentOrder.id }}</td>
+                        <td>{{ paymentOrder.paymentType|capitalize }}</td>
+                        <td>{{ paymentOrder.description }}</td>
+                        <td>{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                        <td>{{ paymentOrder.payments|length }}</td>
+                        <td>{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+            
+{% endblock dashboard_content %}

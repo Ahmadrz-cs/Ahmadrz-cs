@@ -1,0 +1,27 @@
+<div class="{{ className|default('col-sm-6 col-md-3') }}">
+    <p class="text-body-secondary tw-text-sm mb-1">{{ key|default('Actions') }}</p>
+    <div class="d-flex flex-wrap gap-2">
+        {% set actionsAvailable = false %}
+
+        {% for action in primaryActions|default([]) %}
+        {% if workflow_can(object, action) %}
+        {% set actionsAvailable = true %}
+        <a class="btn btn-outline-primary" href="{{ path('admin_' ~ objectType ~ '_' ~ action, { id: object.id} ) }}">{{
+            action|capitalize }} {{ objectType|capitalize }}</a>
+        {% endif %}
+        {% endfor %}
+        
+        {% for action in dangerActions|default([]) %}
+        {% if workflow_can(object, action) %}
+        {% set actionsAvailable = true %}
+        <a class="btn btn-outline-danger" href="{{ path('admin_' ~ objectType ~ '_' ~ action, { id: object.id} ) }}"
+            onclick="return confirm('Are you sure?')">{{
+            action|capitalize }} {{ objectType|capitalize }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if not actionsAvailable %}
+        <span class="fw-bold h4">-</span>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,15 @@
+{% set defaultValueClassName = 'fw-bold fs-5' %}
+{% if indicator is defined %}
+    {% set defaultValueClassName = 'fw-bold fs-5 d-flex gap-2 align-items-center' %}
+{% endif %}
+
+<div class="d-flex flex-column gap-1 {{ className|default('col-sm-6 col-md-3') }}">
+    <div class="text-body-secondary tw-text-sm">{{ key }}</div>
+    <div data-field-name={{ key|lower|replace({' ': '-'}) }}
+        class="{{ valueClassName|default(defaultValueClassName) }}">
+        {% if indicator is defined %}
+            {{ include('admin/components/_indicator.html.twig', {color: indicator|default('gray') }) }}
+        {% endif %}
+        {{- value|nl2br -}}
+    </div>
+</div>

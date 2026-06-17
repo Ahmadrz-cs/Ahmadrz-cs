@@ -1,0 +1,213 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+{% block body %}
+ <!-- main body -->
+ <link rel="stylesheet" href="{{ cssPath }}intlTelInput.css" />
+ <style>
+	input.error {
+		border: 1px solid red;
+	}
+
+	label.error {
+		font-weight: normal;
+		color: red;
+	}
+</style>
+    <main role="main">
+       {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt=""> My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                    {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+
+                            <!-- general information -->
+                            <div class="tab-pane fade show active">
+                                <h4 class="mb-3">General Information</h4>
+                                <form id="editProfile" role="form" action="{{ path('update_profile') }}" method="POST">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="">User Id</label>
+                                            <input type="text" class="form-control form-control-icon" id="" value="{{ userInfo.id }}" name="userId" disabled>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="">Communication Email</label>
+                                            <input type="email" class="form-control" value="{{ userInfo.email }}" name="email" id="email">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="">First Name</label>
+                                            <input type="text" class="form-control form-control-icon" name="given_name" id="given_name" value="{{ userInfo.given_name }}" disabled>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="">Last name</label>
+                                            <input type="text" class="form-control form-control-icon" name="family_name" id="family_name"  value="{{ userInfo.family_name }}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="">Phone</label>
+                                            <div class="input-group mb-2">
+                                                <input id="phone" class="form-control" type="tel" value="" name="phone" placeholder="Phone Number">
+                                                <input type="hidden" value="{{ userInfo.phone_1 }}" name="phone_1" id="phone_1">
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="">Company Name</label>
+                                            <input type="text" autocomplete="off" value="{{ userInfo|get_info('organization_name') }}" placeholder="" class="form-control" name="company_name" id="company_name">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="">Company Postcode</label>
+                                            <input type="text" class="form-control" id="company_postcode" name="company_postcode" value="{{ userInfo|get_info('post_code') }}">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="">Company Address</label>
+                                            <input type="text" class="form-control" id="company_registered_address_1" name="company_registered_address_1" value="{{ userInfo|get_info('reg_address_1') }}">
+                                        </div>
+                                    </div>
+                                    <input id="" type="submit" class="btn btn-primary rounded-pill px-2" value="Save">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+
+{% endblock %}
+{% block pagejs %}
+
+ <script type="text/javascript" src="{{ asset('bundles/app/js/jquery.validate.min.js') }}"></script>
+  <script type="text/javascript" src="{{ asset('bundles/app/js/jquery.validation-additional-method.js') }}"></script>
+  <script type="text/javascript" src="{{ asset('bundles/app/js/intlTelInput.js') }}"></script>
+<script>
+$(document).ready(function () {
+    let setPhone="{{ userInfo.phone_1 }}";
+    let lastClickedtab=localStorage.getItem("lastClickedtab");
+    if(lastClickedtab==null){
+        $('#generalInfo-tab').trigger('click');
+
+    }else{
+        $('#'+lastClickedtab).trigger('click');
+    }
+
+    $('.navClick').on('click',function(){
+            let lastClickedtab=$(this).attr('id');
+            localStorage.setItem("lastClickedtab", lastClickedtab);
+    });
+
+        let input = document.querySelector("#phone");
+
+        let iti=window.intlTelInput(input, {
+            // allowDropdown: false,
+            // autoHideDialCode: false,
+            // autoPlaceholder: "off",
+            // dropdownContainer: document.body,
+            // excludeCountries: ["us"],
+            // formatOnDisplay: false,
+            // geoIpLookup: function(callback) {
+            //   $.get("http://ipinfo.io", function() {}, "jsonp").always(function(resp) {
+            //     var countryCode = (resp && resp.country) ? resp.country : "";
+            //     callback(countryCode);
+            //   });
+            // },
+            // hiddenInput: "full_number",
+            initialCountry: "gb",
+            // localizedCountries: { 'de': 'Deutschland' },
+            // nationalMode: false,
+            // onlyCountries: ['us', 'gb', 'ch', 'ca', 'do'],
+            // placeholderNumberType: "MOBILE",
+            // preferredCountries: ['cn', 'jp'],
+            // separateDialCode: true,
+            utilsScript: "{{ asset('bundles/app/js/') }}utilsIntel.js",
+            });
+
+
+
+        iti.setNumber(setPhone);
+
+    $("#editProfile").validate({
+        rules: {
+             "id": {
+                required: true,
+            },
+            "firstName": {
+                required: true,
+            },
+            "lastName": {
+                required: true,
+            },
+            "email": {
+                required: true,
+                email: true
+            },
+            "phone":{
+                required:true,
+                intelInputValidate:true
+            }
+        },
+        messages: {
+            "name": {
+                required: "Please, enter a name"
+            },
+            "email": {
+                required: "Please, enter an email",
+                email: "Email is invalid"
+            }
+        },
+        submitHandler: function (form) {
+            $('#phone_1').val(iti.getNumber());
+            //alert('valid form submitted');
+
+            form.submit();
+            return true;
+        }
+    });
+    jQuery.validator.addMethod("intelInputValidate", function(value, element) {
+        // allow any non-whitespace characters as the host part
+        return iti.isValidNumber();
+        }, 'Please enter a valid phone number');
+
+});
+
+</script>
+
+
+
+{% endblock %}

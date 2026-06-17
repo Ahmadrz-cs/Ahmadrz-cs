@@ -1,0 +1,98 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "step-contego",
+    "sectionTitle": "Contego-Northrow KYC",
+} %}
+    {% block sectionContent %}
+
+    {# Adopt KYC Reports when they are ready and fully back ported #}
+    {% set mostRecentContegoLog = contegoLogs|first %}
+    {% if mostRecentContegoLog is not empty %}
+    
+        {% if mostRecentContegoLog.RAG|upper == 'GREEN' %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "success",
+                message: "Contego-Northrow has verified this user. You can inspect the history of KYC checks performed on this user below.",
+            }) }}
+
+        {% endif %}
+        
+
+        {% if mostRecentContegoLog.RAG|upper == 'AMBER' %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "This user has a RAG score of AMBER. You should check the result on Contego-Northrow to see the reason why. Then follow your process documentation on the recommended outcome for this KYC review.",
+            }) }}
+
+        {% endif %}
+
+        {% if mostRecentContegoLog.RAG|upper == 'RED' %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "danger",
+                message: "This user has a RAG score of RED. It is likely that this user should be rejected. However, you should still check the result on Contego-Northrow in case it is a false positive.",
+            }) }}
+
+        {% endif %}
+
+        {% else %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "No Contego logs found. User may not have been checked by Contego-Northrow yet.",
+        }) }}
+
+    {% endif %}
+
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'RAG',
+            value: mostRecentContegoLog.RAG|default('N/A')
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Score',
+            value: mostRecentContegoLog.kycscore|default('N/A')
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Contego Check Created At',
+            value: mostRecentContegoLog.createdAt|default() is empty
+                ? 'N/A'
+                : mostRecentContegoLog.createdAt|date(),
+            className: "col-sm-6",
+        }) }}
+    </div>
+
+    <div class="table-responsive">
+        <h4 class="fw-bold fs-5">Contego Check History</h3>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "PDF reports may not be available for all KYC checks.",
+        }) }}
+        <table class="table" id="contegolist">
+            <thead>
+                <tr>
+                    <th>Rag</th>
+                    <th>Score</th>
+                    <th>Reference id</th>
+                    <th>Created On</th>
+                    <th>Report Url</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contegoLog in contegoLogs %}
+                    <tr>
+                        <td>{{ contegoLog.rag }}</td>
+                        <td>{{ contegoLog.kycscore }}</td>
+                        <td>{{ contegoLog.extreferenceid}}</td>
+                        <td>{{ contegoLog.createdAt|date() }}</td>
+                        <td>{% if contegoLog.pdfReportUrl is not empty %}
+                            <a class="btn btn-outline-secondary text-nowrap" target="_blank" href="{{ contegoLog.pdfReportUrl }}">Open Report <i class="fa-solid fa-fw fa-arrow-up-right-from-square tw-text-sm"></i></a>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}

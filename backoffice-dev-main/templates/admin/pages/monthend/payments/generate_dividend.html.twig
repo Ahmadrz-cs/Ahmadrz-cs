@@ -1,0 +1,97 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_dividend_manage' %}
+{% set backToRouteParams = {'id': paymentOrder.id} %}
+{% set areaHeading = 'Monthend - Generate ' ~ paymentOrder.paymentType ~'s' %}
+{% set mainHeading = paymentOrder.asset.name %}
+{% set htmlTitle = 'Generate Payments' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set sharesInCirculation = currentShareholders|reduce((carry, v) => carry + v.shares) %}
+{% set originalTotal = paymentOrder.payments|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+
+    {% if paymentOrder.payments is not empty %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "overwrite-warning",
+        "sectionTitle": "Overwriting Existing Payments",
+        "sectionStyle": "border rounded-3 p-4 border-warning",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "There are already payments in this order. Generating new payments will overwrite the existing ones!",
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% endif %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "guidelines",
+        "sectionTitle": "Guidelines",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}                        
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Asset Valuation',
+                value: "£" ~ paymentOrder.asset.fundingGoal|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shareholders in Asset',
+                value: currentShareholders|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expected Dividend Yield',
+                value: paymentOrder.asset.netProjectedYield|format_number({max_fraction_digit: 3}, style: 'percent'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expected Dividend to Pay',
+                value: (paymentOrder.asset.netProjectedIncome / 12)|format_currency('GBP'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Debit Wallet Balance',
+                value: '£' ~ walletBalance|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+    
+    {{ form_start(form) }}
+    
+    <div class="row g-3">
+        <div class="col-sm-6">{{ form_row(form.amount) }}</div>
+        <div class="col-12">
+            <div>
+                <label class="d-block fw-bold fs-5">{{ form.method.vars.label }}</label>
+                <p class="text-body-secondary tw-text-sm">{{ form.method.vars.help }}</p>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <label class="d-flex flex-column gap-2 fw-bold bg-light rounded-2 border p-3">
+                        {{ form_widget(form.method[0]) }}
+                        <div class="fw-normal tw-text-sm">Accrue any leftovers for next month.</div>
+                    </label>
+                </div>
+                <div class="col-sm-6">
+                    <label class="d-flex flex-column gap-2 fw-bold bg-light rounded-2 border p-3">
+                        {{ form_widget(form.method[1]) }}
+                        <div class="fw-normal tw-text-sm">Distribute any leftovers to payees closest to rounding up.</div>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-success" id="submit" type="submit">Generate Payments</button>
+            <a class="btn btn-outline-secondary"
+                href="{{ path('admin_monthend_dividend_manage', { id: paymentOrder.id }) }}">Cancel</a>
+        </div>
+    </div>
+    
+    {{ form_end(form) }}
+
+{% endblock page_content %}

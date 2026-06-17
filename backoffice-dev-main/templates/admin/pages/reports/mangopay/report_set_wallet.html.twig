@@ -1,0 +1,66 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_reports_mangopay_set_view' %}
+{% set backToRouteParams = {id: reportSet.id} %}
+{% set areaHeading = 'Mangopay Reports' %}
+{% set mainHeading = 'Transaction Report Builder' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set statusToColor = {
+    'available': 'green',
+    'pending': 'yellow',
+    'draft': 'gray',
+} %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'wallet-selection',
+        "sectionTitle": 'Wallet Selection',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                title: "Looking for the main wallet?",
+                message: "The classically named 'main/actual' wallet is named 'settlement' under the new split wallet system.",
+            }) }}
+
+            <div class="table-responsive">
+                <table class="table" id="asset-wallet-list">
+                    <thead>
+                        <tr>
+                            <th>Wallet Description</th>
+                            <th>Wallet Id</th>
+                            {# <th>Actions</th> #}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for walletName, walletId in walletChoices %}
+                        <tr>
+                            <td>{{ walletName|capitalize }}</td>
+                            <td>{{ walletId }}</td>
+                            {# <td></td> #}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {{ form_start(form) }}
+			{{ form_row(form.walletId) }}
+			{{ form_rest(form) }}
+			<div class="mt-3">
+				<button class="btn btn-primary" id="submit" type="submit">Submit Wallet Choice</button>
+				<a class="btn btn-outline-secondary" href="{{ path('admin_reports_mangopay_set_view', {
+                    id: reportSet.id
+                }) }}">Cancel</a>
+			</div>
+			{{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

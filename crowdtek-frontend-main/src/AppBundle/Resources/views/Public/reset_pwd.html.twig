@@ -1,0 +1,114 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Reset Password
+{% endblock %}
+{% block stylesheets %}
+	<link href="{{ asset('bundles/app/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block body %}
+
+	<!-- hero banner -->
+	<div class="hero-banner blog-detail banner-medium bg-fixed bg-overlay">
+		<div class="container pt-6 pt-md-8 position-relative layer-z-1">
+			<div class="hero-banner-content pr-2 py-4 text-center">
+				<div class="row">
+					<div class="col-lg-9 mx-auto"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<section id="complete-registration" class="forgot-password">
+		<div class="container">
+			<div>
+				<div class="card p-4 mt-n4 mb-7">
+					<h2 class="h3 mb-3">
+						Reset Password
+					</h2>
+					<form id="forgot_pwd_type" name="forgot_pwd_type" method="post" action="" class="" role="form">
+						{% if result == 'success' %}
+							<div style="color:#0000FF">
+								Your password has been successfully changed, please
+								<a style="color:#0000FF" href="{{ path('homepage') }}">Log in</a>
+							</div>
+						{% else %}
+							<div style="color:black">
+								<strong>Passwords must satisfy the following criteria to ensure they are as secure as possible:</strong>
+
+								<ul style="padding-left: 3%">
+									<li>Eight or more characters</li>
+									<li>A mix of lower and upper case English letters</li>
+									<li>At least one number (0-9)</li>
+									<li>No number sequences (eg. 5678)</li>
+
+								</ul>
+
+							</div>
+							<br>
+							<div class="mb-1">
+								Please enter your new password below.
+							</div>
+							<div class="forgot-pw-input">
+								<div class="form-group m-b-0">
+									{% if error_code is not empty %}
+										<p style="color: red">{{ error_code | raw }}</p>
+										<style>
+											.form-group ul {
+												color: red;
+												padding-left: 3%
+											}
+										</style>
+									{% endif %}
+									{{ form_widget(form.password, {'attr': {'class': 'form-control mw400','placeholder':'Enter Password'}}) }}
+								</div>
+							
+
+							<div class="form-group">
+								{{ form_widget(form.password_confirm, {'attr': {'class': 'form-control mw400','placeholder':'Re enter Password'}}) }}
+							</div>
+                            </div>
+							{{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary rounded-pill px-2'}, 'label': 'Save'} ) }}
+						{% endif %}
+					</form>
+				</div>
+			</div>
+		</div>
+		<!--/.container-->
+	</section>
+	<!--/about-us-->
+
+{% endblock %}
+
+
+{% block javascripts %}
+	<script type="text/javascript" src="{{ asset('bundles/app/js/jquery.validate.min.js') }}"></script>
+	<script type='text/javascript'>
+		// <![CDATA[
+jQuery(document).ready(function () {
+$("#forgot_pwd_type").validate({
+rules: {
+'form[password]': {
+required: true,
+minlength: 8
+},
+'form[password_confirm]': {
+required: true,
+minlength: 8,
+equalTo: "#form_password"
+}
+},
+messages: {
+'form[password]': {
+required: "Please provide a password",
+minlength: "Your password must be at least 8 characters long"
+},
+'form[password_confirm]': {
+required: "Please provide a password",
+minlength: "Your password must be at least 8 characters long",
+equalTo: "Please enter the same password as above"
+}
+}
+});
+});
+	</script>
+
+{% endblock %}

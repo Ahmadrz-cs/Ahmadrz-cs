@@ -1,0 +1,10 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_assets' %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = asset.name %}
+
+{% block page_content %}
+	{{ include('admin/components/nav_menus/monthend_dashboard.html.twig') }}
+	{% block dashboard_content %}{% endblock dashboard_content %}
+{% endblock page_content %}

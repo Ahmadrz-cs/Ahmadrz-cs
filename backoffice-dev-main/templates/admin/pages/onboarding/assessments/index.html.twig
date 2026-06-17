@@ -1,0 +1,162 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = 'Assessments' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'onboarding' %}
+
+{% set statusToColor = {
+    'Pass': 'green',
+    'Fail': 'red',
+    'No': 'gray',
+    'Yes': 'blue',
+    'Pending': 'gray',
+} %}
+
+{% block foreword %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "assessments-summary",
+        "sectionTitle": "Summary",
+        "linkActions": [
+            {
+                "text": "Export All Assessments",
+                "route": "admin_onboarding_assessment_export",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "Export All Assessment Responses",
+                "route": "admin_onboarding_assessment_response_export",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {% set total = attemptsAndOutcomes|reduce((carry, v) => carry + v.count) %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for counts in attemptsAndOutcomes %}
+                        {% set statusDescription = "Pending" %}
+                        {% if counts.passed is not null %}
+                            {% set statusDescription = counts.passed ? "Pass" : "Fail" %}
+                        {% endif %}
+                        <tr>
+                            <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                                color: statusToColor[statusDescription],
+                                value: statusDescription
+                            }) }}</td>
+                            <td>{{ counts.count }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                                color: statusToColor["Yes"],
+                                value: "Total"
+                            }) }}</td>
+                        <td>{{ total }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block filterPresets %}
+    <a href="{{ path(app.request.attributes.get('_route'), { passed: 1 }) }}" class="btn btn-light">Passed Only</a>
+    <a href="{{ path(app.request.attributes.get('_route'), { passed: 0 }) }}" class="btn btn-light">Failed Only</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.passed) }}</div>
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.complete) }}</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        title: "PS22/10 full enforcement from 2023-02-01",
+        message: "Only users registered after the full enforcement date need to take the new assessment",
+    }) }}
+    <table class="table" id="assessments-list">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Id</th>
+                <th>User</th>
+                <th>Complete</th>
+                <th>Result</th>
+                <th>Responses</th>
+                <th>Expiry</th>
+                <th>Notes</th>
+                <th>Created By</th>
+                <th>Created</th>
+                <th>Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asmt in objects %}
+                {% set isCompleted = asmt.complete ? 'Yes' : 'No' %}
+                {% set isPassed = asmt.passed is not null ? (asmt.passed ? 'Pass' : 'Fail') : 'Pending' %}
+                <tr>
+                    <td>
+                        <div class="d-flex flex-wrap gap-1">
+                            {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Edit",
+                                            "route": 'admin_onboarding_assessment_edit',
+                                            "params": {id: asmt.id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                            {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Simulate",
+                                            "route": 'admin_onboarding_assessment_simulate',
+                                            "params": {id: asmt.id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                        </div>
+                    </td>
+                    <td data-field="id">{{ asmt.Id }}</td>
+                    <td>
+                        <a href="{{ path('admin_user_dashboard_overview', {
+                            id: asmt.profile.user.id
+                        }) }}">{{ asmt.profile.user.fullname }}</a>
+                    </td>
+                    <td data-field="complete">
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[isCompleted],
+                            value: isCompleted
+                        }) }}
+                    </td>
+                    <td data-field="result">
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[isPassed],
+                            value: isPassed
+                        }) }}
+                    </td>
+                    <td data-field="responses">{{ asmt.responses|length }}</td>
+                    <td data-field="expiry">{{ asmt.expiry ? asmt.expiry : 'N/A' }}</td>
+                    <td data-field="notes">{{ asmt.notes }}</td>
+                    <td data-field="created-by">{{ asmt.createdBy }}</td>
+                    <td>{{ asmt.createdAt ? asmt.createdAt|date('Y-m-d H:i:s') : '-' }}</td>
+                    <td>{{ asmt.updatedAt ? asmt.updatedAt|date('Y-m-d H:i:s') : '-' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

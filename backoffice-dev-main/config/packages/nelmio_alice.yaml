@@ -1,0 +1,16 @@
+when@dev: &dev
+    nelmio_alice:
+        locale: "en_GB"
+        seed: 1
+        loading_limit: 5
+        max_unique_values_retry: 150
+        functions_blacklist:
+            - 'current'
+            - 'shuffle'
+            - 'date'
+            - 'time'
+            - 'file'
+            - 'md5'
+            - 'sha1'
+
+when@test: *dev

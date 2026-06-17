@@ -1,0 +1,151 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_reports_mangopay_index' %}
+{% set areaHeading = 'Reports' %}
+{% set mainHeading = 'Mangopay Report Request' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'report-config',
+        "sectionTitle": 'Report Request Configuration',
+        "linkActions": [
+            {
+				"text": "Save for later",
+				"route": "admin_reports_mangopay_store",
+				"params": {
+                    id: report.Id ?? ''
+                },
+				"style": "btn-outline-dark",
+                "render": report is not null 
+                    and report.Status == constant('\\MangoPay\\ReportStatus::ReadyForDownload'),
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+
+        {% if report is not null %}
+            
+            {% if report.Status == constant('\\MangoPay\\ReportStatus::ReadyForDownload') %}
+            
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "You can save this report permanently to our own servers with the 'Save for later' button. If there is already a record, you will be redirected to that record.",
+                }) }}
+
+            {% endif %}
+        
+            <div class="table-responsive">
+                <table class="table">
+                    <thead></thead>
+                    <tbody>
+                        <tr>
+                            <td>Report Id</td>
+                            <td>{{ report.Id }}</td>
+                        </tr>
+                        <tr>
+                            <td>Report Status</td>
+                            <td>{{ report.Status }}</td>
+                        </tr>
+                        <tr>
+                            <td>Tag/Description</td>
+                            <td>{{ report.Tag }}</td>
+                        </tr>
+                        <tr>
+                            <td>Created At</td>
+                            <td>{{ report.CreationDate|date('Y-m-d H:i:s') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Requested At</td>
+                            <td>{{ report.ReportDate|date('Y-m-d H:i:s') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Callback Url</td>
+                            <td>{{ report.CallbackURL }}</td>
+                        </tr>
+                        <tr>
+                            <td>Download Url</td>
+                            <td>{{ report.DownloadURL }}</td>
+                        </tr>
+                        <tr>
+                            <td>Report Type</td>
+                            <td>{{ report.ReportType }}</td>
+                        </tr>
+                        <tr>
+                            <td>Sort Ordering</td>
+                            <td>{{ report.Sort }}</td>
+                        </tr>
+                        <tr>
+                            <td>Is a preview?</td>
+                            <td>{{ report.Preview ? 'Yes' : 'No' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Result Code</td>
+                            <td>{{ report.ResultCode }}</td>
+                        </tr>
+                        <tr>
+                            <td>Result Message</td>
+                            <td>{{ report.ResultMessage }}</td>
+                        </tr>
+                        <tr>
+                            <td>Columns Selected</td>
+                            <td>{{ report.Columns|join("\n")|nl2br }}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Filters - AuthorId</td>
+                            <td>{{ report.Filters.AuthorId }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - WalletId</td>
+                            <td>{{ report.Filters.WalletId }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MinDebitedFundsAmount</td>
+                            <td>{{ report.Filters.MinDebitedFundsAmount }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MinDebitedFundsCurrency</td>
+                            <td>{{ report.Filters.MinDebitedFundsCurrency }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MaxDebitedFundsAmount</td>
+                            <td>{{ report.Filters.MaxDebitedFundsAmount }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MaxDebitedFundsCurrency</td>
+                            <td>{{ report.Filters.MaxDebitedFundsCurrency }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MinFeesAmount</td>
+                            <td>{{ report.Filters.MinFeesAmount }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MinFeesCurrency</td>
+                            <td>{{ report.Filters.MinFeesCurrency }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MaxFeesAmount</td>
+                            <td>{{ report.Filters.MaxFeesAmount }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - MaxFeesCurrency</td>
+                            <td>{{ report.Filters.MaxFeesCurrency }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - AfterDate</td>
+                            <td class="tw-tabular-nums">{{ report.Filters.AfterDate }} ({{ report.Filters.AfterDate ? report.Filters.AfterDate|date('Y-m-d H:i:s') : '' }})</td>
+                        </tr>
+                        <tr>
+                            <td>Filters - BeforeDate</td>
+                            <td class="tw-tabular-nums">{{ report.Filters.BeforeDate }} ({{ report.Filters.BeforeDate ? report.Filters.AfterDate|date('Y-m-d H:i:s') : '' }})</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        {% endif %}
+
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

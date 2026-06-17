@@ -1,0 +1,98 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'User Comms Cleanup' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "emails-by-subject",
+        "sectionTitle": "Emails by Subject Line",
+        "linkActions": [
+            {
+                "text": "Browser User Comms",
+                "route": "admin_maintenance_user_comms_list",
+                "params": {},
+                "style": "btn-primary",
+            },
+            {
+                "text": "Search and Delete User Comms",
+                "route": "admin_maintenance_user_comms_cleanup",
+                "params": {},
+                "style": "btn-danger",
+            }
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Emails Found',
+                value: sizeBySubject|reduce((carry, v) => carry + v.count),
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Most Common',
+                value: sizeBySubject[0].subject|default('N/A')
+                    ~ ' (' ~ sizeBySubject[0].count|default(0) ~  ')',
+                className: 'col-md-6'
+            }) }}
+        </div>
+        <div class="overflow-auto">
+            <table class="table" id="email-subject-count">
+                <thead>
+                    <tr>
+                        <th>Subject Line</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in sizeBySubject|default([]) %}
+                    <tr>
+                        <td data-field-name="subject">{{ entry.subject }}</td>
+                        <td data-field-name="count">{{ entry.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "emails-by-subject-year",
+        "sectionTitle": "Emails by Subject Line Per Year",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {# {{ include('admin/components/stat.html.twig', {
+                key: 'SPV Company Number',
+                value: asset.companyNumber,
+                className: 'col-md-6'
+            }) }} #}
+        </div>
+        <div class="overflow-auto">
+            <table class="table" id="email-subject-count-by-year">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Subject Line</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in sizeBySubjectAndYear|default([]) %}
+                    <tr>
+                        <td>{{ entry.year }}</td>
+                        <td>{{ entry.subject }}</td>
+                        <td>{{ entry.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

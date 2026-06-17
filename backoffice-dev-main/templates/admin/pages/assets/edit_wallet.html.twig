@@ -1,0 +1,45 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_asset_wallet_list' %}
+{% set areaHeading = 'Wallets' %}
+{% set mainHeading = 'Wallet Description Editor' %}
+{% set baseTemplate = 'cms' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "wallet-info",
+        "sectionTitle": "Wallet Info",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Wallet Id": wallet.Id,
+                "Wallet Owner Id": wallet.Owners|first,
+                "Wallet Currency": wallet.Currency,
+                "Wallet Balance": (wallet.Balance.Amount / 100)|number_format(2, '.', ','),
+                "Wallet Description": wallet.Description,
+            }
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "edit-description",
+        "sectionTitle": "Edit Description",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+        <div class="row">
+            <div class="col-12">{{ form_row(form.Description) }}</div>
+            <div class="col-12">
+                {{ form_widget(form.save) }}
+                <a class="btn btn-outline-secondary" href="{{ path('admin_asset_wallet_list') }}">Discard Changes</a>
+            </div>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

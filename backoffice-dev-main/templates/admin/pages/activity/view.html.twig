@@ -1,0 +1,25 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_activity_index' %}
+{% set areaHeading = 'Platform Activity' %}
+{% set mainHeading = 'Activity Log' %}
+
+{% block page_content %}
+	{{ include('admin/components/_kv_table.html.twig', {
+		tableId: "activity-log",
+		valueDefaultStyle: "tw-font-mono",
+		kv: {
+			"Id": log.id,
+			"Time": log.loggedAt ? log.loggedAt|date("Y-m-d H:i:s") : "N/A",
+			"Action": log.action,
+			"Object Class": log.objectClass,
+			"Object Id": log.objectId,
+			"Version": log.version,
+			"Data": {
+				value: log.data|default([]),
+				format: 'json',
+			},
+			"By User": log.username,
+		}
+	}) }}
+{% endblock page_content %}

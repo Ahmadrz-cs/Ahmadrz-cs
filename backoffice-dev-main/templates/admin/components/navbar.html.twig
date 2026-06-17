@@ -1,0 +1,51 @@
+<nav class="navbar navbar-expand-lg fixed-top border-bottom bg-white">
+	<div class="container-fluid">
+		<a class="navbar-brand fw-bold" href="/">
+			<img src="{{ asset('build/images/logo_wordmark_contained.svg') }}" height="32" loading="lazy" alt="yielders logo">
+			Backoffice</a>
+		<button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navlinks-main" aria-controls="navlinks-main" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse pt-3 pt-lg-0 tw-text-sm" id="navlinks-main">
+			<ul class="navbar-nav nav-pills navbar-nav-scroll gap-2 me-auto mb-2 mb-md-0">
+				<li class="nav-item">
+					<a class="nav-link fw-medium px-3" aria-current="page" href="/">Home</a>
+				</li>
+				{% for menuName in ['cms', 'ops', 'tools', 'configuration'] %}
+					{{ include('admin/components/nav_menus/' ~ menuName ~ '.html.twig', {template: '_dropdown'}) }}
+				{% endfor %}
+			</ul>
+			<ul class="navbar-nav nav-pills gap-2 mb-2 mb-md-0">
+				<li class="nav-item">
+					{{ include('admin/components/_dropdown.html.twig', {
+                        toggleText: 'Account',
+                        align: 'right',
+                        links: [
+                            {
+								"groupName": "Logged in as",
+								"linkDefinitions": [
+									{
+										text: app.user.userIdentifier,
+									},
+									{
+										route: 'admin_profile_index',
+										text: 'Profile',
+									},
+								]
+							},
+							{
+								"linkDefinitions": [
+									{
+										route: 'app_logout',
+										text: 'Log Out',
+									},
+								]
+							}
+                        ]
+                    }) }}
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>

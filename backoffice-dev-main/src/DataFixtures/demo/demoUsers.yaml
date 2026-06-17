@@ -1,0 +1,141 @@
+include:
+    - ../templates/baseUsers.yaml
+    - ../templates/baseDocument.yaml
+
+# dynamic parameters require Alice V3 (currently broken)
+parameters:
+    walletUser_demo1: "user_m_01KQEZZRGPMYD4W55VN2YAD8NC"
+    wallet_demo1: "wlt_m_01KQF00B1ZYN3EST9DMKTTEFZ0"
+    walletUser_demo2: "user_m_01KQF1H2P30XCEWGN1SZ6X5PPC"
+    wallet_demo2: "wlt_m_01KQF1HNEEPNM9XJ9R1VGSP2W2"
+    walletUser_demo3: "user_m_01KQHBFN30KQ6N94XJCRY2BHM0"
+    wallet_demo3: "wlt_m_01KQHBG7HQJR7PKTK8Z6KXPKX8"
+    walletUser_demo4: "user_m_01KQHKAVJD1MT521HSESDCBJPC"
+    wallet_demo4: "wlt_m_01KQHKBE6H379S0BAQG62YBBPA"
+
+App\Entity\User:
+    user_demo (template, extends user_base):
+        username: '<current()>\@yielders.co.uk'
+        plainPassword: "YieldersDemo266"
+        password: '\$2y\$13\$mgzcGg8JUl73wm8gD7BTQehcDBhgsd5iE4IR3rVOtXg3jNBaGz2Cm'
+        gender: "<randomElement(['MALE', 'FEMALE'])>"
+        firstname: "Demo"
+
+    # Demo admin - shares wallet with regular Yielderverse admin.auto
+    # But no SCA activity expected
+    user{demoadmin} (extends user_random):
+        roles: ["ROLE_ADMIN"]
+        username: 'admin.demo@yielders.co.uk'
+        firstname: "Demo"
+        lastname: "Admin"
+        mangoPayUserId: "user_m_01HW3E0JWXCSNK856X9ZETKKPJ"
+        mangoPayWalletId: "wlt_m_01HW3E2FBKJ5R1QWKWR4K6ZETP"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        # Note that on Mangopay, the users were enrolled with SCA around Mid-June 2025
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+    # Fresh user without investments
+    user{demo1} (extends user_demo):
+        mangoPayUserId: "user_m_01KQEZZRGPMYD4W55VN2YAD8NC"
+        mangoPayWalletId: "wlt_m_01KQF00B1ZYN3EST9DMKTTEFZ0"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        # Note that on Mangopay, the users were enrolled with SCA around Mid-June 2025
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+        lastname: "New"
+
+    # Has investments
+    user{demo2} (extends user_demo):
+        mangoPayUserId: "user_m_01KQF1H2P30XCEWGN1SZ6X5PPC"
+        mangoPayWalletId: "wlt_m_01KQF1HNEEPNM9XJ9R1VGSP2W2"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+        lastname: "Starter"
+
+    # Kitchen sink
+    user{demo3} (extends user_demo):
+        mangoPayUserId: "user_m_01KQHBFN30KQ6N94XJCRY2BHM0"
+        mangoPayWalletId: "wlt_m_01KQHBG7HQJR7PKTK8Z6KXPKX8"
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+        lastname: "Established"
+
+    # Top Yielder kitchen sink
+    user{demo4} (extends user_demo):
+        mangoPayUserId: "user_m_01KQHKAVJD1MT521HSESDCBJPC"
+        mangoPayWalletId: "wlt_m_01KQHKBE6H379S0BAQG62YBBPA"
+        isVIP: 1
+        contego_score: "@contegoscore<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        phone2: "0257887555123"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+        lastname: "Top-Yielder"
+
+App\Entity\Investor:
+    userinvestor{demo1, demo2, demo3, demo4, demoadmin} (extends investors_base):
+
+App\Entity\Status:
+    userstatus{demo1, demo2, demo3, demo4, demoadmin} (extends userstatus_base):
+
+App\Entity\UserSecurity:
+    usersecurity{demo1, demo2, demo3, demo4, demoadmin} (extends usersecurity_base):
+        mfaEmail: false
+
+App\Entity\Address:
+    useraddress{demo1, demo2, demo3, demo4, demoadmin}:
+        user: "@user<current()>"
+        address1: "<numberBetween(1,128)> <streetName()>"
+        city: "<city()>"
+        postCode: "<postcode()>"
+        country: "GB"
+
+App\Entity\UserDocument:
+    userdoc{demo1, demo2, demo3, demo4, demoadmin}:
+        user: "@user<current()>"
+        document: "@doc_poi<current()>"
+
+App\Entity\Document:
+    doc_poi{demo1, demo2, demo3, demo4, demoadmin} (extends doc_poi):
+    doc_poa (extends doc_pdf):
+        tag: "proof_of_address"
+    doc_poc (extends doc_pdf):
+        tag: "proof_of_company"
+
+App\Entity\UserCustomFields:
+    usercustomfield{demo2}:
+        user: "@user<current()>"
+        fieldKey: "fatca"
+        fieldValue: "1"
+
+App\Entity\ContegoScore:
+    contegoscore{demo1, demo2, demo3, demo4, demoadmin} (extends contegoscore_base):
+
+App\Entity\ContegoLog:
+    contegolog{demo1} (extends contegolog_base):
+
+App\Entity\KycProfile:
+    kycProfile{demo1, demo2, demo3, demo4, demoadmin} (extends kycProfile_verified):
+
+App\Entity\OnboardingProfile:
+    onboardingProfile{demo1, demo3, demoadmin} (extends onboardingProfile_complete):
+    onboardingProfile{demo2} (extends onboardingProfile_complete):
+        category: "sophisticated"
+    onboardingProfile{demo4} (extends onboardingProfile_complete):
+        category: "hnw"
+
+App\Entity\UserStatusLog:
+    userstatuslog_active_{demo1, demo2, demo3, demo4, demoadmin} (extends userstatuslog_active):
+        occuredAt: "@userstatus<current()>->emailValidatedOn"

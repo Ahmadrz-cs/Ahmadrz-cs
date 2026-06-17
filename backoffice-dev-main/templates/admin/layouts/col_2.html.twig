@@ -1,0 +1,22 @@
+{% extends 'admin/layouts/base.html.twig' %}
+
+{% block page_layout %}
+
+	<div class="{{ containerClass|default('container-xxl') }} d-grid gap-5 py-3 py-lg-4 xl:tw-grid-cols-[16rem_1fr]">
+
+		{% block side_nav %}
+			<aside class="side-nav d-none d-xl-flex bg-white rounded-3">
+				{% block side_nav_content %}{% endblock side_nav_content %}
+			</aside>
+		{% endblock side_nav %}
+
+		{% block page_main %}
+			<main class="d-grid gap-4 {{ contentContainer|default('') }} tw-auto-rows-min">
+				{% block page_header %}{% endblock page_header %}
+				{% block page_content %}{% endblock page_content %}
+			</main>
+		{% endblock page_main %}
+
+	</div>
+
+{% endblock page_layout %}

@@ -1,0 +1,86 @@
+{% set menuLinks = [
+    {
+        "groupName": "Data",
+        "linkDefinitions": [
+            {
+                route: 'admin_export_hub',
+                text: 'Exports and Reports',
+            },
+            {
+                route: 'admin_report_mangopay_sets',
+                text: 'Wallet Reporting',
+            },
+            {
+                route: 'admin_analytics_dashboard',
+                text: 'Analytics',
+            },
+            {
+                route: 'admin_administration_shares_circulation',
+                text: 'Asset Shares Tracker',
+            },
+            {
+                route: 'admin_events_mangopay_index',
+                text: 'Mangopay Events',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+        ]
+    },
+    {
+        "groupName": "Maintenance and Upgrades",
+        "linkDefinitions": [
+            {
+                route: 'admin_asset_wallet_list',
+                text: 'Asset Wallet Manager',
+            },
+            {
+                route: 'admin_maintenance_user_comms',
+                text: 'User Comms Cleanup',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_maintenance_oauth2_cleanup',
+                text: 'OAuth2 Artifact Cleanup',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_maintenance_activity_log_cleanup',
+                text: 'Activity Log Cleanup',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_mailchimp_rejectlist_index',
+                text: 'Manage Transactional Emails',
+            },
+            {
+                route: 'admin_upgrade_mangopay_user_category',
+                text: 'Mangopay User Upgrade',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_maintenance_card_cleanup',
+                text: 'Mangopay User Card Cleanup',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+            {
+                route: 'admin_trade_system_porting_index',
+                text: 'Trade System Porter',
+                roleRequired: 'ROLE_TECH_OPS',
+            },
+        ]
+    },
+    {
+        "groupName": "Legacy Upgrades",
+        "linkDefinitions": [
+            {
+                route: 'admin_administration_doc_dashboard',
+                text: 'Documents Sync',
+            },
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_vertical_nav') ~'.html.twig', {
+    navId: 'toolsNav',
+    toggleText: 'Tools',
+    links: menuLinks,
+}) }}

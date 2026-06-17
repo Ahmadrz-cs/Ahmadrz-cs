@@ -1,0 +1,46 @@
+{% set assetWallets = {
+    'hold': asset.mangoPayWalletId,
+    'settlement/actual': asset.settlementWalletId,
+    'deposit': asset.depositWalletId,
+    'expenses': asset.expensesWalletId,
+    'tax': asset.taxWalletId,
+    'distribution': asset.distributionWalletId,
+    'treasury': asset.treasuryWalletId,
+} %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Wallet Description</th>
+                <th>Wallet Id</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for walletName, walletId in assetWallets %}
+                {% if showWallets is not defined or walletName in showWallets %}
+                    <tr class="{% if walletId in activeWallets|default([]) %}bg-info-subtle{% endif %}">
+                        <td>
+                            {% if walletId is not empty %}
+                            {{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "View Transactions",
+                                    "route": "admin_wallet_transactions",
+                                    "params": {walletId: walletId},
+                                    "style": "btn-outline-dark text-nowrap",
+                                },
+                            }) }}
+                            {% else %}-
+                            {% endif %}
+                        </td>
+                        <td data-field="walletName">{{ walletName|capitalize }}</td>
+                        <td data-field="walletId">{{ walletId|default('Missing') }}</td>
+                        
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

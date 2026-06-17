@@ -1,0 +1,28 @@
+include:
+    - ../templates/baseReport.yaml
+
+App\Entity\ReportSet:
+    draft_report_set{1} (extends report_set_base):
+        description: "Example merge test reports 1 to 3"
+        asset: "@assetkolness"
+    transaction_builder_complete (extends report_set_base):
+        description: "Example completed transaction report builder"
+        reportSetType: "wallet transaction"
+        asset: "@assetkolness"
+        progress: 100
+        periodStart: "<dateTimeBetween('-1 month', '-2 weeks')>"
+        periodEnd: "<dateTimeBetween('-1 week', 'now')>"
+
+App\Entity\Report:
+    draft_report{1..3} (extends report_base):
+        description: "Merged test report <current()>"
+        reportSets: ["@draft_report_set1"]
+    transaction_builder_report_mangopay{1..2} (extends report_base):
+        description: "Example mangopay origin report available <current()>"
+        reportSets: ["@transaction_builder_complete"]
+        status: "available"
+        origin: "mangopay"
+    transaction_builder_report_merged (extends report_base):
+        description: "Example merged report available"
+        reportSets: ["@transaction_builder_complete"]
+        status: "available"

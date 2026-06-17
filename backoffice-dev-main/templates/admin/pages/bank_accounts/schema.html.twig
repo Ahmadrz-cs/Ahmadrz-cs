@@ -1,0 +1,70 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_index' %}
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Recipient Schema Browser' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'country-form',
+        "sectionTitle": 'Select Recipient Country',
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+        <div class="row">
+            <div class="col-md-6 col-lg-4">{{ form_row(form.country) }}</div>
+            <div class="col-md-6 col-lg-4">{{ form_row(form.currency) }}</div>
+            <div class="col-md-6 col-lg-4">{{ form_row(form.payoutMethod) }}</div>
+        </div>
+        <div class="">
+            <button class="btn btn-primary" id="submit" type="submit">Submit</button>
+            <a class="btn btn-outline-secondary" href="{{ path(app.request.attributes.get('_route')) }}">Reset</a>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'recipient-schema',
+        "sectionTitle": 'Recipient Schema',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Country Code',
+                value: country ?? "N/A",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Country Name',
+                value: country ? country|country_name : "N/A",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payout Currency',
+                value: currency|default("N/A"),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Payout Method',
+                value: schema ? (schema.LocalBankTransfer|default([]) ? "LocalBankTransfer" : "InternationalBankTransfer") : payoutMethod|default("Auto")|capitalize,
+            }) }}
+        </div>
+        <section class="d-flex flex-column gap-2">
+            <h4 class="fw-bold fs-5">Supported Payout Methods</h4>
+            <pre>{{ payoutMethods|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </section>
+        <section class="d-flex flex-column gap-2">
+            <h4 class="fw-bold fs-5">Bank Account Schema</h4>
+            {% set accountSchema = schema.LocalBankTransfer|default([]) ? schema.LocalBankTransfer|default([]) : schema.InternationalBankTransfer|default([]) %}
+            <pre>{{ accountSchema|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </section>
+        <section class="d-flex flex-column gap-2">
+            <h4 class="fw-bold fs-5">Full Schema</h4>
+            <pre>{{ schema|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </section>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,74 @@
+# This is Light at the Peninsula lighthouse
+# Unique trait - 4 year term
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{partingdale} (extends asset_base):
+        name: Partingdale House - Reading
+        briefDescription: One of several new build homes in the Reading centre regeneration projects.
+        pricePerShare: 1.44
+        amountOfShares: 150000
+        companyNumber: SPVAF00006
+        netProjectedYield: '0.0591'
+        netProjectedIncome: '12765'
+        minimumInvestment: '100'
+        createdAt: "<dateTimeBetween('-8 months', '-7 months')>"
+        termStart: "@self->createdAt"
+
+App\Entity\AssetAddress:
+    assetaddress{partingdale} (extends assetaddress_base):
+        address1: Partingdale House
+        address2: 35 Sutton Road
+        city: Reading
+        postCode: RG1 8PQ
+        longitude: -0.970469
+        latitude: 51.457539
+
+App\Entity\AssetMember:
+    assetmember{partingdale} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{partingdale_aoa, partingdale_im}:
+        asset: "@assetpartingdale"
+        document: "@doc<current()>"
+    assetdoc{partingdale_logo}:
+        asset: "@assetpartingdale"
+        document: "@doc<current()>"
+    assetgallerypartingdale{1}:
+        asset: "@assetpartingdale"
+        document: "@gallerypartingdale<current()>"
+    assetdoc{partingdale_calc}:
+        asset: "@assetpartingdale"
+        document: "@doc<current()>" 
+
+App\Entity\Offering:
+    offering{partingdale} (extends offering_base):
+        asset: '@asset<current()>'
+        name: '@asset<current()>->name'
+        pricePerShare: '@asset<current()>->pricePerShare'
+        noOfShares: '@asset<current()>->amountOfShares'
+        netRentProjected: 5.91
+        grossProjectReturn: 25.36
+
+App\Entity\OfferingDocuments:
+    offeringdoc{partingdale_calc}:
+        offering: "@offeringpartingdale"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{partingdale_aoa} (extends doc_aoa):
+    doc{partingdale_im} (extends doc_im):
+    doc{partingdale_logo} (extends doc_logo):
+        description: "Newbuild in Reading suburb"
+        filename: "newbuildstock.jpg"
+    doc{partingdale_calc} (extends doc_calculations):
+    gallerypartingdale{1} (extends doc_property_photo):
+        description: "Example property document"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{partingdale} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

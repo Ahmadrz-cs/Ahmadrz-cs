@@ -1,0 +1,87 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_income_disaggregation_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Income Disaggregation' %}
+{% set mainHeading = 'Setup Transfers' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "collect-from-order-choice",
+        "sectionTitle": "Choose a Transfer Order",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        <p class="mb-0">This tools allows you to copy all the transfers from a completed income disaggregation order from the last 12 monthends. Select a suitable order below by pressing their "Preview Transfers" button.</p>
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "Transfer Order Requirements",
+        } %}
+            {% block message %}
+                <p>The following list only shows transfer orders that meet the following requirements:</p>
+                <ul>
+                    <li>Must be an <span class="fw-bold">income disaggregation</span> order</li>
+                    <li>Must be for a monthend in the last 12 months</li>
+                    <li>Must be completed</li>
+                </ul>
+                <p class="mt-3 mb-0">If no income disaggregation orders are shown below, then there are none that meet the above requirements. You can still manually add transfers.</p>
+            {% endblock message %}
+        {% endembed %}
+
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Suitable Transfer Orders',
+                value: suitableOrders|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Covering Period Between',
+                value: startDate|date('d F Y') 
+                    ~ ' - ' 
+                    ~ endDate|date('d F Y'),
+                className: 'col-md-6',
+            }) }}
+        </div>
+
+        <table class="table table-striped datatable" id="suitable-orders-list">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Id</th>
+                    <th>Related Monthend</th>
+                    <th>Description</th>
+                    <th>Number of Transfers</th>
+                    <th>Total Value Transfered (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in suitableOrders|default([]) %}
+                    <tr data-object-id="{{ order.id }}">
+                        <td>
+                            {{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Preview Transfers",
+                                    "route": "admin_monthend_income_disaggregation_copy_existing_preview",
+                                    "params": { 
+                                        id: transferOrder.id,
+                                        copyFromOrder: order.id,
+                                    },
+                                    "style": "btn-outline-dark text-nowrap",
+                                },
+                            }) }}
+                        </td>
+                        <td data-field="orderId">{{ order.id }}</td>
+                        <td data-field="related-monthend">{{ order.scheduledFor|date('Y-m') }}</td>
+                        <td data-field="description">{{ order.description }}</td>
+                        <td data-field="transferCount">{{ order.transfers|length }}</td>
+                        <td data-field="transferValue">{{ order.transfers|reduce((carry, v) => carry + v.amount)|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

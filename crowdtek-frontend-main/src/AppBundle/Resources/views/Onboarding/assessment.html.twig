@@ -1,0 +1,45 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/onboarding-base-bs4.html.twig' %}
+
+
+{% block body %}
+    <section class="row">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/bs4_flash.html.twig' %}
+            <div style="padding:10px 0; border-bottom:solid thin #333; text-transform:uppercase">
+                <div class="font-medium">SELF ASSESSMENT</div>
+            </div>
+            <div class="row mt-4 ">
+                <div class="offset-md-2 col-md-8">
+                    <h3>Investor Appropriateness Test</h3>
+                    <p>We need to make sure you fully understand the risks involved when making investments through the Yielders platform.</p>
+                    <p>This involves a short quiz that should only take a few minutes.</p>
+                    <p>If you would like more information about how Yielders works, <b><a href="https://help.yielders.co.uk/en" target="_blank">please visit the help centre</a></b>.</p>
+                    <div class="d-flex py-2" style="gap: 0.5rem;">
+                        {# <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">I'll do this later</a> #}
+                        <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('OB_assessment_quiz') }} role="button">Start Test</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

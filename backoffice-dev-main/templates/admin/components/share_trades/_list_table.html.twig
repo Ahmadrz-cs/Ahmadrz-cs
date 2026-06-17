@@ -1,0 +1,91 @@
+{% set statusToColor = {
+    'draft': 'gray',
+    'reserved': 'yellow',
+    'unsettled': 'blue',
+    'settled': 'green',
+    'suspended': 'yellow',
+    'cancelled': 'red',
+} %}
+
+<div class="table-responsive">
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    
+    {% if showAggregate|default(false) %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            title: "Aggregate Stats",
+            tableId: "aggregate-stats",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Total Count": objects|length|number_format,
+                "Total Shares": objects|reduce((carry, h) => carry + h.numberOfShares)|number_format,
+                "Total Trade Value": objects|reduce((carry, h) => carry + h.tradeValue, 0)|string|format_currency('GBP'),
+                "Settled Count": objects|filter(h => h.status == enum('App\\Entity\\Enum\\TradeStatus').Settled)|length|number_format,
+                "Settled Shares": objects|filter(h => h.status == enum('App\\Entity\\Enum\\TradeStatus').Settled)|reduce((carry, h) => carry + h.numberOfShares)|number_format,
+                "Settled Trade Value": objects|filter(h => h.status == enum('App\\Entity\\Enum\\TradeStatus').Settled)|reduce((carry, h) => carry + h.tradeValue, 0)|string|format_currency('GBP'),
+                "Unsettled Count": objects|filter(h => h.status == enum('App\\Entity\\Enum\\TradeStatus').Unsettled)|length|number_format,
+                "Unsettled Shares": objects|filter(h => h.status == enum('App\\Entity\\Enum\\TradeStatus').Unsettled)|reduce((carry, h) => carry + h.numberOfShares)|number_format,
+                "Unsettled Trade Value": objects|filter(h => h.status == enum('App\\Entity\\Enum\\TradeStatus').Unsettled)|reduce((carry, h) => carry + h.tradeValue, 0)|string|format_currency('GBP'),
+            }
+        }) }}
+    {% endif %}
+    
+    <table class="table {{ showAggregate|default(false) ? 'mt-3' : '' }} {{ tableStyle|default() }}" id="{{ tableId|default('share-trades-list') }}">
+        <thead>
+            <tr>
+                {% if actions|default([]) is not empty %}<th>Actions</th>{% endif %}
+                <th>Id</th>
+                {% if showAsset ?? true %}<th>Asset</th>{% endif %}
+                <th>Sell Order</th>
+                <th>Buy Order</th>
+                {# <th>Sell → Buy User</th> #}
+                <th>Seller</th>
+                <th>Buyer</th>
+                <th class="text-end">Quantity</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Value</th>
+                <th class="text-end">Fees</th>
+                <th class="text-end">Taxes</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in objects %}
+            <tr data-object-id="{{ item.id }}">
+                {% if actions|default([]) is not empty %}
+                    <td data-field="actions">
+                        <div class="d-flex gap-2">
+                            {% for action in actions %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": action.text,
+                                        "route": action.route,
+                                        "params": action.params|merge({id: item.id}),
+                                        "style": action.style,
+                                    },
+                                }) }}
+                            {% endfor %}
+                        </div>
+                    </td>
+                {% endif %}
+                <td data-field="id" data-uuid="{{ item.uuid }}"><a href="{{ path('admin_share_trade_view', { id: item.id }) }}">{{ item.id }}</a></td>
+                {% if showAsset ?? true %}<td data-field="asset" ><a href="{{ path('admin_product_shareholders', { id: item.sellOrder.asset.id }) }}">#{{ item.sellOrder.asset.id }} // {{ item.sellOrder.asset.name }}</a></td>{% endif %}
+                <td data-field="sellOrder"><a href="{{ path('admin_trade_order_view', { id: item.sellOrder.id }) }}">#{{ item.sellOrder.id }}</a> ({{ item.sellOrder.type.value }})</td>
+                <td data-field="buyOrder"><a href="{{ path('admin_trade_order_view', { id: item.buyOrder.id }) }}">#{{ item.buyOrder.id }}</a> ({{ item.buyOrder.type.value }})</td>
+                {# <td>{{ item.sellOrder.user.id }} → {{ item.buyOrder.user.id }}</td> #}
+                <td data-field="seller"><a href="{{ path('admin_user_dashboard_portfolio', { id: item.sellOrder.user.id }) }}">#{{ item.sellOrder.user.id }} // {{ item.sellOrder.user }}</a></td>
+                <td data-field="buyer"><a href="{{ path('admin_user_dashboard_portfolio', { id: item.buyOrder.user.id }) }}">#{{ item.buyOrder.user.id }} // {{ item.buyOrder.user }}</a></td>
+                <td data-field="quantity" class="tw-font-mono text-end">{{ item.numberOfShares|default(0)|number_format }}</td>
+                <td data-field="price" class="tw-font-mono text-end">{{ item.pricePerShare|default(0)|string|format_currency('GBP') }}</td>
+                <td data-field="tradeValue" class="tw-font-mono text-end">{{ item.tradeValue|default(0)|string|format_currency('GBP') }}</td>
+                <td data-field="fees" class="tw-font-mono text-end">{{ item.buyOrder.fees|default(0)|string|format_currency('GBP') }}</td>
+                <td data-field="taxes" class="tw-font-mono text-end">{{ item.buyOrder.taxes|default(0)|string|format_currency('GBP') }}</td>
+                <td data-field="status">{{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[item.status.value],
+                    value: item.status.value|capitalize }) }}</td>
+                <td data-field="createdAt">{{ item.createdAt|date('Y-m-d H:i:s') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

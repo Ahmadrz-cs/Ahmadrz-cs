@@ -1,0 +1,77 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_offering_index' %}
+{% set areaHeading = 'Offerings' %}
+{% set mainHeading = '#' ~ offering.id ~ ' // ' ~ offering.name %}
+{% set htmlTitle = 'Offering View' %}
+
+{% block page_content %}
+
+	<div class="nav-tabs-custom">
+		<ul class="nav nav-tabs">
+			<li class="active">
+				<a href="#personal" data-bs-toggle="tab" aria-expanded="true">Description</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="personal">
+
+				<p>Asset:
+					{{ offering.asset }}</p>
+				<p>Offering Name:
+					{{ offering.name }}</p>
+				<p>Category:
+					{{ offering.category }}</p>
+				<p>Funding Goal:
+					{{ offering.fundingGoal }}</p>
+				<p>External Commitments:
+					{{ offering.externalCommitments }}</p>
+
+				{% if offering.isFeatured == 0  %}
+					<p>Is Featured:No</p>
+				{% else %}
+					<p>Is Featured:Yes</p>
+				{% endif %}
+				{% if offering.isSecondaryMrkt == 0  %}
+					<p>Is Secondary Market:No</p>
+				{% else %}
+					<p>Is Secondary Market:Yes</p>
+				{% endif %}
+				<p>Valuation:
+					{{ offering.valuation }}</p>
+				<p>Equity Offered:
+					{{ offering.equityOffered }}</p>
+				<p>No Of Shares:
+					{{ offering.noOfShares }}</p>
+				<p>Price Per Share:
+					{{ offering.pricePerShare }}</p>
+				<p>Net Rent Projected:
+					{{ offering.netRentProjected }}</p>
+				<p>Gross Project Return:
+					{{ offering.grossProjectReturn }}</p>
+				<p>Offering Term:
+					{{ offering.offeringTerm }}</p>
+
+				<p>Minimum Commit User:
+					{{ offering.minCommitUser }}</p>
+				<p>Maximum Commit User:
+					{{ offering.maxCommitUser }}</p>
+				<p>Comments:
+					{{ offering.comments }}</p>
+
+				{% if offering.visibility == 0  %}
+					<p>Visibility:Open</p>
+				{% elseif (offering.visibility ) %}
+					<p>Visibility:Hidden</p>
+				{% else %}
+					<p>Visibility:Public</p>
+				{% endif %}
+				<td>Status:
+					{% include 'admin/pages/offerings/_status.html.twig' %}</td>
+			</div>
+			<!-- /.tab-pane -->
+		</div>
+		<!-- /.tab-content -->
+	</div>
+
+{% endblock page_content %}

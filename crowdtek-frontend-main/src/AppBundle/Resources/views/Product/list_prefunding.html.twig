@@ -1,0 +1,61 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block body %}
+<main role="main">
+    <div class="hero-banner properties banner-medium bg-fixed bg-overlay">
+        <div class="container pt-6 pt-md-8 position-relative layer-z-1">
+            <div class="hero-banner-content pr-2 py-4 text-center">
+                <div class="row">
+                    <div class="col-lg-9 mx-auto">
+                        <h2 class="h1 hero-banner-hd text-light mb-3">
+                            Prefunding Properties
+                        </h2>
+                    </div>
+                    {# <div class="col-lg-8 mx-auto">
+						<p class="hero-banner-dtls text-light mb-4">
+                            Properties that have paid back investors and are no longer under Yielders management.
+						</p>
+					</div> #}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="container my-4">
+        <p class="h5 mb-4 text-center">
+            Prefunding properties are exclusively available to Top Yielders
+        </p>
+        <div class="row gap-y-5" id="products-list">
+            {% for entry in assets|filter(a => a.featured > 0 and a.sharesAvailable > 0 and not a.buyRestricted)|sort((a, b) => (b.buyRestricted ? 0 : b.sharesAvailable) <=> (a.buyRestricted ? 0 : a.sharesAvailable)) %}
+                <article class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                    {{ include('@AppBundle/Product/_asset_card.html.twig', {
+                        asset: entry,
+                        showFields: [
+                            "Net Projected Yield",
+                            "Target End Date",
+                            "Price",
+                            "Shares Available",
+                            "Remaining",
+                        ],
+                    }) }}
+                </article>
+            {% endfor %}
+            {% for entry in assets|filter(a => a.featured <= 0 or a.sharesAvailable <= 0 or a.buyRestricted)|sort((a, b) => (b.buyRestricted ? 0 : b.sharesAvailable) <=> (a.buyRestricted ? 0 : a.sharesAvailable)) %}
+                <article class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                    {{ include('@AppBundle/Product/_asset_card.html.twig', {
+                        asset: entry,
+                        showFields: [
+                            "Net Projected Yield",
+                            "Target End Date",
+                            "Price",
+                            "Shares Available",
+                            "Remaining",
+                        ],
+                    }) }}
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+
+{% endblock %}

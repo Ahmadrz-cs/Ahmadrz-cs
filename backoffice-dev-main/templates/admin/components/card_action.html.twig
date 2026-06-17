@@ -1,0 +1,20 @@
+<article class="d-flex flex-column gap-1 p-3 border rounded">
+	<header class="d-flex tw-justify-between tw-items-start">
+		{% if title ?? false %}
+			<h5 class="tw-font-semibold tw-text-base tw-text-slate-700 mb-0">{{ title }}</h5>
+		{% endif %}
+        {% if link ?? false %}
+			{{ include('admin/components/button_link.html.twig', {
+                linkProps: link,
+            }) }}
+		{% endif %}
+	</header>
+	<section class="d-flex tw-justify-between tw-items-center">
+		{% if description ?? false %}
+			<div class="tw-text-sm tw-text-slate-500 align-middle">{{ description }}</div>
+		{% endif %}
+		{% if supplement ?? false %}
+			<div class="tw-font-semibold tw-text-sm tw-text-slate-300">{{ supplement }}</div>
+		{% endif %}
+	</section>
+</article>

@@ -1,0 +1,62 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_index' %}
+{% set mainHeading = 'Mangopay KYC Docs' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'all-kyc-docs',
+        "sectionTitle": 'All KYC Documents',
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+            <div class="row">
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.perPage) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.Status) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.Type) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.AfterDate) }}</div>
+                <div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.filters.BeforeDate) }}</div>
+            </div>
+            {{ form_rest(form) }}
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+                <a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset to Defaults</a>
+            </div>
+        {{ form_end(form) }}
+        {{ include('admin/components/_mangopay_pagination.html.twig') }}
+        <div class="table-responsive">
+            <table class="table" id="mangopay-kyc-docs">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Mangopay User Id</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Flags</th>
+                        <th>Refused Reason</th>
+                        <th>Created On</th>
+                        <th>Processed On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for doc in results %}
+                    <tr>
+                        <td>{{ doc.Id }}</td>
+                        <td>{{ doc.UserId }}</td>
+                        <td>{{ doc.Type }}</td>
+                        <td>{{ doc.Status }}</td>
+                        <td>{{ doc.Flags|join(',') }}</td>
+                        <td>{{ doc.RefusedReasonType }} - {{ doc.RefusedReasonMessage }}</td>
+                        <td>{{ doc.CreationDate|date() }}</td>
+                        <td>{{ doc.ProcessedDate ? doc.ProcessedDate|date() : 'N/A' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

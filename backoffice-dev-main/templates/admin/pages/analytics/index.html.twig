@@ -1,0 +1,185 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Analytics' %}
+{% set mainHeading = 'Dashboard' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    <div>
+        <a class="btn btn-warning" href="{{ path('admin_analytics_classic') }}">Go to Classic Dashboard</a>
+    </div>
+    {% set activeUsersMax = activeUsers
+        |reduce((carry, v) => carry.count|default(0) > v.count ? carry : v )
+        |default([]) 
+    %}
+    {% set referralMostCommon = investorReferrals
+        |reduce((carry, v) => carry.usersCount|default(0) > v.usersCount ? carry : v )
+        |default([]) 
+    %}
+    {{ include('admin/components/stat_block.html.twig', {
+        name: 'Active Users',
+        links: [
+            { name: 'admin_analytics_active_users', text: 'View Full Analysis'}
+        ],
+        stats: [
+            {
+                'label': (activeUsers.0.year|default("now"|date("Y")) ~ '-' ~ activeUsers.0.month|default("now"|date("m")))
+                    |date("Y-M"),
+                'value': activeUsers.0.count|default('0'),
+            },
+            {
+                'label': 'Last 12 months',
+                'value': activeUsers
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            },
+            {
+                'label': 'Highest in last 12 months',
+                'value': activeUsersMax.count|default('0') ~ ' (' ~ (activeUsersMax.year|default("now"|date("Y")) ~ '-' ~ activeUsersMax.month|default("now"|date("m")))
+                    |date("Y-M") ~ ')',
+            },
+        ]
+    }) }}
+    {{ include('admin/components/stat_block.html.twig', {
+        name: 'User Registrations',
+        links: [
+            { name: 'admin_analytics_referrals', text: 'Referrals Visualisation', variant: 'btn-outline-dark'}
+        ],
+        stats: [
+            {
+                'label': (userRegistrations.0.year|default("now"|date("Y")) ~ '-' ~ userRegistrations.0.month|default("now"|date("m")))
+                    |date("Y-M"),
+                'value': userRegistrations.0.count|default('0'),
+            },
+            {
+                'label': 'Last 12 months',
+                'value': userRegistrations
+                    |filter(v => v.year == "now"|date("Y") or (v.year == ("now"|date("Y") - 1) and v.month >= "now"|date("m")))
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            },
+            {
+                'label': 'Lifetime',
+                'value': userRegistrations
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            },
+            {
+                'label': 'Most Common Referral Code',
+                'value': referralMostCommon.usersCount|default('0') ~ ' (' ~ referralMostCommon.referralCode|default('-') ~ ')',
+            },
+        ]
+    }) }}
+    {{ include('admin/components/stat_block.html.twig', {
+        name: 'First Party Investments',
+        description: 'First party investments processed through the frontend/API, approximating the AUM by investments made',
+        stats: [
+            {
+                'label': platformInvestments.0.year|default('-') ~ ' Count',
+                'value': platformInvestments.0.count|default('0'),
+            },
+            {
+                'label': platformInvestments.0.year|default('-') ~ ' Value',
+                'value': '£' ~ platformInvestments.0.total
+                    |default('0')
+                    |number_format(2, '.', ','),
+            },
+            {
+                'label': 'Year-on-year change',
+                'value': platformInvestments.1.yoy
+                    |default('0')
+                    |number_format(2, '.', ',') ~ '%',
+            },
+        ]
+    }) }}
+    {{ include('admin/components/stat_block.html.twig', {
+        name: 'General Investments',
+        description: 'All settled investments including prefunding and off-market which may lead to double counting. First party investments exclude off-market and prefunding type investments',
+        links: [
+            { name: 'admin_analytics_general_investments', text: 'View Full Analysis'},
+            { name: 'admin_analytics_investments', text: 'Investments Visualisation', variant: 'btn-outline-dark'}
+        ],
+        stats: [
+            {
+                'label': 'Unique Investors',
+                'value': investorInvestmentCounts|length,
+            },
+            {
+                'label': 'Most Investments By Single Investor',
+                'value': (investorInvestmentCounts|first).count|default(0),
+            },
+            {
+                'label': 'Settled Investments',
+                'value': investments
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            },
+            {
+                'label': 'Overall Investments Value',
+                'value': '£' ~ investments
+                    |reduce((carry, v) => carry + v.total)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            },
+            {
+                'label': 'First Party Investments Value',
+                'value': '£' ~ retailInvestments
+                    |reduce((carry, v) => carry + v.firstPartyTotal)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            },
+            {
+                'label': '2ndary Market Listings Published',
+                'value': relistings
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            },
+            {
+                'label': '2ndary Market Investments Value',
+                'value': '£' ~ retailInvestments
+                    |reduce((carry, v) => carry + v.secondaryMarketTotal)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            },
+        ]
+    }) }}
+    {{ include('admin/components/stat_block.html.twig', {
+        name: 'Dividends',
+        description: 'Only includes dividends made with the CMS tool, not legacy dividends',
+        links: [
+            { name: 'admin_analytics_dividends', text: 'View Full Analysis'}
+        ],
+        stats: [
+            {
+                'label': 'Total Lifetime Dividends',
+                'value': '£' ~ dividends
+                    |reduce((carry, v) => carry + v.dividendsTotal)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            },
+            {
+                'label': 'Total Dividends this month',
+                'value': '£' ~ dividends
+                    |reduce((carry, v) => carry + v.dividendsThisMonth)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            },
+            {
+                'label': 'Assets With Dividends',
+                'value': dividends|length,
+            },
+        ]
+    }) }}
+
+    {{ include('admin/components/stat_block.html.twig', {
+        name: 'Investors',
+        description: 'Investor leaderboards across an assorted set of metrics',
+        links: [
+            { name: 'admin_analytics_investors', text: 'View Leaderboards'}
+        ],
+        stats: [
+        ]
+    }) }}
+
+{% endblock page_content %}

@@ -1,0 +1,137 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Become A Top Yielder
+{% endblock %}
+
+
+{% block body %}
+
+<main role="main">
+
+	<!-- hero banner -->
+		<div class="hero-banner become-top-yielder banner-medium bg-fixed bg-overlay">
+			<div class="container pt-6 pt-md-8 position-relative layer-z-1">
+				<div class="hero-banner-content pr-2 py-6 text-center">
+					<div class="row">
+						<div class="col-lg-9 mx-auto">
+							<h2 class="h1 hero-banner-hd text-light mb-3">
+								Becoming a Top Yielder
+							</h2>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+		<div class="top-yielder-block pt-2 pt-lg-7 mb-7">
+			<div class="full-block top-yielder b-top-y">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-5 right mt-3">
+							<hgroup>
+								<h3>Become a <span class="sr-only">Top Yielder</span></h3>
+								<h3 class="h2">Top Yielder</h3>
+							</hgroup>
+							<p>Looking to invest more than £50,000? We offer a range of tailored off market 
+																								                         UK property investment opportunities that may be perfect for you.</p>
+						</div>
+						<div class="col-lg-7 leftRight">
+							<span class="image-1">
+								<img class="img-fluid" src="{{asset('bundles/app/images/temp-9.png')}}" loading="lazy" alt="top yielder"/></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="benefits-section top-yielder-block">
+			<div class="heading">
+				<h3 class="h2 text-center mb-2">The Benefits</h3>
+			</div>
+			<div class="full-block top-yielder bg-light pt-4 mb-0 mb-lg-8 pb-4 pb-lg-0">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-6 left">
+							<span class="image-1">
+								<img class="img-fluid" src="{{asset('bundles/app/images/temp-16.jpg')}}" loading="lazy" alt="top yielder"/></span>
+						</div>
+						<div class="col-lg-6 right mt-3">
+							<hgroup>
+								<h3>Become a <span class="sr-only">Top Yielder</span></h3>
+								<h3 class="h2">Top Yielder</h3>
+							</hgroup>
+							<p>As a top Yielder, you will gain unprecedented access to the off-market deals that the Yielders sourcing team see everyday! All opportunities are of course vetted against our strict criteria. 
+																								                        Get in contact with us if you feel like you match the criteria of a Top Yielder!</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="top-yielder-block my-properties b-top  pt-5 mt-0 mt-lg-8">
+			<div class="full-block top-yielder bg-light pb-3">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-6 right mt-5 text-lg-right mb-4 mb-lg-0">
+							<hgroup>
+								<h3>Become a <span class="sr-only">Top Yielder</span></h3>
+								<h3 class="h2">Top Yielder</h3>
+							</hgroup>
+							<p>These off-market opportunities are both residential and commercial providing High Net Worth  
+																								                        individuals the chance to be part of larger scale developments. Get in contact to find out more!</p>
+						</div>
+						<div class="col-lg-6 mt-lg-n8 left Right">
+
+							<h5 class="text-lg-center">My Properties</h5>
+							<span class="image-1">
+								<img class="img-fluid" src="{{asset('bundles/app/images/temp-15.png')}}" loading="lazy" alt="top yielder"/></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="full-info-bar">
+			<div class="container">
+				<div class="d-flex justify-content-center">
+					<h3 class="text-light mr-3">Find out if this could work for you</h3>
+					<a href="{{ path('profile') }}" class="def-btn d-flex align-items-center">Go to Profile</a>
+				</div>
+			</div>
+		</div>
+
+
+		{# <div class="full-block group-investor property-group-investor mb-7">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 left">
+						<hgroup>
+							<h3>Become a <span class="sr-only">Group Investor</span></h3>
+							<h3 class="h2">Group Investor</h3>
+						</hgroup>
+						<p>Want to invest with a group of friends or family? We offer a range of crowdfunding property opportunities for 
+																					                    group investors that may be perfect for you.
+						</p>
+					</div>
+					<div class="col-lg-6 rightRight">
+						<span class="image-1">
+							<img class="img-fluid" src="{{asset('bundles/app/images/temp-17.png')}}" loading="lazy" alt="market"/></span>
+					</div>
+				</div>
+			</div>
+		</div> #}
+
+
+</main>
+{% endblock %}
+
+{% block footer %}
+	<footer class="footer">
+		<div class="container">
+			{{ include('@AppBundle/Common/footer-links.html.twig') }}
+		</div>
+	</footer>
+{% endblock %}

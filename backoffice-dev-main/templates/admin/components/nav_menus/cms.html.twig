@@ -1,0 +1,121 @@
+{% set menuLinks = [
+    {
+        "groupName": "Core",
+        "linkDefinitions": [
+            {
+                route: 'admin_asset_index',
+                text: 'Assets',
+            },
+            {
+                route: 'admin_payout_index',
+                text: 'Payouts',
+            },
+            {
+                route: 'admin_user_index',
+                text: 'Users',
+            },
+            {
+                route: 'admin_trade_order_index',
+                text: 'Trade Orders (Listings)',
+            },
+            {
+                route: 'admin_share_trade_index',
+                text: 'Share Trades',
+            },
+        ]
+    },
+    {
+        "groupName": "Documents",
+        "linkDefinitions": [
+            {
+                route: 'admin_assetdocument_index',
+                text: 'Asset Documents',
+            },
+            {
+                route: 'admin_userdocument_index',
+                text: 'User Documents',
+            },
+        ]
+    },
+    {
+        "groupName": "Transactional",
+        "linkDefinitions": [
+            {
+                route: 'admin_payment_order',
+                text: 'Payment Orders',
+            },
+            {
+                route: 'admin_transfer_order_index',
+                text: 'Transfer Orders',
+            },
+            {
+                route: 'admin_transactions_index',
+                text: 'Transactions',
+            },
+            {
+                route: 'admin_report_set_index',
+                text: 'Report Sets',
+            },
+            {
+                route: 'admin_reports_index',
+                text: 'Reports',
+            },
+        ]
+    },
+    {
+        "groupName": "Miscellaneous",
+        "linkDefinitions": [
+            {
+                route: 'admin_kyc_report_index',
+                text: 'KYC Reports',
+            },
+            {
+                route: 'admin_contegolog_index',
+                text: 'Contego Log',
+            },
+            {
+                route: 'admin_activity_index',
+                text: 'Activity Timeline',
+            },
+            {
+                route: 'admin_question_index',
+                text: 'Questions',
+            },
+        ]
+    },
+    {
+        "groupName": "Legacy",
+        "linkDefinitions": [
+            {
+                route: 'admin_offering_index',
+                text: 'Offerings',
+            },
+            {
+                route: 'admin_investment_index',
+                text: 'Investments',
+            },
+            {
+                route: 'admin_offeringdocument_index',
+                text: 'Offering Documents',
+            },
+            {
+                route: 'admin_investmentdocument_index',
+                text: 'Investment Documents',
+            },
+            {
+                route: 'admin_holding_current',
+                text: 'Shareholdings',
+            },
+            {
+                route: 'admin_holding_trades',
+                text: 'Share Trades',
+            },
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_vertical_nav') ~'.html.twig', {
+    navId: 'cmsNav',
+    toggleText: 'CMS',
+    links: menuLinks,
+}) }}

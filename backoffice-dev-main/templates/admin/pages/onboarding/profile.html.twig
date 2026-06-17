@@ -1,0 +1,38 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set backToRoute = 'admin_onboarding_index' %}
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = 'Profile' %}
+{% set maturityLabel = 'beta' %}
+
+{% set profile = user.onboardingProfile %}
+
+{% block page_content %}
+
+    {{ include('admin/components/users/_basic_info.html.twig') }}
+
+    {{ include('admin/components/onboarding/_profile.html.twig') }}
+
+    {{ include('admin/components/onboarding/_categorisations.html.twig', {
+        linkActions: [
+            {
+                "text": "Add Categorisation",
+                "route": "admin_onboarding_categorisation_add",
+                "params": { id: user.id },
+                "style": "btn-outline-primary",
+            },
+        ]
+    }) }}
+
+    {{ include('admin/components/onboarding/_assessments.html.twig', {
+        linkActions: [
+            {
+                "text": "Add Assessment",
+                "route": "admin_onboarding_assessment_add",
+                "params": { id: user.id },
+                "style": "btn-outline-primary",
+            },
+        ]
+    }) }}
+
+{% endblock page_content %}

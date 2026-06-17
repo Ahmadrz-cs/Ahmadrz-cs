@@ -1,0 +1,18 @@
+{% set defaultStyles = {
+    'green': 'tw-bg-green-600',
+    'yellow': 'tw-bg-yellow-500',
+    'red': 'tw-bg-red-500',
+    'blue': 'tw-bg-blue-600',
+    'gray': 'tw-bg-gray-300',
+} %}
+
+{% set size = size|default("md") %}
+{% set sizeStyles = "tw-w-3 tw-h-3" %}
+{% if size == "sm" %}
+    {% set sizeStyles = "tw-w-2 tw-h-2" %}
+{% elseif size == "lg" %}
+    {% set sizeStyles = "tw-w-4 tw-h-4" %}
+{% endif %}
+
+
+<span class="d-flex {{ sizeStyles }} {{ defaultStyles[color|default('gray')] }} tw-rounded-full"></span>

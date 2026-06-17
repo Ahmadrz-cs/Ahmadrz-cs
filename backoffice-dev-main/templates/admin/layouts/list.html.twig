@@ -1,0 +1,13 @@
+{% extends 'admin/layouts/' ~ baseTemplate|default('col_1') ~'.html.twig' %}
+
+{% block page_content %}
+
+	<section class="d-flex flex-wrap gap-2" id="create-actions">
+		{% block createActions %}{% endblock %}
+	</section>
+	
+	<section class="table-responsive">
+		{% block table %}{% endblock %}
+	</section>
+		
+{% endblock page_content %}

@@ -1,0 +1,141 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "monthend-checklist",
+    "sectionTitle": "Monthend Checklist",
+    "linkActions": [
+        {
+            "text": "Review Historical Monthend Activity",
+            "route": "admin_monthend_review",
+            "params": {},
+            "style": "btn-outline-dark",
+        },
+    ]
+} %}
+    {% block sectionContent %}
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Current Monthend',
+            value: 'now'|date('Y F'),
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Covering Period Between',
+            value: 'now'|date_modify('-1 month')|date('01 F Y') 
+                ~ ' - ' 
+                ~ 'now'|date_modify('-1 month')|date('t F Y'),
+            className: 'col-md-6',
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Checklist Synced At',
+            value: taskTracker.metadata.syncedAt ? taskTracker.metadata.syncedAt|date('Y-m-d H:i:s') : 'N/A'
+        }) }}
+    </div>
+    
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "Info",
+        title: "Note on the summary stats",
+        message: "Only completed orders will be tracked in the summary stats. The settlement tasks shows the investment settlement value only and then the stamp duty in brackets.",
+    }) }}
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Activity</th>
+                    <th>Orders</th>
+                    <th>Transfers/Payments</th>
+                    <th>Amount (£)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-activity-name="income-deposits">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/_task_status.html.twig', {
+                            taskName: 'incomeDeposits',
+                        }) }}
+                    </td>
+                    <td>Income Deposits</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td></td>
+                </tr>
+                <tr data-activity-name="income-disaggregations">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/_task_status.html.twig', {
+                            taskName: 'incomeDisaggregations',
+                        }) }}
+                    </td>
+                    <td>Income Disaggregations</td>
+                    <td>{{ activity.incomeDisaggregations|length|number_format(0) }}</td>
+                    <td>{{ activity.incomeDisaggregations|reduce((carry, order) => carry + order.transfers|length)|number_format(0) }}</td>
+                    <td>{{ activity.incomeDisaggregations|reduce((carry, order) => carry + order.transfers|reduce((c, v) => c + v.amount))|number_format(2) }}</td>
+                    <td>
+                        <a class="btn btn-outline-dark text-nowrap" href="{{ path('admin_monthend_income_disaggregation_index') }}">View</a>
+                    </td>
+                </tr>
+                <tr data-activity-name="dividends">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/_task_status.html.twig', {
+                            taskName: 'dividends',
+                        }) }}
+                    </td>
+                    <td>Dividends</td>
+                    <td>{{ activity.dividends|length|number_format(0) }}</td>
+                    <td>{{ activity.dividends|reduce((carry, order) => carry + order.payments|length)|number_format(0) }}</td>
+                    <td>{{ activity.dividends|reduce((carry, order) => carry + order.payments|reduce((c, v) => c + v.amount))|number_format(2) }}</td>
+                    <td>
+                        <a class="btn btn-outline-dark text-nowrap" href="{{ path('admin_monthend_overview_dividends') }}">View</a>
+                    </td>
+                </tr>
+                <tr data-activity-name="settlements">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/_task_status.html.twig', {
+                            taskName: 'settlements',
+                        }) }}
+                    </td>
+                    <td>Settlements</td>
+                    <td>{{ activity.settlements|length|number_format(0) }}</td>
+                    <td>{{ settlementsBreakdown.settlement|length|number_format(0) }}
+                        ({{ settlementsBreakdown.stampDuty|length|number_format(0) }})
+                    </td>
+                    <td>{{ settlementsBreakdown.settlement|reduce((c, v) => c + v.amount)|number_format(2) }}
+                        ({{ settlementsBreakdown.stampDuty|reduce((c, v) => c + v.amount)|number_format(2) }})
+                    </td>
+                    <td>
+                        <a class="btn btn-outline-dark text-nowrap" href="{{ path('admin_monthend_overview_settlements') }}">View</a>
+                    </td>
+                </tr>
+                <tr data-activity-name="repayments">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/_task_status.html.twig', {
+                            taskName: 'repayments',
+                        }) }}
+                    </td>
+                    <td>Repayments</td>
+                    <td>{{ activity.repayments|length|number_format(0) }}</td>
+                    <td>{{ activity.repayments|reduce((carry, order) => carry + order.payments|length)|number_format(0) }}</td>
+                    <td>{{ activity.repayments|reduce((carry, order) => carry + order.payments|reduce((c, v) => c + v.amount))|number_format(2) }}</td>
+                    <td>
+                        <a class="btn btn-outline-dark text-nowrap" href="{{ path('admin_monthend_overview_repayments') }}">View</a>
+                    </td>
+                </tr>
+                <tr data-activity-name="fee-collections">
+                    <td data-checklist-field="status">
+                        {{ include('admin/pages/monthend/_task_status.html.twig', {
+                            taskName: 'feeCollections',
+                        }) }}
+                    </td>
+                    <td>Fee Collections</td>
+                    <td>{{ activity.feeCollections|length|number_format(0) }}</td>
+                    <td>{{ activity.feeCollections|reduce((carry, order) => carry + order.transfers|length)|number_format(0) }}</td>
+                    <td>{{ activity.feeCollections|reduce((carry, order) => carry + order.transfers|reduce((c, v) => c + v.amount))|number_format(2) }}</td>
+                    <td>
+                        <a class="btn btn-outline-dark text-nowrap" href="{{ path('admin_monthend_fee_collection_index') }}">View</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}

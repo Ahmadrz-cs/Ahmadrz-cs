@@ -1,0 +1,30 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_onboarding_profile' %}
+{% set backToRouteParams = { id: user.id } %}
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = mainHeading|default('New Appropriateness Assessment') %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'ops' %}
+
+{% block objectMeta %}
+    {{ include('admin/components/users/_basic_info.html.twig') }}
+{% endblock %}
+
+{% block formContents %}
+    <section class="row">
+        <div class="col-md-6">{{ form_row(form.passed) }}</div>
+        <div class="col-md-6">
+            <label class="d-flex flex-column gap-2 bg-light rounded-2 border p-3">
+                {{ form_widget(form.complete) }}
+                <div class="fw-normal tw-text-sm">{{ form.complete.vars.help }}</div>
+            </label>
+        </div>
+        <div class="col-12">{{ form_row(form.notes) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Create Assessment</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_onboarding_profile', {id: user.id}) }}">Cancel</a>
+{% endblock %}

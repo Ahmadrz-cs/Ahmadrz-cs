@@ -1,0 +1,300 @@
+{% if active is not defined %}
+	{% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+	{% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated
+= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% if app.session.has('walletScaRequired') %}
+	{% set walletScaRequired = app.session.get('walletScaRequired') %}
+{% else %}
+	{% set walletScaRequired = null %}
+{% endif %}
+
+
+<!-- header -->
+
+
+{% if authenticated %}
+	<header class="fixed-top" id="myHeader">
+		<h1 class="sr-only">Yielders</h1>
+
+		<!-- top bar -->
+		<section class="topbar d-flex flex-column border-bottom">
+			<h2 class="sr-only">Top bar</h2>
+			<div class="topbar-container d-flex justify-content-end position-relative">
+				{# <div class="wallet position-absolute d-inline mx-auto text-center text-md">
+					
+				</div> #}
+				<ul class="topbar-list d-flex text-md w-100 w-lg-auto p-0 mb-0">
+					{# <li class="topbar-list-item d-none d-lg-block">
+						<a href="#" class="topbar-list-link pl-2 ml-1" data-toggle="modal" data-target="#referral-info" id="refer-a-friend">Refer a Friend</a>
+					</li> #}
+					<li class="topbar-list-item">
+						{% if hasUserInfo and userInfo.mangopay_wallet_id
+							and userInfo.sca_status == "active"
+							and walletScaRequired is not null
+							and walletScaRequired == false
+						%}
+							<a href="{{ path('transactions_list') }}" class="wallet-data btn-link">Wallet (£{{ app.session.get('balance')|default('0.00')|replace({' ':','})|number_format(2, '.', ',') }})</a>
+						{% else %}
+							<a href="{{ path('transactions_list') }}" class="wallet-data btn-link">Wallet</a>
+						{% endif %}
+					</li>
+					{# <li class="topbar-list-item">
+						<a href="http://blog.yielders.co.uk/" class="topbar-list-link pl-1 pl-sm-2 ml-0 ml-sm-1" target="_blank">Blog</a>
+					</li> #}
+					<li class="topbar-list-item">
+						<a href="{{path('contact_us')}}" class="topbar-list-link pl-1 pl-sm-2 ml-0 ml-sm-1">Contact</a>
+					</li>
+					<li class="topbar-list-item ml-auto ml-lg-0">
+						<a href="{{ path('logout') }}" class="topbar-list-link pl-2 ml-1">Logout</a>
+					</li>
+				</ul>
+			</div>
+		</section>
+		<nav class="navbar navbar-container navbar-expand-lg justify-content-between">
+			<h2 class="sr-only">Main Navigation</h2>
+			<!-- branding -->
+			<a class="navbar-brand" href="/">
+				<figure class="mb-0">
+					<img src="{{asset('bundles/app/img/')}}logo_wordmark_contained.svg" loading="lazy" alt="">
+				</figure>
+			</a>
+
+			<!-- main navigation -->
+			<div class="collapse navbar-collapse" id="navbarCollapse">
+				<ul class="navbar-nav mx-auto">
+					<li class="nav-item">
+						<div class="dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Properties
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-animated" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="{{ path('product_properties_current')}}">Current Properties</a>
+								<a class="dropdown-item" href="{{ path('product_properties_prefunding')}}">Prefunding Properties</a>
+								<a class="dropdown-item" href="{{ path('product_properties_archived')}}">Archived Properties</a>
+							</div>
+						</div>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ path('how_it_works') }}">How It Works</a>
+					</li>
+					<li class="nav-item">
+						<div class="dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								About Us
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-animated" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="{{ path('how_it_works') }}">How It Works</a>
+								<a class="dropdown-item" href="{{ path('about_us') }}">About Us</a>
+								{# <a class="dropdown-item" href="https://blog.yielders.co.uk/careers/" target="_blank">Careers</a> #}
+								<a class="dropdown-item" href="{{ path('contact_us') }}">Contact Us</a>
+							</div>
+						</div>
+					</li>
+					<li class="nav-item">
+						<div class="dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Knowledge Hub
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-animated" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="http://help.yielders.co.uk/en" target="_blank">Help Centre</a>
+								{# <a class="dropdown-item" href="http://blog.yielders.co.uk/" target="_blank">Blog</a> #}
+							</div>
+						</div>
+					</li>				
+				</ul>
+			</div>
+
+			<!-- RWD button -->
+			<button class="navbar-toggler p-0" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<!-- user control -->
+			<div class="user-control logged-in">
+				<a href="{{ path('my_portfolio') }}" class="btn btn-primary rounded-pill px-1 px-sm-2">My Portfolio</a>
+				<a href="{{ path('profile') }}" class="btn btn-light rounded-pill px-1 px-sm-2">My Profile</a>
+			</div>
+
+		</nav>
+		<div class="" id="risk-warning">
+			<div class="topbar-container py-1 font-weight-bold text-center" >
+				Don't invest unless you're prepared to lose all the money you invest.
+				This is a high-risk investment and you are unlikely to be protected if something goes wrong.
+				<a class="d-inline-block" href="#" data-toggle="modal" data-target="#risk-summary">Take 2 mins to learn more.</a>
+			</div>
+		</div>
+	</header>
+{% else %}
+	<header class="fixed-top" id="myHeader">
+		<h1 class="sr-only">Yielders</h1>
+
+		<!-- top bar -->
+		{# <section class="topbar d-flex flex-column border-bottom">
+			<h2 class="sr-only">Top bar</h2>
+			<div class="topbar-container d-flex justify-content-end">
+				<ul class="topbar-list d-flex justify-content-end text-md w-100 w-lg-auto p-0 mb-0">
+					<li class="topbar-list-item">
+						<a href="http://blog.yielders.co.uk/" class="topbar-list-link pl-2 ml-1" target="_blank">Blog</a>
+					</li>
+					<li class="topbar-list-item">
+						<a href="{{path('contact_us')}}" class="topbar-list-link pl-2 ml-1">Contact</a>
+					</li>
+				</ul>
+			</div>
+		</section> #}
+
+		<nav class="navbar navbar-container navbar-expand-lg justify-content-between">
+			<h2 class="sr-only">Main Navigation</h2>
+			<!-- branding -->
+			<a class="navbar-brand" href="/">
+				<figure class="mb-0">
+					<img src="{{asset('bundles/app/img/')}}logo_wordmark_contained.svg" loading="lazy" alt="">
+				</figure>
+			</a>
+
+			<!-- main navigation -->
+			<div class="collapse navbar-collapse" id="navbarCollapse">
+				<ul class="navbar-nav mx-auto">
+					<li class="nav-item">
+						<div class="dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Properties
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-animated" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="{{ path('product_properties_current')}}">Current Properties</a>
+								<a class="dropdown-item" href="{{ path('product_properties_prefunding')}}">Prefunding Properties</a>
+								<a class="dropdown-item" href="{{ path('product_properties_archived')}}">Archived Properties</a>
+							</div>
+						</div>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ path('how_it_works') }}">How It Works</a>
+					</li>
+					<li class="nav-item">
+						<div class="dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								About Us
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-animated" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="{{ path('how_it_works') }}">How It Works</a>
+								<a class="dropdown-item" href="{{ path('about_us') }}">About Us</a>
+								{# <a class="dropdown-item" href="https://blog.yielders.co.uk/careers/" target="_blank">Careers</a> #}
+								<a class="dropdown-item" href="{{ path('contact_us') }}">Contact Us</a>
+							</div>
+						</div>
+					</li>
+					<li class="nav-item">
+						<div class="dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Knowledge Hub
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-animated" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="http://help.yielders.co.uk/en" target="_blank">Help Centre</a>
+								{# <a class="dropdown-item" href="http://blog.yielders.co.uk/" target="_blank">Blog</a> #}
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+
+			<!-- RWD button -->
+			<button class="navbar-toggler p-0" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<!-- user control -->
+			<div class="user-control">
+				<a href="{{ path('login')}}" class="btn btn-light rounded-pill px-1 px-sm-2">Login</a>
+				<a href="{{ path('Onboarding')}}" class="btn btn-secondary rounded-pill px-2">Sign up</a>
+			</div>
+
+		</nav>
+
+		<div class="" id="risk-warning">
+			<div class="topbar-container py-1 font-weight-bold text-center">
+				Don't invest unless you're prepared to lose all the money you invest.
+				This is a high-risk investment and you are unlikely to be protected if something goes wrong.
+				<a class="d-inline-block" href="#" data-toggle="modal" data-target="#risk-summary">Take 2 mins to learn more.</a>
+			</div>
+		</div>
+	</header>
+{% endif %}
+
+<div class="modal fade" id="risk-summary" tabindex="-1" role="dialog" aria-labelledby="risk-summary-title" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="risk-summary-title">Risk Summary</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body p-2 text-md">
+				{% include '@AppBundle/Common/_risk_summary.html.twig' %}
+			</div>
+		</div>
+	</div>
+</div>
+
+{# {% if authenticated %}
+	<!-- begin:referral-info -->
+	<div class="modal fade y-modal" id="referral-info" tabindex="-1" role="dialog" aria-labelledby="referral-info" aria-hidden="true">
+		<div class="modal-dialog modal-md">
+			{% include('@AppBundle/Common/referralmodal.html.twig')%}
+		</div>
+	</div>
+	<!-- /#referral-info -->
+{% endif %} #}
+<script>
+$(document).ready(function() {
+  window.onscroll = function() {
+    myFunction();
+
+	
+  };
+  
+
+  // Get the header
+  var header = document.getElementById("myHeader");
+
+  // Get the offset position of the navbar
+  var sticky = header.offsetTop;
+
+  // Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
+  function myFunction() {
+    if (window.pageYOffset > sticky) {
+      header.classList.add("sticky");
+    } else {
+      header.classList.remove("sticky");
+    }
+  }
+if ($(window).scrollTop()>0 ){
+	header.classList.add("sticky");
+	}
+
+});
+
+
+
+</script>

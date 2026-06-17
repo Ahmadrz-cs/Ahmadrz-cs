@@ -1,0 +1,519 @@
+App\Entity\Mail:
+    investment.new:
+        slug: 'investment.new'
+        subject: 'Thank You for Investing'
+        name: 'Thank You for Investing'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:3:{s:10:"investment";s:32:"App\Entity\Investment";s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";}'
+        body: '\Hello {{user.fullname}}, <br/><br/>
+        Your investment into <strong>{{asset.name}} - {{offering.name}}</strong> of <strong>{{investment.investmentValue}} GBP</strong> has been registered successfully.
+        <br/><br/>We will notify you at the end of the month, once your investment has been settled and your shares are issued.
+        <br/><br/>Please note - rental income is paid 1 month in arrears, from the point of settlement.
+        <br/><br/>If you have any questions please contact the team; team@yielders.co.uk
+        <br/><br/>Thanks,'
+    investment.settled:
+        slug: 'investment.settled'
+        subject: 'Investment Settled'
+        name: 'Investment Settled'
+        sendAdmin: false
+        sendUser: true        
+        # params: 'a:2:{s:10:"investment";s:32:"App\Entity\Investment";s:5:"asset";s:27:"App\Entity\Asset";}'
+        body: '\Hi {{user.fullname}}<br><br>
+        Congratulations! Your investment has officially been settled and you are now the
+        lawful owner of ({{investment.numberOfShares}}) shares in {{asset.name}}.
+        <br><br>
+        Our management team have been working extremely hard in the background to ensure all
+        legalities and share register updates have been made. You will now be able to access your
+        share certificate under your investment in My Portfolio alongside all other documentation
+        in relation to your investment.
+        <br>'
+    user.registration:
+        slug: 'user.registration'
+        subject: 'Congratulations on becoming a Yielder !'
+        name: 'Congratulations on becoming a Yielder !'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi {{user.fullname}}, <br/><br>
+              Congratulations on becoming a Yielder!<br/><br/>
+              You have made the first step towards a successful investment portfolio.<br/><br/>
+              Please follow the link below to verify your email address and complete your profile.
+              <br/><br/>
+              <a href="{{url}}">Verify Email</a>
+              <br/>'
+    user.registration.admin:
+        slug: 'user.registration.admin'
+        subject: 'Congratulations on becoming a Yielder !'
+        name: 'Congratulations on becoming a Yielder !'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Team Yielders, <br/><br>
+
+              <strong>{{user.fullname}} - {{user.email}}</strong> has signed up to your site.
+              <br/>'
+    user.password.forgot:
+            slug: 'user.password.forgot'
+            subject: 'Password Reset '
+            name: 'Password Reset '
+            sendAdmin: true
+            sendUser: true            
+            # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+            body: '\Hi {{user.fullname}}, <br/><br/>
+
+            We have received your request to reset your Yielders password.<br/><br/>
+
+            <strong>Password Re-set:</strong><br/>
+            1) Your Password must include at least 8 characters including a minimum of 1 capital letter and 1 number.<br/><br/>
+
+            Click here to create a new password: <br/>
+            <a href="{{url}}">Reset Password</a>
+            <br/><br/>
+            1) Caution - This link will expire within 24 hours.<br/>
+            2) Once password has been reset, you can log into your account immediately.<br/>
+            3) If you have any further problems - please do not hesitate to get in contact with team@yielders.co.uk, quoting your user email account.<br/>'
+    user.password.forgot.admin:
+            slug: 'user.password.forgot.admin'
+            subject: 'Password Reset '
+            name: 'Password Reset '
+            sendAdmin: true
+            sendUser: true
+            # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+            body: '\Hi Team Yielders, <br/><br/>
+
+            User <strong>{{user.fullname}} - {{user.email}}</strong> has requested to reset their account password<br>'
+
+    offering.new:
+        slug: 'offering.new'
+        subject: 'New Offering created'
+        name: 'New Offering created'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";}'
+        body: '\Dear admin team ,<br><br>
+              A new offering is now available for our users to Invest in<br>
+              Offering : {{offering.Name}} for Asset {{asset.Name}}
+              <br><br>
+              If you have not completed your registration, please continue to do so at www.yielders.co.uk.<br>
+              If you are already a registered user, please log in, top your e-wallets and  become a part of this unique investment opportunity.
+              <br><br>
+              If you require any further assistance, please contact us on <br>
+              team@yielders.co.uk<br>
+              02072054650
+              <br><br>
+              Thank you<br>'
+    relist.offering.new.admin:
+        slug: 'relist.offering.new.admin'
+        subject: 'Request to sell shares'
+        name: 'Request to sell shares'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:3:{s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Yielders Team ,<br><br>
+              User <strong>{{user.fullname}} - ID:{{user.id}}</strong> has requested to sell shares in <strong>{{asset.Name}} - {{offering.Name}}</strong><br>
+              <strong>Number of shares for sale:</strong> {{offering.fundingGoal / asset.pricePerShare}}<br>
+              <strong>Value of Shares:</strong> £{{offering.fundingGoal}}
+              <br><br>
+              <a href="https://backoffice.yielders.co.uk/admin/offering/{{offering.Id}}/edit">Offering Link</a>
+              <br>'
+    relist.offering.new:
+        slug: 'relist.offering.new'
+        subject: 'Request to sell shares'
+        name: 'Request to sell shares'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:3:{s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi {{user.fullname}} ,<br><br>
+              Your request for selling your shares in <strong>{{asset.Name}} - {{offering.Name}}</strong><br> has been request.
+              A member of Yielders team will get in touch with you shortly.<br><br>
+              <strong>Number of shares for sale:</strong> {{offering.fundingGoal / asset.pricePerShare}}<br>
+              <strong>Value of Shares:</strong> £{{offering.fundingGoal}}
+              <br>'
+    fundinggoal.fiftypercent:
+        slug: 'fundinggoal.fiftypercent'
+        subject: 'Funding Goal Fifty Percent '
+        name: 'Funding Goal Fifty Percent'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";}'
+        body: '\Hi {{user.firstname}},<br><br>
+        Half way there! We have managed to raise 50% investment in {{asset.name}} -
+        {{offering.name}}.<br>
+        <br><br>Theres still time for you to get involved!
+        <br>'
+    contego.response.green:
+        slug: 'contego.response.green'
+        subject: 'Contego Response Green'
+        name: 'Contego Response Green'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Admin team , <br/> <br>
+              Contego has responded with GREEN for the following User {{user.username}}<br/> '
+    contego.response.red:
+        slug: 'contego.response.red'
+        subject: 'Contego Response Red'
+        name: 'Contego Response Red'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Admin team , <br/> <br>
+              Contego has responded with RED for the following User {{user.username}}<br/> '
+    contego.response.amber:
+        slug: 'contego.response.amber'
+        subject: 'Contego Response Amber'
+        name: 'Contego Response Amber'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Admin team , <br/><br>
+              Contego has responded with AMBER for the following User {{user.username}}<br/> '
+    fundinggoal.hundredpercent:
+        slug: 'fundinggoal.hundredpercent'
+        subject: 'Funding Goal Hundred Percent '
+        name: 'Funding Goal Hundred Percent'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";}'
+        body: '\Hi {{user.firstname}},<br><br>
+        The investment round for  {{asset.name}} -{{offering.name}} has now closed!<br><br>
+        Congratulations on your investment! We will be in contact shortly
+        to confirm your settled investments, share certificates and dividend payments.
+        <br><br>
+        If you have any questions about your investment please get in contact with the team - team@yielders.co.uk
+        <br><br>
+        Thank You<br>'
+    offering.cancelled:
+        slug: 'offering.cancelled'
+        subject: 'Offering Cancelled '
+        name: 'Offering Cancelled'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:5:"asset";s:27:"App\Entity\Asset";s:8:"offering";s:30:"App\Entity\Offering";}'
+        body: '\Hi {{user.fullname}},<br><br>
+        Unfortunately due to unforeseen circumstances, we have had to cancel
+         the following offering:<br>{{asset.name}} -{{offering.name}}
+         <br><br>
+         We are endeavouring to come to a solution and will be in contact once 
+         we have further information. However, in the mean time please feel free to
+        explore our other assets.
+        <br>'
+    transaction.created:
+        slug: 'transaction.created'
+        subject: 'Transaction Created '
+        name: 'Transaction Created'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:11:"transaction";s:33:"App\Entity\Transaction";s:10:"investment";s:32:"App\Entity\Investment";}'
+        body: '\Hi {{user.fullname}},<br><br>
+        A financial transaction for the following amount has been created {{investment.investmentValue}}<br><br>
+        Transaction id : {{transaction.id}}<br>'
+    transaction.failed:
+        slug: 'transaction.failed'
+        subject: 'Transaction Failed '
+        name: 'Transaction Failed'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:11:"transaction";s:33:"App\Entity\Transaction";s:10:"investment";s:32:"App\Entity\Investment";}'
+        body: '\Hi {{user.fullname}} <br><br>
+        The transaction for investment for {{investment.investmentValue}} has failed,
+         the admin are looking into the issue.<br><br>
+         Transaction id : {{transaction.id}}<br><br>
+         Thanks,'
+    transaction.paid:
+        slug: 'transaction.paid'
+        subject: 'Transaction Paid '
+        name: 'Transaction Paid'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:2:{s:11:"transaction";s:33:"App\Entity\Transaction";s:10:"investment";s:32:"App\Entity\Investment";}'
+        body: '\Hi {{user.fullname}}<br><br>
+        Your investment for {{investment.investmentValue}} has been successfully executed.<br><br>
+        Transaction id : {{transaction.id}}<br><br>Thanks,'
+    transaction.cancelled:
+        slug: 'transaction.cancelled'
+        subject: 'Transaction Cancelled '
+        name: 'Transaction Cancelled'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:2:{s:11:"transaction";s:33:"App\Entity\Transaction";s:10:"investment";s:32:"App\Entity\Investment";}'
+        body: '\Hi {{user.fullname}}<br><br>
+        The transaction for investment for {{investment.investmentValue}} has been 
+        cancelled by the Admin team.<br><br>
+        Transaction id : {{transaction.id}}<br><br>Thanks,'
+    asset.new:
+        slug: 'asset.new'
+        subject: 'New Asset Created '
+        name: 'New Asset Created'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:5:"asset";s:27:"App\Entity\Asset";}' 
+        body : '\Dear {{user.fullname}},<br><br>
+        The following Asset has been created<br>
+        Asset Name :  {{asset.name}}<br><br>
+        Thank you<br>'
+    user.approved:
+        slug: 'user.approved'
+        subject: 'User Approved '
+        name: 'User Approved'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}' 
+        body : '\Dear {{user.fullname}},<br><br>
+        You have been approved to start trading !<br><br>
+        Thank you<br>'
+    yielder.top:
+        slug: 'yielder.top'
+        subject: 'Top Yielder '
+        name: 'Top Yielder'
+        sendAdmin: true
+        sendUser: true        
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}' 
+        body : '\Dear {{user.fullname}},<br><br>
+        You have been approved to start trading !<br><br>
+        Thank you<br>,'
+    mangopay.payin_banktransfer:
+        slug: 'mangopay.payin_banktransfer'
+        subject: 'Bankwire Transfer Details'
+        name: 'Bankwire Transfer Details'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body : '\Dear {{user.fullname}},<br><br>
+
+        Thank you for indicating that you will be making a bank transfer into your Yielders Account. UK bank transfers can clear on the same working day provided that the correct <span style="color:#ff1a1a;font-weight: bold;">wire reference</span> and <span style="color:#ff1a1a;font-weight: bold;">amount triggered</span> via the platform match the values <span style="color:#ff1a1a;font-weight: bold;"> exactly</span> as shown below.
+        <br><br>
+        For more info on International bank transfers, please click here - <a href="http://help.yielders.co.uk/en/articles/3436595-bankwire-transfers" target="_blank" rel="noopener noreferrer">http://help.yielders.co.uk/en/articles/3436595-bankwire-transfers</a>
+        <br><br>
+
+        <strong style="font-size:24px;">UK Bank Transfer:</strong><br><br>
+
+        <strong>Amount:</strong><span style="color:#ff1a1a;"> £{{ Amount }}</span><br> 
+        <strong>Wire Reference:</strong><span style="color:#ff1a1a;"> {{ wireReference }}</span><br> 
+        <strong>Owner:</strong> {{ ownerName }}<br>
+        <strong>Settlement Bank:</strong> Barclays<br>
+        <strong>Sort Code:</strong> 20-00-00<br>
+        <strong>Account Number:</strong> 63956474<br>
+        <strong>Address:</strong> 1 Churchill Place, London, E14 5HP<br>
+        <strong>Country:</strong> United Kingdom<br><br>
+
+
+        <strong style="font-size:24px;">International Bank Transfer:</strong><br><br>
+
+        Note that any bank charges will be deducted.<br>
+        <strong>Amount:</strong><span style="color:#ff1a1a;"> £{{ Amount }}</span><br> 
+        <strong>Wire Reference:</strong><span style="color:#ff1a1a;"> {{ wireReference }}</span><br>
+        <strong>Owner:</strong> {{ ownerName }}<br>
+        <strong>Settlement Bank:</strong> Barclays<br>
+        <strong>IBAN:</strong> GB09 BARC 2000 0063 9564 74<br>
+        <strong>SWIFT/BIC:</strong> {{ BIC }}<br>
+        <strong>Address:</strong> 1 Churchill Place, London, E14 5HP<br>
+        <strong>Country:</strong> United Kingdom<br><br>
+
+        Most online banking sites allow you to specify a reference for the transfer; please refer to the reference shown above which must be entered.
+        <br><br>'
+    user.gdpr_reject.admin:
+        slug: 'user.gdpr_reject.admin'
+        subject: 'User has rejected GDPR'
+        name: 'User Rejected GDPR'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Team Yielders, <br/><br>
+
+              <strong>{{user.fullname}} - {{user.email}}</strong> has rejected GDPR.
+              <br/>'
+    user.onboarding.complete:
+        slug: 'user.onboarding.complete'
+        subject: 'Congratulations - You''re a Yielder!'
+        name: 'User Onboarding Complete'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi {{user.fullname}}, <br/><br>
+               Congratulations on becoming a Yielder!<br/><br/>
+               Your profile is now complete, you can now add funds to your account and proceed to invest.<br/><br/>
+               If you require any further assistance, please do not hesitate to get in contact on <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a>.
+               <br/>'
+    user.onboarding.complete.admin:
+        slug: 'user.onboarding.complete.admin'
+        subject: 'User Onboarding Complete'
+        name: 'Admin - User Onboarding Complete'
+        sendAdmin: true
+        sendUser: false
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Team Yielders, <br/><br>
+              {{user.fullname}} - {{user.email}} has completed their profile. Ready to invest.'
+    user.onboarding.resubmit:
+        slug: 'user.onboarding.resubmit'
+        subject: 'User Onboarding In Progress'
+        name: 'User Onboarding Resubmit ID'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi {{user.fullname}}, <br/><br>
+               Thank you for signing up to the Yielders platform.<br/><br/>
+               We are working on completing your profile, this can take up to 4 (working) hours.
+               Sit tight and we''ll be in contact as soon as your profile is finalised.
+               In the meantime you can still browse and invest on the platform (subject to T&C''s).
+               <br/><br/>
+               <a href="https://www.yielders.co.uk/all-properties">Browse all properties</a>
+               <br/><br/>'
+    user.onboarding.resubmit.admin:
+        slug: 'user.onboarding.resubmit.admin'
+        subject: 'User Onboarding In Progress'
+        name: 'Admin - User Onboarding In Progress'
+        sendAdmin: true
+        sendUser: false
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Team Yielders, <br/><br>
+              {{user.fullname}} - {{user.email}} has completed their profile, but ID is not verified.<br/><br/>
+              Client needs to resubmit ID<br/><br/>'
+    user.onboarding.contact:
+        slug: 'user.onboarding.contact'
+        subject: 'Contact Admin'
+        name: 'User Onboarding Contact Admin'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi {{user.fullname}}, <br/><br>
+               Thank you for signing up to the Yielders platform.<br/><br/>
+               We are working on verifying your profile, this can take up to 24 hours. Sit tight and we''ll be in contact as soon as your profile is complete.
+               </br></br>'
+    user.onboarding.contact.admin:
+        slug: 'user.onboarding.contact.admin'
+        subject: 'Contact Admin'
+        name: 'Admin - User Onboarding Contact Admin'
+        sendAdmin: true
+        sendUser: false
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi Team Yielders, <br/><br>
+              {{user.fullname}} - {{user.email}} has not been on-boarded; please review their profile.<br/><br/>'
+    user.onboarding.questionnaire_reset:
+        slug: 'user.onboarding.questionnaire_reset'
+        subject: 'Continue Onboarding'
+        name: 'Continue Onboarding'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Hi {{user.fullname}}, <br/><br>
+               Thank you for your interest in Yielders! You can now <a href="https://yielders.co.uk/login">log back in</a> and complete your profile.<br/><br/>
+               In the meantime, if you require any further assistance please do not hesitate to contact us.
+               </br></br>'
+    mangopay.setup.direct_debit:
+        slug: 'mangopay.setup.direct_debit'
+        subject: 'Direct Debit Set-up Confirmation'
+        name: 'Direct Debit Set-up Confirmation'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br>
+        Thank you for completing the direct debit set-up form. Please ensure you have <a href="{{ confirmationURL }}" target="_blank">confirmed the direct debit mandate.</a><strong> If you do not do so your direct debit will be automatically cancelled.</strong>
+        <br><br>
+        <strong>Direct Debit Details:</strong><br><br>
+        Amount (incl. £0.60 fee): £{{ amount }}<br>
+        Next payment date: {{ nextPaymentDate }}<br>
+        Payment Frequency: Once every month on the 20th<br>
+        <br>
+        Please note it can take up to five working days for the payment to clear.
+        <br><br>'
+
+    mangopay.direct_debit.payin:
+        slug: 'mangopay.direct_debit.payin'
+        subject: 'Direct Debit Payment Confirmation'
+        name: 'Direct Debit Payment Confirmation'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br>
+        Your Direct Debit payment has been processed.
+        <br><br>
+        <strong>Payment Details:</strong><br><br>
+        Amount (incl. £0.60 fee): £{{ amount }}<br><br>
+        Please note it can take up to five working days for the payment to clear.
+        <br><br>'
+
+    direct_debit.amount.changed:
+        slug: 'direct_debit.amount.changed'
+        subject: 'Direct Debit Amount Change Confirmation'
+        name: 'Direct Debit Amount Change Confirmation'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br>
+        Your Direct Debit amount has been changed.
+        <br><br>
+        Your Direct Debit payments are now set to: £{{ amount }} (incl. £0.60 fee)
+        <br><br>'
+
+    direct_debit.cancellation:
+        slug: 'direct_debit.cancellation'
+        subject: 'Direct Debit Cancellation Confirmation'
+        name: 'Direct Debit Cancellation Confirmation'
+        sendAdmin: true
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br>
+            This email confirms that your Direct Debit has been successfully cancelled, Direct Debit payments will no longer be processed from your bank account.
+            <br><br>
+            If you would like to set up a new Direct Debit, you can do so by <a href="https://yielders.co.uk/my-profile/direct-debit-setup" target="_blank">re-submitting your details.</a>
+            <br><br>'
+
+    password.reset.confirmation:
+        slug: 'password.reset.confirmation'
+        subject: 'Password Reset Confirmation'
+        name: 'Password Reset Confirmation'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br>
+            Your password has been successfully updated.
+            <br><br>
+            If you require any further assistance, please do not hesitate to contact us.
+            <br><br>'
+
+    user.mfa.email_code:
+        slug: 'user.mfa.email_code'
+        subject: 'Yielders Login Verification Code'
+        name: 'Yielders Login Verification Code'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: <('Hi {{user.firstname}},<br><br>Please enter the following code to finish logging in:<br><br><b>{{ user.security.emailAuthCode }}</b><br>')>
+
+    dividend.payment_confirmation:
+        slug: 'dividend.payment_confirmation'
+        subject: 'Dividend Payment Confirmation'
+        name: 'Dividend Payment Confirmation'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br>We are pleased to let you know that your dividend of £{{ amount }} for {{ assetName }} has been paid for {{ month }}, straight into your e-wallet. This amount is based on your shareholding of {{ numOfShares }}, and may be subject to fluctuation based on aspects such as arrears or unexpected expenses incurred by the SPV.<br><br>If you have any questions, please don''t hesitate to get in contact with the Team through email <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a><br><br>'
+
+    user.vip_confirmation:
+        slug: 'user.vip_confirmation'
+        subject: 'Top Yielder Confirmation'
+        name: 'Top Yielder Confirmation'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br><p>Congratulations, your onboarding for the Top Yielder process is now complete. You will now be able to view and directly invest into Top Yielder-exclusive opportunities including development and prefunding projects through the platform.</p><p>You are now also subscribed to the Top Yielder mailing list, meaning you will receive automatic notifications of any new opportunities on launch.</p><p>If you have any questions, please do get in touch with the team via the contact details below.</p><p>Yielders Investor Relations<br>0044 (0) 207 205 4650 (WhatsApp enabled)<br><a href="mailto:ir@yielders.co.uk">ir@yielders.co.uk</a></p>'
+        
+    user.vip_application:
+        slug: 'user.vip_application'
+        subject: 'Top Yielders Application Received'
+        name: 'Top Yielders Application Received'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:1:{s:4:"user";s:22:"App\Entity\User";}'
+        body: '\Dear {{user.fullname}},<br><br><p>Thank you for submitting an application for Top Yielders, we have successfully received your application. Our team will process your application and provide an update within 48 working hours.</p><p>If you have any questions, please do get in touch with the team via the contact details below.</p><p>Yielders Investor Relations<br>0044 (0) 207 205 4650<br><a href="mailto:ir@yielders.co.uk">ir@yielders.co.uk</a></p>'
+
+    divestment.payment_confirmation:
+        slug: 'divestment.payment_confirmation'
+        subject: 'Investment Exit Payment Received'
+        name: 'Divestment Payment Confirmation'
+        sendAdmin: false
+        sendUser: true
+        # params: 'a:0:{}'
+        body: '<("Dear {{user.fullname}},<br><br>You have received £{{ paymentAmount }} in your e-wallet from the investment exit of {{ asset }}. This amount is based on your shareholding of {{ shareholding }}.")>'

@@ -1,0 +1,32 @@
+# Refer to the codeception configuration reference for what options do
+# https://codeception.com/docs/reference/Configuration
+namespace: App\Tests
+support_namespace: Support
+bootstrap: bootstrap.php
+paths:
+    tests: tests
+    output: tests/_output
+    data: tests/Support/Data
+    support: tests/Support
+    envs: tests/_envs
+actor_suffix: Tester
+extensions:
+    enabled:
+        - Codeception\Extension\RunFailed
+settings:
+    colors: true
+    # lint: true
+    log: true
+    memory_limit: 1024M
+params:
+    - .env
+    # - .env.local
+    - .env.test
+    # - .env.test.local
+    - env # load params from environment vars
+modules:
+    config:
+        Db:
+            dsn: "mysql:host=%DATABASE_HOST%;dbname=%DATABASE_DBNAME%"
+            user: "%DATABASE_USER%"
+            password: "%DATABASE_PASSWORD%"

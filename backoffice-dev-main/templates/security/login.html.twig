@@ -1,0 +1,76 @@
+{% extends 'lava/lavabase.html.twig' %}
+
+{% block body %}
+<main role="main" class="container mb-5">
+    <nav class="row justify-content-between mt-3">
+        <div class="col">
+            <a href="{{ consumer_app_url }}">
+                <img class="logo-nav mb-2" src="{{ asset('build/images/logo_wordmark_contained.svg') }}" height="40" loading="lazy" alt="yielders logo">
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="{{ consumer_app_url }}/onboarding"class="btn btn-light rounded-pill px-3 py-2">Sign-up</a>
+        </div>
+    </nav>
+
+    <section class="row justify-content-center mt-2 mt-sm-5 py-5">
+        <div class="col-md-10 col-lg-8 col-xl-6">
+            <h3>Log in</h3>
+            <form method="post">
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                {# {% if app.user %}
+                    <div class="mb-3">
+                        You are logged in as {{ app.user.username }}, <a href="{{ path('app_logout') }}">Logout</a>
+                    </div>
+                {% endif %} #}
+
+                <input type="hidden" name="_csrf_token"
+                    value="{{ csrf_token('authenticate') }}"
+                >
+
+                <div class="form-row">
+                    <div class="form-group col-12 has-feedback">
+                        <label for="inputUsername" class="form-label">Username</label>
+                        <input type="text" value="{{ last_username }}" name="_username" id="inputUsername" class="form-control" autocomplete="username" required autofocus>
+                    </div>
+                    <div class="form-group col-12 has-feedback">
+                        <label for="inputPassword" class="form-label">Password</label>
+                        <div class="input-group">
+                            <input class="form-control" type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+                            <span class="btn btn-link" id="toggle-pw-visibility"><i class="fas fa-eye-slash fa-fw"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- <input id="form_sign_in" type="submit" class="btn btn-primary rounded-pill btn-lg btn-block" value="Login"> -->
+                        <button type="submit" class="btn btn-primary rounded-pill btn-lg btn-block w-100">Login</button>
+                    </div>
+                    <div class="col-sm-6 d-flex flex-column justify-content-center mt-3 mt-sm-0">
+                        <a href="{{ consumer_app_url }}/forgot-password"
+                            class="d-block btn btn-link text-sm-end py-2 py-sm-1">Forgot password?</a>
+                    </div>
+                </div>
+
+                {#
+                    Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
+                    See https://symfony.com/doc/current/security/remember_me.html
+
+                    <div class="checkbox mb-3">
+                        <label>
+                            <input type="checkbox" name="_remember_me"> Remember me
+                        </label>
+                    </div>
+                #}
+            </form>
+        </div>
+    </section>
+</main>
+{% endblock %}
+

@@ -1,0 +1,105 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_app_setting' %}
+{% set areaHeading = 'Platform Configuration' %}
+{% set mainHeading = 'Superadmin SCA Configuration' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'configure-superadmin-sca',
+        "sectionTitle": 'Configure Superadmin SCA',
+        "linkActions": [
+            {
+                "text": "Start Mangopay SCA Enrollment",
+                "route": "admin_app_setting_superadmin_sca",
+                "params": {startSession: true},
+                "style": "btn-warning",
+                "render": user.scaStatus != enum('App\\Entity\\Enum\\ScaStatus').Active,
+                "roleRequired": "ROLE_ADMIN",
+            },
+            {
+                "text": "Start Mangopay Proxy Consent Session",
+                "route": "admin_app_setting_superadmin_sca",
+                "params": {startSession: true},
+                "style": "btn-warning",
+                "render": user.scaStatus == enum('App\\Entity\\Enum\\ScaStatus').Active,
+                "roleRequired": "ROLE_ADMIN",
+            },
+            {
+                "text": "View in User Dashboard",
+                "route": "admin_user_dashboard_overview",
+                "params": {id: user.id},
+                "style": "btn-outline-secondary",
+            },
+        ],
+    } %}
+        {% block sectionContent %}
+            {% if user.scaStatus != enum('App\\Entity\\Enum\\ScaStatus').Active %}
+                {% embed 'admin/components/_alert.html.twig' with {
+                    variant: "info",
+                    title: "Superadmin SCA enrollment",
+                } %}
+                    {% block message %}
+                        <p>Superadmin must be enrolled with Strong Customer Authentication (SCA) as a requirement by Mangopay for any wallet transfer activity.</p>
+                        <p></p>
+                        <p><b>Please ensure the SCA credentials (passcodes, phone number, etc) are safely stored and accessible.</b></p>
+                        <p><b>This is especially important for when responsibility is delegated or transferred to another member of staff.</b></p>
+                        <p class="mb-0">Superadmin is the owner of all the asset wallets, so all monthend payments (e.g. dividends, etc) will typically required SCA verification. However, we can skip verification on each transfer by enabling proxy consent for "Executing Payments". You will be asked for this consent during enrollment.</p>
+                    {% endblock message %}
+                {% endembed %}
+            {% endif %}
+            {{ include('admin/components/_mangopay_proxy_info.html.twig') }}
+
+            {{ include('admin/components/_kv_table.html.twig', {
+                tableId: "user-info",
+                title: "Yielders Records",
+                valueDefaultStyle: "tw-font-mono",
+                kv: {
+                    "User Id": user.id,
+                    "Username": user.userIdentifier,
+                    "Mangopay SCA Status": user.scaStatus.value|capitalize,
+                    "Last SCA Enrollment Attempt": user.scaEnrolledAt ? user.scaEnrolledAt|date() : 'N/A',
+                    "Mangopay User Id": user.mangoPayUserId|default('N/A'),
+                    "Mangopay Wallet Id": user.mangoPayWalletId|default('N/A'),
+                }
+            }) }}
+
+            {% if scaStatus ?? null is not null %}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    tableId: "mangopay-sca-records",
+                    title: "Mangopay SCA Records",
+                    valueDefaultStyle: "tw-font-mono",
+                    kv: {
+                        "Mangopay User Status": scaStatus.UserStatus|default('N/A'),
+                        "Mangopay is SCA Enrolled": scaStatus.IsEnrolled ? 'Yes' : 'No',
+                        "Mangopay Last SCA Enrollment Date": scaStatus.LastEnrollmentDate ? user.scaEnrolledAt|date('Y-m-d H:i:s') : 'N/A',
+                    }
+                }) }}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    tableId: "proxy-consent-status",
+                    title: "Mangopay SCA Proxy Consent Records",
+                    valueDefaultStyle: "tw-font-mono",
+                    kv: {
+                        "Last Consent Collection Date": scaStatus.LastConsentCollectionDate ? scaStatus.LastConsentCollectionDate|date('Y-m-d H:i:s') : 'N/A',
+                        "Contact Information Update":  scaStatus.ConsentScope.ContactInformationUpdate|default('N/A'),
+                        "Recipient Registration": scaStatus.ConsentScope.RecipientRegistration|default('N/A'),
+                        "Transfer": scaStatus.ConsentScope.Transfer|default('N/A'),
+                        "View Account Information": scaStatus.ConsentScope.ViewAccountInformation|default('N/A'),
+                    }
+                }) }}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Consent actions that are enabled on the platform will show as either 'ACTIVE' or 'INACTIVE'. Actions not enabled will show as 'N/A'.",
+                }) }}
+            {% else %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "Unable to retrieve SCA status info from Mangopay.",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,25 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% if form.vars.data.asset is not null %}
+	{% set backToRoute = 'admin_monthend_asset_dashboard' %}
+	{% set backToRouteParams = { id: form.vars.data.asset.id } %}
+{% else %}
+	{% set backToRoute = 'admin_monthend_assets' %}
+{% endif %}
+
+{% set areaHeading = 'Monthend - Payments' %}
+{% set mainHeading = 'Create Payment Order' %}
+
+{% block page_content %}
+
+	{{ form_start(form) }}
+	<div class="row ">
+		<div class="col-12">{{ form_row(form.asset, {attr: {'class': 'searchable' }}) }}</div>
+	</div>
+	<div class="">
+		<button class="btn btn-success" id="submit" type="submit">Create Payment Order</button>
+		<a class="btn btn-outline-secondary" href="{{ path(backToRoute, backToRouteParams|default({})) }}">Abandon</a>
+	</div>
+	{{ form_end(form) }}
+
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_user_list_staff' %}
+{% set areaHeading = 'User Roles and Permissions' %}
+{% set mainHeading = user.userIdentifier %}
+{% set htmlTitle = 'Edit User Role' %}
+
+{% set staffRoles = [
+    'ROLE_SUPER_ADMIN',
+    'ROLE_ADMIN',
+    'ROLE_FINANCIAL_OPS',
+    'ROLE_OPERATIONS',
+    'ROLE_TECH_OPS',
+    'ROLE_ANALYST',
+] %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "edit-user-role",
+        "sectionTitle": "Edit User Role",
+		"linkActions": [
+            {
+                "text": "Go to User Dashboard",
+                "route": "admin_user_dashboard_overview",
+                "params": { id: user.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form, { attr: { class: "row g-3" }}) }}
+			<section class="col-12">
+				<h4 class="fw-bold fs-5">Staff Roles</h4>
+				<p class="">Staff users have access to backoffice CMS.</p>
+				<div class="row g-2">
+					{% for index, item in form.roles %}
+						{% if item.vars.value in staffRoles %}
+							<div class="col-sm-6 col-md-3 col-xl-2">
+								<label class="card card-body bg-light shadow-none border">
+									{{ form_widget(form.roles[index]) }}
+								</label>
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</section>
+			<section class="col-12">
+				<h4 class="fw-bold fs-5">Non-Staff Roles</h4>
+				<div class="row g-2">
+					{% for index, item in form.roles %}
+						{% if item.vars.value not in staffRoles %}
+							<div class="col-sm-6 col-md-3 col-xl-2">
+								<label class="card card-body bg-light shadow-none border">
+									{{ form_widget(form.roles[index]) }}
+								</label>
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</section>
+			<div class="col-12">
+				{{ form_widget(form.submit) }}
+				<a class="btn btn-outline-secondary" href="{{ path(exitRoute|default('admin_user_list_staff')) }}">Discard Changes</a>
+			</div>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "staff-role-permissions",
+        "sectionTitle": "Staff Role Permissions",
+        "linkActions": []
+    } %}
+		{% block sectionContent %}
+			<div class="table-responsive">
+				<table class="table table-striped" id="permissionsSummary">
+					<thead>
+						<th>Action</th>
+						<th>Analyst</th>
+						<th>Operations</th>
+						<th>Financial Ops</th>
+						<th>Tech Ops</th>
+						<th>Admin</th>
+						<th>Super Admin</th>
+					</thead>
+					<tbody>
+						{% for action, roles in permissionRoles %}
+							<tr>
+								<td>{{ action|capitalize }}</td>
+								<td>
+									{% if 'analyst' in roles %}
+										<i class="fa fa-check"></i>
+									{% endif %}
+								</td>
+								<td>
+									{% if 'operations' in roles %}
+										<i class="fa fa-check"></i>
+									{% endif %}
+								</td>
+								<td>
+									{% if 'finops' in roles %}
+										<i class="fa fa-check"></i>
+									{% endif %}
+								</td>
+								<td>
+									{% if 'techops' in roles %}
+										<i class="fa fa-check"></i>
+									{% endif %}
+								</td>
+								<td>
+									{% if 'admin' in roles %}
+										<i class="fa fa-check"></i>
+									{% endif %}
+								</td>
+								<td>
+									{% if 'superadmin' in roles %}
+										<i class="fa fa-check"></i>
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,195 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_setup' %}
+{% set backToRouteParams = {'id': transferOrder.id} %}
+{% set areaHeading = 'Monthend - Fee Collection' %}
+{% set mainHeading = 'Setup Transfers' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set totalFees = relistingFeeSummary|reduce((carry, v) => carry + v.totalRelistingFees) %}
+{% set totalRelisted = monthlyRelistings|reduce((carry, v) => carry + v.fundingGoal) %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "asset-relistings-summary",
+        "sectionTitle": "Generate Relisting Fee Transfers",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        {# Show warning if using non-default date range #}
+        {% if transferOrder.scheduledFor|date_modify('-1 month')|date('Y-m-01') != form.scheduledFor_gte.vars.value|date('Y-m-01')
+            or transferOrder.scheduledFor|date('Y-m-01') != form.scheduledFor_lt.vars.value|date('Y-m-01') %}
+        
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "Custom date ranges beyond the default will result in incorrect month attribution in the transfer description. It will say 'For Month " ~ transferOrder.scheduledFor|date_modify('-1 month')|date('Y-m') ~ "', rather than the full date range given. You should customise the description to suit your needs in these cases.",
+            }) }}
+
+        {% endif %}
+
+        {{ form_start(form, {attr: {class: "d-grid sm:tw-grid-cols-2 gap-4"}}) }}
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-1">
+                <h4 class="fw-bold fs-5">Step 1: Estimate Relisting Fees Collected</h4>
+                {{ form_row(form.scheduledFor_gte) }}
+                {{ form_row(form.scheduledFor_lt) }}
+                <div class="d-flex flex-wrap gap-2">
+                    {{ form_widget( form.search, { 'attr': {'class': 'btn-primary'} } ) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Cancel",
+                                "route": "admin_monthend_fee_collection_manage",
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Reset Criteria to Default",
+                            "route": app.request.attributes.get('_route'),
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-2">
+                <h4 class="fw-bold fs-5">Step 2: Generate Fee Collection Transfers</h4>
+                {% embed 'admin/components/_alert.html.twig' with {
+                    variant: "info",
+                } %}
+                    {% block message %}
+                        <p>Generated transfers will go from the asset's hold wallet to the fee wallet (or superadmin wallet if no fee wallet configured).</p>
+                        <p class="mb-0">Alternatively, you can configure a single transfer manually.</p>
+                    {% endblock message %}
+                {% endembed %}
+                {{ form_row(form.feeWalletId) }}
+                <div class="mt-auto">
+                    {{ form_widget( form.generate, { 'attr': {'class': 'btn-success'} } ) }}
+                </div>
+            </section>
+            
+            {{ form_rest(form) }}
+        {{ form_end(form) }}
+
+        <div class="row g-3">
+            <h4 class="fw-bold fs-5">Estimated Asset Relisting Fees</h4>
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Assets',
+                value: relistingFeeSummary|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Estimated Relisting Fees',
+                value: '£' ~ totalFees|number_format(2, '.', ','),
+            }) }}
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped" id="asset-relisting-fee-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Asset</th>
+                        <th>Hold Wallet Id</th>
+                        <th>Users Who Relisted</th>
+                        <th class="text-end">Estimated Relisting Fees (£)</th>
+                        <th class="text-end">Proportion (%)</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assetId, assetRelistings in relistingFeeSummary|default([]) %}
+                        {# Extract the asset from the first offering inside the grouped relistings #}
+                        {% set asset = (assetRelistings.relistings|first|first).asset %}
+                        <tr data-object-id="{{ assetId }}">
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a class="btn btn-outline-dark text-nowrap"
+                                        href="{{ path('admin_monthend_fee_collection_add_transfer', { 
+                                            transferOrder: transferOrder.id,
+                                            asset: asset.id,
+                                            feeType: 'relisting',
+                                            amount: assetRelistings.totalRelistingFees,
+                                            redirectRoute: 'admin_monthend_fee_collection_generate_relisting',
+                                        }) }}">Configure Transfer
+                                    </a>
+                                </div>
+                            </td>
+                            <td data-field="asset">
+                                <a href="{{ path('admin_product_listings', {id: assetId, sell_investment: 1}) }}">#{{ assetId }} // {{ asset.name }} ({{ asset.companyNumber }})</a>
+                            </td>
+                            <td data-field="hold-wallet-id">{{ asset.holdWalletId }}</td>
+                            <td data-field="userCount">{{ assetRelistings.relistings|length }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ assetRelistings.totalRelistingFees|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums">{{ (assetRelistings.totalRelistingFees * 100 / max(totalFees, 0.01))|number_format(3, '.', ',') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "relistings-summary",
+        "sectionTitle": "Relistings Found",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "This section shows all the matched relistings used to estimate the relisting fees above. It is for information purposes only, but can be useful for sanity checking the estimated relisting fees.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Relistings',
+                value: monthlyRelistings|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Value Relisted',
+                value: '£' ~ totalRelisted|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Covering Period Between',
+                value: form.scheduledFor_gte.vars.value|date('d F Y') 
+                    ~ ' - ' 
+                    ~ form.scheduledFor_lt.vars.value|date('d F Y'),
+                className: 'col-md-6',
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped datatable" id="relisting-list">
+                <thead>
+                    <tr>
+                        <th>Offering Id</th>
+                        <th>Asset</th>
+                        <th>Seller</th>
+                        <th>Top Yielder Fee Exemption</th>
+                        <th class="text-end">Amount Listed (£)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for listing in monthlyRelistings|default([]) %}
+                        <tr data-object-id="{{ listing.id }}">
+                            <td data-field="id">{{ listing.id }}</td>
+                            <td data-field="asset">
+                                <a href="{{ path('admin_product_listings', {id: listing.asset.id, sell_investment: 1}) }}">#{{ listing.asset.id }} // {{ listing.asset.name }} ({{ listing.asset.companyNumber }})</a>
+                            </td>
+                            <td>
+                                <a href="{{ path('admin_user_dashboard_relistings', {id: listing.sellInvestment.user.id}) }}">{{ listing.sellInvestment.user }}</a>
+                            </td>
+                            <td>{{ listing.sellInvestment.user.isVip ? 'Yes' : 'No' }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ listing.fundingGoal|number_format(2, '.', ',') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

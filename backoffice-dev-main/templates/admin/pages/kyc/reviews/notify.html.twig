@@ -1,0 +1,33 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set backToRoute = redirectRoute %}
+{% set backToRouteParams = { id: kycReview.id } %}
+{% set areaHeading = 'KYC' %}
+{% set mainHeading = 'KYC Review #' ~ kycReview.id ~ ' User Notification' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'notification-confirmation',
+        "sectionTitle": 'Notification Confirmation',
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Supported KYC Review Types",
+            message: "Currently only KYC reviews for Mangopay ID Doc renewal support notifications.",
+        }) }}
+        {{ form_start(form) }}
+        <div>
+            {# <button class="btn btn-primary" id="submit" type="submit">Save Changes</button> #}
+            {{ form_widget(form.submit) }}
+            <a class="btn btn-outline-secondary" href="{{ path(redirectRoute, {id: kycReview.id}) }}">Cancel</a>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

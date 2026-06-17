@@ -1,0 +1,77 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - cadvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - 9092:9092
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - '-port=9092'
+    depends_on:
+      - redis
+
+  # WSL2 + Docker Desktop known issue, see recommended workaround - https://github.com/google/cadvisor/issues/2648#issuecomment-1049215354
+  # Uncomment this setup if using WSL2 + Docker Desktop and comment out original cadvisor setup.
+  # cadvisor:
+  #   image: gcr.io/cadvisor/cadvisor:latest
+  #   container_name: cadvisor
+  #   ports:
+  #     - 9092:9092
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run/:/var/run/:rw
+  #     - /sys:/sys:ro
+  #     - /mnt/windows_docker/:/rootfs/var/lib/docker:ro
+  #   command:
+  #     - '-port=9092'
+  #   depends_on:
+  #     - redis
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379
+
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - ./loki:/etc/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+
+  promtail:
+    image: grafana/promtail:latest
+    restart: unless-stopped
+    volumes:
+      - ./promtail:/etc/promtail
+      # Optional - for access to docker related logs
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount to /var/log/symfony so it's distinct from other system level logs
+      - ../var/log:/var/log/symfony
+    command: -config.file=/etc/promtail/promtail-config.yml

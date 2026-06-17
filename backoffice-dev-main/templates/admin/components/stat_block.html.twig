@@ -1,0 +1,39 @@
+{#
+Required:
+- stats (array)
+
+Optional
+- name (the block heading)
+- description
+- route.name (Symfony route name for more info)
+- route.linkText (text to put on link button)
+#}
+
+<section class="d-flex flex-column gap-3 gap-lg-4 border rounded-2 p-4">
+    {% if name is defined %}
+        <h2 class="fw-bold">{{ name }}</h2>
+    {% endif %}
+
+    {% if links|default([]) is not empty %}
+        <div>
+        {% for link in links %}
+            {% if link.name is defined %}
+                <a class="btn {{ link.variant|default("btn-dark") }}" href="{{ path(link.name) }}">{{ link.text|default('More Info') }}</a>
+            {% endif %}
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if description is defined %}
+        <p class="bg-light rounded-2 p-3">{{ description }}</p>
+    {% endif %}
+    <div class="row g-3">
+        {% for stat in stats %}
+            {{ include('admin/components/stat.html.twig', {
+                key: stat.label,
+                value: stat.value,
+                className: stat.className|default(null)
+            }) }}
+        {% endfor %}
+    </div>
+</section>

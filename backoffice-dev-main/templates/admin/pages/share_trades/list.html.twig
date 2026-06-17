@@ -1,0 +1,17 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Share Trades' %}
+{% set mainHeading = 'Share Trades List' %}
+{% set maturityLabel = 'alpha' %}
+
+{% block page_content %}
+    {{ include('admin/pages/share_trades/_list_w_filters.html.twig', {
+        options: {
+            showLinks: true,
+            showPresets: true,
+            showFilters: true,
+            showAsset: true,
+            exportUri: path('admin_share_trade_index', app.request.query.all|merge({export:1}))
+        },
+    }) }}
+{% endblock page_content %}

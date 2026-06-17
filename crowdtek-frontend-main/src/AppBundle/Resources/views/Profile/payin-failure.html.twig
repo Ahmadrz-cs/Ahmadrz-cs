@@ -1,0 +1,251 @@
+{% extends "@AppBundle/onboarding-base.html.twig" %}
+
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block body %}
+
+    <section class="wrap">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/errorflash.html.twig' %}
+            <div class="row">
+
+                {% if authenticated %}
+
+                    <div class="form-step js-form-step" id="completion-message">
+                        <div class="pdg_20">
+
+                            <div class="faild">
+                                <img src="{{ asset('bundles/app/images/onboarding/icons/fail.png') }}" loading="lazy" alt="fail indicator">
+                                <h3>Sorry your payment request failed</h3>
+                                <p>{{ response_error }}</p>
+                                <p>You payment has been unsuccessful. Please try again. Alternatively, if the issue persists, please contact the Yielders team on +44 2072054650 or email on <a href="mailto:team@yielders.co.uk?subject=Onboarding Payin Failed">team@yielders.co.uk</a></p>
+
+                            </div>
+
+                            <div class="btn_1">
+                                <button type="submit" class="btn_grdnt" onclick="showAddFunds()">ADD FUNDS</button>
+                                <a class="btntest" style="margin-left:5px !important;width:165px !important" href="{{ path('product_properties_current') }}">VIEW PROPERTIES</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-step js-form-step hide" id="add-funds-form">
+                        <div class="col-md-12">
+                            <div style="padding:10px 0; border-bottom:solid thin #333; text-transform:uppercase; font-weight:700; ">
+                                <h4>ADD FUNDS</h4>
+                            </div>
+                            <div class="col-md-offset-2 col-md-8">
+                                <div class="col-md-offset-2 col-md-8">
+                                    <div class="pdg_20">
+                                        <p class="nml_p">Add Funds</p>
+
+                                        {{ form_start(form, {'attr': { 'name':'add_funds_form', onsubmit:'formatExpiryDate(event);' }}) }}
+                                        {{ form_errors(form) }}
+                                        <div class="group" style="margin-top:25px;">
+                                            <div class="col-md-6 mobile-clear">
+                                                <label for="optcard" class="radio">
+                                                    <input type="radio" name="rdo" id="optcard" class="hidden" checked="checked" onclick="paymenttype()" />
+                                                    <span class="label"></span>Pay by Debit Visa / Mastercard
+                                                </label>
+                                            </div>
+                                            <div class="col-md-6 mobile-clear">
+                                                <label for="optbank" class="radio">
+                                                    <input type="radio" name="rdo" id="optbank" class="hidden" onclick="paymenttype()" />
+                                                    <span class="label"></span>Pay by Bankwire
+                                                </label>
+
+                                            </div>
+                                        </div>
+                                        <div style="clear:both"></div>
+                                        <div class="group" style="margin-top:25px;">
+                                            {{ form_widget(form.amount, {attr:{onchange:"return amtvali();",onblur:"extractNumber(this,3,true);", onkeypress:"return blockNonNumbers(this, event, true, true);"}}) }}
+                                            <span class="highlight"></span>
+                                            <span class="bar"></span>
+                                            {{ form_label(form.amount, null, {label_attr:{id:"lblamount"}}) }}
+                                        </div>
+
+                                        <div id="paycard">
+
+                                            <div class="group">
+                                                {{ form_widget(form.cardNumber, {attr:{onchange:"return amtvali();", onblur:"extractNumber(this,3,false);", onkeypress:"return blockNonNumbers(this, event, false, false);", maxlength:"16", min:"16"}}) }}
+                                                <span class="highlight"></span>
+                                                <span class="bar"></span>
+                                                {{ form_label(form.cardNumber, null, {label_attr:{id:"lblcardNumber"}}) }}
+                                            </div>
+
+                                            <div class="group">
+                                                {{ form_widget(form.cardCvx, {attr:{onchange:"return amtvali();", onblur:"extractNumber(this,3,false);", onkeypress:"return blockNonNumbers(this, event, false, false);", maxlength:"3", min:"3"}}) }}
+                                                <span class="highlight"></span>
+                                                <span class="bar"></span>
+                                                {{ form_label(form.cardCvx, null, {label_attr:{id:"lblcardCvx"}}) }}
+                                            </div>
+
+                                            <div class="group">
+                                                <div class="col-md-12" style="padding-left:0px;color:#999;">
+                                                    Card Expiration Date
+                                                </div>
+                                                {{ form_widget(form.expiryDatePicker.day, {attr:{class:'hidden'}}) }}
+                                                {{ form_widget(form.expiryDatePicker.month, {attr:{onchange:"return amtvali();",class:'custom-dropdown__select custom-dropdown__select--red', style:'width:4em; border-bottom:solid thin #e5e5e5; border-radius:0; padding-right:1.5em;'}}) }}
+                                                <span class="delim">&#47;</span>
+                                                {{ form_widget(form.expiryDatePicker.year, {attr:{onchange:"return amtvali();",class:'custom-dropdown__select custom-dropdown__select--red', style:'width:5em; border-bottom:solid thin #e5e5e5; border-radius:0;padding-right:1.5em;'}}) }}
+                                                
+
+                                            </div>
+
+                                            <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+                                                {{ form_widget(form.addFunds, {attr:{class:"btn_grdnt", onclick:"return amtvali();"}}) }}
+                                            </div>
+                                        </div>
+                                        {{ form_end(form) }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+        <script>
+        //This script does an ajax post to the back end
+
+        var input = document.querySelector('#amount');
+
+        function setAjaxAmount() {
+            //alert("setAjaxAmount called");
+            $.ajax({
+                url: "/onboarding/setAmount",
+                type: "POST",
+
+                data: {
+                    amount: input.value
+                },
+                success: function (response) {
+                    //alert("setAjaxAmount success");
+
+                },
+                error: function () {
+                    //alert("setAjaxAmount failed");
+                }
+
+            });
+            //form validation that recalls the page showing with supplied inputs.
+
+        }
+        window.onload = function () {
+            if (document.getElementById("amount").value != "") {
+                document.getElementById("lblamount").style = "top: -15px;";
+
+            }
+            if (document.getElementById("cardNumber").value != "") {
+                document.getElementById("lblcardNumber").style = "top: -15px;";
+
+            }
+            if (document.getElementById("cardCvx").value != "") {
+                document.getElementById("lblcardCvx").style = "top: -15px;";
+
+            }
+            document.getElementById("addFunds").onclick = function fun() {
+                //alert(input.value);
+                setAjaxAmount();
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+    
+        function amtvali()
+        {
+            // var cclength=parseInt(document.getElementById("cardNumber").value );
+            var chkstpfnd=1;
+            var fndamt=parseFloat(document.getElementById("amount").value );
+            //alert(document.getElementById("cardNumber").value.length);
+            if(fndamt<100 || fndamt>1500)
+            { 
+                // alert("dd");
+                $('#amount').addClass('invalid_email');
+                    chkstpfnd=0;
+            }
+            else {
+                $('#amount').removeClass('invalid_email');
+            }
+            if(document.getElementById("cardNumber").value.length<16 || document.getElementById("cardNumber").value.length>16)
+            {
+                $('#cardNumber').addClass('invalid_email');
+                chkstpfnd=0;
+            }
+            else{
+                $('#cardNumber').removeClass('invalid_email');
+            }
+            if(document.getElementById("cardCvx").value.length<3 || document.getElementById("cardCvx").value.length>3)
+            {
+                $('#cardCvx').addClass('invalid_email');
+                chkstpfnd=0;
+            }
+            else{
+                $('#cardCvx').removeClass('invalid_email');
+            }
+            if(document.getElementById("expiryDatePicker_month").value=="")
+            {
+                $('#expiryDatePicker_month').addClass('invalid_email');
+                chkstpfnd=0;
+            }
+            else{
+                $('#expiryDatePicker_month').removeClass('invalid_email');
+            }
+            if(document.getElementById("expiryDatePicker_year").value=="")
+            {
+                $('#expiryDatePicker_year').addClass('invalid_email');
+                chkstpfnd=0;
+            }
+            else{
+                $('#expiryDatePicker_year').removeClass('invalid_email');
+            }
+            if(chkstpfnd==0)
+            {
+                return false;
+            }
+        }
+        //This script does form validation on submit
+        
+        function formatExpiryDate(e) {
+            e.preventDefault();
+            var formatted_month =  ("0" + $("#expiryDatePicker_month").val()).slice(-2);
+            var formatted_year = $("#expiryDatePicker_year").val().substr(2,2);
+            var formatted_expiry_date = String(formatted_month) + String(formatted_year);
+            console.log(formatted_expiry_date);
+            document.getElementById("cardExpirationDate").value = formatted_expiry_date;
+            document.getElementsByName("add_funds_form")[0].submit();
+        }
+    </script>  
+{% endblock %}

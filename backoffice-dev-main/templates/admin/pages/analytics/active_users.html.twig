@@ -1,0 +1,122 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_analytics_dashboard' %}
+{% set areaHeading = 'Analytics' %}
+{% set mainHeading = 'Active Users' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "user-logins",
+        "sectionTitle": "User logins",
+    } %}
+        {% block sectionContent %}
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+        } %}
+            {% block message %}
+                <div>Using users' <span class="fw-bold tw-font-mono">last_login</span> to determine unique active users per month</div>
+            {% endblock message %}
+        {% endembed %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Last 12 months',
+                value: activeUsers
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            }) }}
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date-month</th>
+                    <th>User logins</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in activeUsers %}
+                    <tr>
+                        <td>{{ (item.year ~ '-' ~ item.month)|date("Y-M") }}</td>
+                        <td>{{ item.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Hour of day</th>
+                    <th>User logins</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in activeUsersByTime %}
+                    <tr>
+                        <td>{{ item.hour }}</td>
+                        <td>{{ item.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "api-sessions",
+        "sectionTitle": "API Sessions",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Using API oauth2 access tokens as a proxy for user sessions. These tokens are valid for up to an hour, after which they are replaced with a new one if a user is still active.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Last 12 months',
+                value: accessTokenActivity
+                    |filter(v => v.year == "now"|date("Y") or (v.year == ("now"|date("Y") - 1) and v.month >= "now"|date("m")))
+                    |reduce((carry, v) => carry + v.count)
+                    |default('0'),
+            }) }}
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date-month</th>
+                    <th>API Sessions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in accessTokenActivity %}
+                    <tr>
+                        <td>{{ (item.year ~ '-' ~ item.month)|date("Y-M") }}</td>
+                        <td>{{ item.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Hour of day</th>
+                    <th>API Sessions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in accessTokenActivityByTime %}
+                    <tr>
+                        <td>{{ item.hour }}</td>
+                        <td>{{ item.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,195 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}My Wallet{% endblock %}
+
+
+{% block body %}
+
+ <!-- main body -->
+    <main role="main">
+       {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt=""> My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                    {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+
+
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+
+                            <div class="card p-3 border-0 bg-info rounded-0 shadow-sm" id="my-wallet">
+                                <h6 class="mb-2">My Wallet</h6>
+                                {% if hasUserInfo and userInfo.mangopay_wallet_id
+                                    and userInfo.sca_status == "active"
+                                    and scaRequired is not null
+                                    and scaRequired == false
+                                %}
+                                    <p class="h3 text-center mb-3">£{{ app.session.get('balance')|default('0.00')|replace({' ':','})|number_format(2, '.', ',') }}</p>
+                                {% else %}
+                                    {{ include('@AppBundle/Common/_sca_wallet_verification_prompt.html.twig') }}
+                                {% endif %}
+                                <div class="d-flex justify-content-center mb-2">
+                                    <a href="{{ path('add_fund_new') }}" class="btn btn-primary rounded-pill px-2 mr-2">Add Funds</a>
+                                    {# <a href="{{ path('direct_debit_summary') }}" class="btn btn-primary rounded-pill px-2">Direct Debit</a> #}
+                                    <a href="{{ path('withdraw_funds') }}" class="btn btn-light rounded-pill px-2">Withdraw Funds</a>
+                                </div>
+                            </div>
+
+                            <!-- transaction history -->
+                            <div class="tab-pane fade show active" id="transactionHistory" role="tabpanel"
+                                aria-labelledby="transactionHistory-tab">
+                                <div class="transaction-history mb-3">
+                                    <div class="text-center my-2">
+                                        <h4>Transaction History</h4>
+                                    </div>
+                                    {% if not scaRequired %}
+                                    <div class="text-center mb-2">
+                                        <a href="{{ path('transaction_export') }}" class="btn btn-primary px-2 rounded-pill">Export to
+                                        CSV</a>
+                                    </div>
+                                    {% endif %}
+                                    <table class="grid-table d-lg-table table table-striped table-hover table-borderless border-bottom-0 table-custom text-md" id="transHistory">
+                                        <thead class="bg-info p-3 font-medium">
+
+                                        {# <th>Reference</th> #}
+                                        <th class="pl-3 border-0 table-custom-hd">Date </th>
+                                        <th class="border-0 table-custom-hd">Type</th>
+                                        <th class="border-0 table-custom-hd">Asset Name</th>
+                                        <th class="border-0 table-custom-hd">Asset Code</th>
+                                        <th class="text-right border-0 table-custom-hd">Amount(£)</th>
+                                        <th class="text-right border-0 table-custom-hd">Fee(£)</th>
+                                        <th class="border-0 table-custom-hd">Status</th>
+                                        </thead>
+                                        <tbody>
+                                                {% for tran in transactions|default([]) %}
+                                                    <tr class="grid-table-2 align-end">
+                                                        {# <td class="pl-3" >{{ tran.Id }}</td> #}
+                                                        <td class="table-custom-data grid-order-3 grid-text-left subtext" data-label="Date"><span class="table-custom-value"> {{ tran.CreationDate|date('d/m/Y') }}</span></td>
+                                                        <td class="table-custom-data grid-order-1 grid-text-left" data-label="Type">
+                                                            <span class="table-custom-value">
+                                                                {% if tran.Tag.Type is defined %}
+                                                                    {{ tran.Tag.Type }}
+                                                                {% else %}
+                                                                    {{ tran.Type | capitalize }}
+                                                                {% endif %}
+                                                            </span>
+                                                        </td>
+                                                        <td class="table-custom-data show-label grid-order-6 grid-text-left subtext grid-span-2" data-label="Asset" {% if tran.Tag.AstName is not defined %}data-empty{% endif %}>
+                                                            <span class="table-custom-value">
+                                                                {% if tran.Tag.AstName is defined %}
+                                                                    {{ tran.Tag.AstName }}{% else %}-
+                                                                {% endif %}
+                                                            </span>
+                                                        </td>
+                                                        <td class="table-custom-data grid-order-7 grid-text-left subtext grid-span-2" data-label="Asset Code" {% if tran.Tag.AstCode is not defined %}data-empty{% endif %}>
+                                                            <span class="table-custom-value">
+                                                                {% if tran.Tag.AstCode is defined %}
+                                                                    {{ tran.Tag.AstCode }}{% else %}-
+                                                                {% endif %}
+                                                            </span>
+                                                        </td>
+                                                        <td class="t-attr-header t-amount text-lg-right table-custom-data grid-order-2 grid-text-right" data-label="Amount (£)">
+                                                            <span class="table-custom-value">
+                                                                {% if (tran.CreditedFunds.Amount > 0 and wallet.id == tran.DebitedWalletId) %}-{% endif %}£{{ (tran.CreditedFunds.Amount/100)|number_format(2, '.', ',') }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="table-custom-data grid-order-5 grid-text-right subtext grid-span-2 show-label show-label-inline" data-label="Fee:" {% if tran.Fees.Amount is not defined or tran.Fees.Amount == 0%}data-empty{% endif %}>
+                                                            <span class="table-custom-value d-inline-block">£{{ (tran.Fees.Amount/100)|number_format(2, '.', ',') }}</span>
+                                                        </td>
+                                                        <td class="table-custom-data grid-order-4 grid-text-right subtext rsp-upper" data-label="Status">
+                                                            <span class="table-custom-value">{{ tran.Status | capitalize }}</span>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <section>
+                                        {% for tran in transactions|default([]) %}
+                                        <article>
+
+                                        </article>
+                                        {% endfor %}
+                                    </section>
+                                </div>
+                                    <form id="pagination-nav" method="get" action="">
+                                        <nav class="d-flex justify-content-end">
+                                            <ul class="pager pl-0">
+                                                {# Disable depending on availability of variables #}
+                                                {% if page != 1 %}
+                                                    <span onclick="changePage('first')" class="btn btn-sm btn-primary px-2">
+                                                        First
+                                                    </span>
+                                                    <span onclick="changePage('prev')" class="btn btn-sm btn-primary px-2">
+                                                        Previous
+                                                    </span>
+                                                {% endif %}
+                                                {% if transactions|length == page_size %}
+                                                    <span onclick="changePage('next')" class="btn btn-sm btn-primary px-2">
+                                                        Next
+                                                    </span>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                        {# value set to current page, on click on prev or next, update the value, #}
+                                        <input class="hidden" id="transactions_page" name="page" type="number" value="{{ page }}">
+                                    </form>
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+ <link href="{{ asset('bundles/app/css/bootstrapDataTable.css') }}" rel="stylesheet">
+{% endblock %}
+{% block pagejs %}
+<script src="{{ asset('bundles/app/js/bootstrapDataTable.js') }}"></script>
+<script type="text/javascript">
+    function changePage(direction) {
+        current_page = {{ page }};
+        if (direction == 'first' && current_page != 1) {
+            document.getElementById("transactions_page").value = 1;
+            document.getElementById('pagination-nav').submit();
+        }
+        if (direction == 'prev' && current_page > 1) {
+            document.getElementById("transactions_page").value = current_page - 1;
+            document.getElementById('pagination-nav').submit();
+
+        }
+        if (direction == 'next') {
+            document.getElementById("transactions_page").value = current_page + 1;
+            document.getElementById('pagination-nav').submit();
+        }
+    }
+</script>
+
+{% endblock %}
+
+
+
+

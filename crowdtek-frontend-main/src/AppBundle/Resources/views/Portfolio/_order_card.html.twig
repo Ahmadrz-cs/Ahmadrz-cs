@@ -1,0 +1,42 @@
+<article class="border rounded-lg tw-p-4" {% if not (showId ?? false) %}data-uuid="{{ order.uuid }}"{% endif %}>
+	<div class="d-flex flex-column text-md gap-y-2">
+		<div class="d-flex justify-content-between align-items-center gap-y-2 text-muted text-sm">
+			<div data-field-name="creation-date">{{ order.createdAt|date(dateformat|default('Y-m-d')) }}</div>
+			<div data-field-name="status">{{ order.status.value|capitalize }}</div>
+		</div>
+		{% if showAsset ?? false %}
+			<div class="d-flex justify-content-between align-items-center gap-y-2">
+				<div class="font-semibold" data-field-name="asset-name">{{ order.assetName }}</div>
+			</div>
+		{% endif %}
+		<div class="d-flex justify-content-between align-items-center gap-y-2">
+			<div class="font-semibold" data-field-name="value">{{ (order.numberOfShares * order.pricePerShare)|format_currency('GBP') }}</div>
+			<div class="font-semibold">
+				<span data-field-name="shares">{{ order.numberOfShares|number_format(0, '.', ',') }}</span>
+				<span>shares @</span>
+				<span data-field-name="price">{{ order.pricePerShare|format_currency('GBP') }}</span>
+			</div>
+		</div>
+		{% if order.status == enum('AppBundle\\Entity\\Enum\\TradeOrderStatus').Active %}
+			{% set progress = 0 %}
+			{% if order.numberOfShares > 0 %}
+				{% set progress = (100 * (order.numberOfShares - order.sharesAvailable) / order.numberOfShares)|round(1)  %}
+			{% endif %}
+			{% set valueRemaining = (order.sharesAvailable * order.pricePerShare)|format_currency('GBP') %}
+			<div class="text-sm">
+				<div class="d-flex justify-content-between text-muted">
+					<span data-field-name="progress">{{ progress }}%</span>
+					<span>{{ valueRemaining }} (<span data-field-name="shares-remaining">{{ order.sharesAvailable }}</span> shares) remaining</span>
+				</div>
+				<div class="progress" style="height: 8px;">
+					<div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+				</div>
+			</div>
+		{% endif %}
+		{% if showId ?? false %}
+		<div class="d-flex justify-content-between align-items-center gap-y-2">
+			<div class="text-muted text-sm" data-field-name="uuid">{{ order.uuid }}</div>
+		</div>
+		{% endif %}
+	</div>
+</article>

@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    # Interface defaults
+    Fidry\AliceDataFixtures\LoaderInterface $loader: "@fidry_alice_data_fixtures.loader.doctrine"
+    Fidry\AliceDataFixtures\LoaderInterface: "@fidry_alice_data_fixtures.loader.doctrine"
+
+    # Service configs
+    App\DataFixtures\:
+        resource: "%kernel.project_dir%/src/DataFixtures/*.php"

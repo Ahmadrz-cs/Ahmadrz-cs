@@ -1,0 +1,80 @@
+<div class="row tw-text-sm">
+    <nav class="col-sm-6" aria-label="mangopay page navigation">
+        <ul class="pagination">
+            {# Based on the pagination template from pagerfanta #}
+            {% set currentRoute = app.request.attributes.get('_route') %}
+            {% set routeParams = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
+            {% set proximity = 2 %}
+            {% set start_page = max(1, pagination.Page - proximity) %}
+            {% set end_page = min(pagination.TotalPages, pagination.Page + proximity) %}
+            
+            {# Previous Page Link #}
+            {%- if pagination.Page > 1 -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: pagination.Page - 1})) -%}
+                <li class="page-item"><a class="page-link" href="{{- path -}}" rel="prev">Previous</a></li>
+            {%- else -%}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {%- endif -%}
+
+            {# First Page Link #}
+            {%- if start_page > 1 -%}
+                {%- set page = 1 -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: page})) -%}
+                <li class="page-item"><a class="page-link" href="{{- path -}}">{{- page -}}</a></li>
+            {%- endif -%}
+
+            {# Second Page Link, displays if we are on page 3 #}
+            {%- if start_page == 3 -%}
+                {%- set page = 2 -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: page})) -%}
+                <li class="page-item"><a class="page-link" href="{{- path -}}">{{- page -}}</a></li>
+            {%- endif -%}
+
+            {# Separator, creates a "..." separator to limit the number of items if we are starting beyond page 3 #}
+            {%- if start_page > 3 -%}
+                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {%- endif -%}
+
+            {# Page Links #}
+            {%- for page in range(start_page, end_page) -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: page})) -%}
+                {%- if page == pagination.Page -%}
+                    <li class="page-item active" aria-current="page"><span class="page-link">{{- page -}}</span></li>
+                {%- else -%}
+                    <li class="page-item"><a class="page-link" href="{{- path -}}">{{- page -}}</a></li>
+                {%- endif -%}
+            {%- endfor -%}
+
+            {# Separator, creates a "..." separator to limit the number of items if we are over 3 pages away from the last page #}
+            {%- if end_page < (pagination.TotalPages - 2) -%}
+                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {%- endif -%}
+
+            {# Second to Last Page Link, displays if we are on the third from last page #}
+            {%- if end_page == (pagination.TotalPages - 2) -%}
+                {%- set page = (pagination.TotalPages - 1) -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: page})) -%}
+                <li class="page-item"><a class="page-link" href="{{- path -}}">{{- page -}}</a></li>
+            {%- endif -%}
+
+            {# Last Page Link #}
+            {%- if pagination.TotalPages > end_page -%}
+                {%- set page = pagination.TotalPages -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: page})) -%}
+                <li class="page-item"><a class="page-link" href="{{- path -}}">{{- page -}}</a></li>
+            {%- endif -%}
+
+            {# Next Page Link #}
+            {%- if pagination.Page > 1 and pagination.Page < pagination.TotalPages -%}
+                {%- set path = path(currentRoute, routeParams|merge({ page: pagination.Page + 1})) -%}
+                <li class="page-item"><a class="page-link" href="{{- path -}}" rel="next">Next</a></li>
+            {%- else -%}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {%- endif -%}
+        </ul>
+    </nav>
+    <section class="col-sm-6 mb-3 d-flex justify-content-end">
+        <span class="border rounded-2 d-inline-block p-2 me-1" id="list-meta-results">{{ pagination.TotalItems|number_format(0, '.', ',') }} Results</span>
+        <span class="border rounded-2 d-inline-block p-2" id="list-meta-page">{{ pagination.TotalPages|number_format(0, '.', ',') }} Pages</span>
+    </section> 
+</div>

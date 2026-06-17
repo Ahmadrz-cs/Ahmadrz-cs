@@ -1,0 +1,137 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_transfer_order_manage' %}
+{% set backToRouteParams = {'id': transferOrder.id} %}
+{% set areaHeading = 'Monthend - Prefunder Repayment Transfer' %}
+{% set mainHeading = 'Generate Transfers' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set sharesSettled = monthendInvestments|reduce((carry, v) => carry + v.shareAmount)|default(0) %}
+{% set valueSettled = monthendInvestments|reduce((carry, v) => carry + v.investmentValue)|default(0) %}
+{% set surplusShares = sharesInCirculation - transferOrder.asset.amountOfShares %}
+
+{% block page_content %}
+
+    {% if transferOrder.transfers is not empty %}
+    
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "overwrite-warning",
+            "sectionTitle": "Overwriting Existing Transfers",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+        } %}
+            {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "This transfer order has existing transfers. Applying a template will overwrite them!",
+            }) }}
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+    {% if surplusShares != sharesSettled %}
+    
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "share-tracking-warning",
+            "sectionTitle": "Share Tracking Mismatch",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+        } %}
+            {% block sectionContent %}
+            
+            {% embed 'admin/components/_alert.html.twig' with {
+                variant: 'warning',
+            } %}
+                {% block message %}
+                    <p class="">Surplus shares and recently settled shares do not match.
+                        Recently settled shares only searches investments made in the month before
+                        the scheduled monthend shown below. Investments from outside this search
+                        range are not included.</p>
+                    <p class="mb-0">However, you can still use the surplus shares in circulation as the
+                        basis for the amount to transfer.</p>
+                {% endblock message %}
+            {% endembed %}
+
+            <div class="row">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Scheduled Monthend',
+                    value: transferOrder.scheduledFor|date('Y-m'),
+                }) }}
+            </div>
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "guidelines",
+        "sectionTitle": "Guidelines",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}              
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Asset',
+                value: transferOrder.asset.id
+                    ~ ' // ' ~ transferOrder.asset.name
+                    ~ ' (' ~ transferOrder.asset.companyNumber ~ ')',
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Settlement Wallet Balance',
+                value: '£' ~ settlementWalletBalance|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Distribution Wallet Balance',
+                value: '£' ~ distributionWalletBalance|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shares Issued',
+                value: transferOrder.asset.amountOfShares|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Active Shares in Circulation',
+                value: sharesInCirculation|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Surplus Shares Sold',
+                value: surplusShares|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Surplus Value Sold',
+                value: '£' ~ (surplusShares * transferOrder.asset.pricePerShare)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shares Recently Settled',
+                value: sharesSettled|number_format(0, '', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Value Recently Settled',
+                value: '£' ~ valueSettled|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ form_start(form) }}
+    <div class="row ">
+        <div class="col-sm-6">{{ form_row(form.debitWalletId) }}</div>
+        <div class="col-sm-6">{{ form_row(form.creditWalletId) }}</div>
+        <div class="col-12">{{ form_row(form.amount) }}</div>
+        <div class="col-12">
+            {{ form_row(form.description) }}
+            <datalist id="{{ form.description.vars.attr.list|default(form.description.vars.name) }}">
+                <option value="Move settled funds to repay prefunders">
+            </datalist>
+        </div>
+    </div>
+    <div class="">
+        <button class="btn btn-success" id="submit" type="submit">{% block saveActionText %}Generate Transfers{% endblock %}</button>
+        <a class="btn btn-outline-secondary"
+            href="{{ path('admin_transfer_order_manage', {
+                id: transferOrder.id
+        }) }}">{% block cancelActionText %}Cancel{% endblock %}</a>
+    </div>
+    {{ form_end(form) }}
+
+{% endblock page_content %}

@@ -1,0 +1,58 @@
+{% extends 'admin/layouts/product.html.twig' %}
+
+{% set areaHeading = 'Asset Products' %}
+{% set mainHeading = 'Asset Product List' %}
+
+{% block page_content %}
+    {{ include('admin/pages/assets/_list_w_filters.html.twig', {
+        options: {
+            showLinks: true,
+            showPresets: true,
+            showFilters: true,
+            links: [
+                {
+                    "text": "Create New Product",
+                    "route": "admin_product_create",
+                    "params": {},
+                    "style": "btn-success",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+                {
+                    "text": "Share Price Suggester",
+                    "route": "admin_utilities_asset_share_price",
+                    "params": {},
+                    "style": "btn-light",
+                },
+                {
+                    "text": "View Transaction Reports",
+                    "route": "admin_report_mangopay_sets",
+                    "params": {},
+                    "style": "btn-light",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+            ],
+            actions: [
+                {
+                    "text": "View Product",
+                    "route": "admin_product_dashboard",
+                    "params": {},
+                    "style": "btn-outline-primary text-nowrap",
+                },
+            ],
+            showFields: [
+                'fundingGoal',
+                'sharesAvailable',
+                'netProjectedIncome',
+                'netProjectedYield',
+                'mode',
+                'status',
+                'featured',
+                'buying',
+                'selling',
+                'feesConfig',
+                'visibility',
+            ],
+        },
+        
+    }) }}
+{% endblock page_content %}

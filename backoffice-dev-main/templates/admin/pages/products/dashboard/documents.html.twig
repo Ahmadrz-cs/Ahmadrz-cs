@@ -1,0 +1,192 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "documents-checklist",
+        "sectionTitle": "Documents Checklist",
+        "linkActions": [
+            {
+                "text": "Add Documents",
+                "route": "admin_product_edit_documents",
+                "params": {"id": asset.id},
+                "style": "btn-outline-primary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <p class="h6 ">Products can be launched if there are at least 1 of each of the required documents. Documents that require exactly 1 variant may cause the product to exhibit unintended side-effects if more than 1 are present</p>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Required Number</th>
+                        <th>Required Tag</th>
+                        <th>Required Description</th>
+                        <th>Matches Found</th>
+                        <th>Requirements met?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-doc-type="logo">
+                        <td>Asset Logo (Main Photo)</td>
+                        <td>Exactly 1</td>
+                        <td>logo</td>
+                        <td></td>
+                        <td>{{ sortedDocs.logo|length }}</td>
+                        <td>
+                            {% if sortedDocs.logo is empty %}
+                                <i class="fa-solid fa-xmark"></i>
+                            {% else %}
+                                <i class="fa-solid fa-check"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr data-doc-type="articles-of-association">
+                        <td>Articles of Association</td>
+                        <td>Exactly 1</td>
+                        <td>read_to_activate</td>
+                        <td>Articles of Association</td>
+                        <td>{{ sortedDocs.articlesOfAssociation|length }}</td>
+                        <td>
+                            {% if sortedDocs.articlesOfAssociation is empty %}
+                                <i class="fa-solid fa-xmark"></i>
+                            {% else %}
+                                <i class="fa-solid fa-check"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr data-doc-type="information-memorandum">
+                        <td>Information Memorandum</td>
+                        <td>Exactly 1</td>
+                        <td>read_to_activate</td>
+                        <td>Information Memorandum</td>
+                        <td>{{ sortedDocs.informationMemorandum|length }}</td>
+                        <td>
+                            {% if sortedDocs.informationMemorandum is empty %}
+                                <i class="fa-solid fa-xmark"></i>
+                            {% else %}
+                                <i class="fa-solid fa-check"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr data-doc-type="financial-summary">
+                        <td>Financial Summary</td>
+                        <td>Exactly 1</td>
+                        <td>calculations</td>
+                        <td>Financial Summary</td>
+                        <td>{{ sortedDocs.financialSummary|length }}</td>
+                        <td>
+                            {% if sortedDocs.financialSummary is empty %}
+                                <i class="fa-solid fa-xmark"></i>
+                            {% else %}
+                                <i class="fa-solid fa-check"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr data-doc-type="property-photos">
+                        <td>Property Photos</td>
+                        <td>At least 1</td>
+                        <td>property_photos</td>
+                        <td></td>
+                        <td>{{ sortedDocs.propertyPhotos|length }}</td>
+                        <td>
+                            {% if sortedDocs.propertyPhotos is empty %}
+                                <i class="fa-solid fa-xmark"></i>
+                            {% else %}
+                                <i class="fa-solid fa-check"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "asset-documents",
+        "sectionTitle": "Asset Documents",
+    } %}
+        {% block sectionContent %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Asset doc id</th>
+                        <th>Inner doc id</th>
+                        <th>File name</th>
+                        <th>File description</th>
+                        <th>Tag</th>
+                        <th>Has Url</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assetdocument in asset.documents %}
+                    <tr>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Download",
+                                        "route": 'admin_document_download',
+                                        "params": {
+                                            'id': assetdocument.document.id,
+                                            'type':'public',
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "View",
+                                        "route": 'admin_document_download',
+                                        "params": {
+                                            'id': assetdocument.document.id,
+                                            'type':'public',
+                                            'preview': 1,
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                        "newTab": true,
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Delete",
+                                        "route": 'admin_assetdocument_delete',
+                                        "params": {
+                                            id: assetdocument.id,
+                                            redirectRoute: 'admin_product_documents',
+                                        },
+                                        "style": "btn-outline-danger text-nowrap",
+                                        "dangerous": true,
+                                    },
+                                }) }}
+                            </div>
+                        </td>
+                        <td><a href="{{ path('admin_assetdocument_edit', { id: assetdocument.id }) }}">{{
+                                assetdocument.id }}</a></td>
+                        <td>{{ assetdocument.document.id }}</td>
+                        <td><a href="{{ path('admin_assetdocument_edit', { id: assetdocument.id }) }}">{{
+                                assetdocument.document.filename }}</a></td>
+                        <td>{{ assetdocument.document.description }}</td>
+                        <td>{{ assetdocument.document.tag }}</td>
+                        <td>
+                            {% set has_url = assetdocument.document.documentUrl ? 'Set' : 'Missing' %}
+                            {{ include('admin/components/_indicator_with_text.html.twig', {
+                                color: statusToColor[has_url],
+                                value: has_url
+                            }) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

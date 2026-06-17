@@ -1,0 +1,41 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_mailchimp_rejectlist_index' %}
+{% set areaHeading = 'Transactional Email Management' %}
+{% set mainHeading = 'Mandrill Rejection Denylist Removal' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "removal-confirmation-form",
+        "sectionTitle": "Confirm Removal from Denylist",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Email To Remove from Denylist',
+                value: email,
+                className: 'col-sm-6',
+            }) }}
+        </div>
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+            title: "User Actions Required"
+        } %}
+            {% block message %}
+                <p class="mb-0">You should ensure that the user has added our no-reply email (<span class="fs-6 fw-bold">{{ transactionalSenderEmail }}</span>) to their email provider's allowlist/whitelist before removing removing them from our send denylist.</p>
+            {% endblock message %}
+        {% endembed %}
+        {{ form_start(form, { attr: {class: "d-flex flex-column gap-2"} }) }}
+        {{ form_row(form.confirmation) }}
+        {{ form_row(form.submit, { attr: { class: "btn-danger"}}) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

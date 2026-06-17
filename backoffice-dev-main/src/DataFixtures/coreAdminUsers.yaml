@@ -1,0 +1,75 @@
+# include:
+#     - templates/userTemplates.yaml
+
+App\Entity\User:
+    user{A1} (extends user_random):
+        __construct:
+            - "<dateTimeBetween('-60 months', '-59 months')>"
+        username: "superadmin@test.yielderverse.co.uk"
+        plainPassword: "HarvestBounty!756"
+        enabled: true
+        # email: "admin@helpmewithit.com"
+        roles: ["ROLE_SUPER_ADMIN"]
+        firstname: "Admin"
+        lastname: "Yielderverse"
+        mangoPayUserId: "user_m_01HW3CCXCYF1W0QNYE3KXVNRRQ"
+        mangoPayWalletId: "wlt_m_01HW3CMGAM5NJJ01RM8TQ6H8BS"
+        isVIP: 1
+        term_service_accepted: true
+        gdpraccepted: true
+        contego_score: "@contegoscore<current()>"
+        createdAt: "<dateTimeBetween('-60 months', '-59 months')>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-2 month', '-1 months')>"
+    user{SD} (extends user_random):
+        __construct:
+            - "<dateTimeBetween('-60 months', '-59 months')>"
+        username: "stampduty@yielders.co.uk"
+        plainPassword: "HarvestBounty!756"
+        enabled: true
+        roles: ["ROLE_ADMIN"]
+        firstname: "stampduty"
+        lastname: "yielders"
+        jobTitle: 'stamp duty'
+        mangoPayUserId: "user_m_01HW3D5DZHQKZ11CH9B4BR9K70"
+        mangoPayWalletId: "wlt_m_01HW3D90QQQXZ5KEB5X6PJYXN9"
+        isVIP: 1
+        term_service_accepted: true
+        gdpraccepted: true
+        contego_score: "@contegoscore<current()>"
+        createdAt: "<dateTimeBetween('-60 months', '-59 months')>"
+
+App\Entity\Investor:
+    userinvestor{A1, SD} (extends investors_base):
+
+App\Entity\Status:
+    userstatus{A1, SD} (extends userstatus_base):
+        emailNotVerifiedOn: "<dateTimeBetween('-60 months', '-59 months')>"
+        emailValidatedOn: "<dateTimeBetween('-59 months', '-58 months')>"
+        regCompletedOn: "<dateTimeBetween('-58 months', '-57 months')>"
+        approvedOn: "<dateTimeBetween('-57 months', '-56 months')>"
+
+App\Entity\UserSecurity:
+    usersecurity{A1, SD} (extends usersecurity_base):
+        mfaEmail: false
+
+App\Entity\Address:
+    useraddress{A1}:
+        user: "@user<current()>"
+        address1: "72 Adminstrators Arcade"
+        city: "London"
+        postCode: "AA2 8GT"
+        country: "GB"
+    useraddress{SD}:
+        user: "@user<current()>"
+        address1: "StampDuty House"
+        city: "London"
+        postCode: "AA2 8GT"
+        country: "GB"
+
+App\Entity\ContegoScore:
+    contegoscore{A1, SD} (extends contegoscore_base):
+
+App\Entity\UserStatusLog:
+    userstatuslog_active_{A1, SD} (extends userstatuslog_active):
+        occuredAt: "@userstatus<current()>->emailValidatedOn"

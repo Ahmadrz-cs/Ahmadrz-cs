@@ -1,0 +1,110 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_offering_index' %}
+{% set areaHeading = 'Offerings' %}
+{% set mainHeading = 'Offerings List - Funding Progress' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{{ include('admin/components/_alert.html.twig', {
+		variant: "warning",
+		message: "This tool is fairly rudimentary. It is intended as a stop-gap solution as modifying the regular offering list view is a bit difficult without breaking normal functionality.",
+	}) }}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "offerings-list",
+        "sectionTitle": "Offerings Funding Progress",
+		"linkActions": [
+            {
+                "text": "Download Results (CSV)",
+                "route": app.request.attributes.get('_route'),
+                "params": app.request.query.all|merge({export: 1}),
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "Download Results (XLS)",
+                "route": app.request.attributes.get('_route'),
+                "params": app.request.query.all|merge({export: 1, format:'xls'}),
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+				<section class="row my-3">
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.lifecycleStatus) }}</div>
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.fundingProgress) }}</div>
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.firstPartyOnly) }}</div>
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.includePrefunding) }}</div>
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.orderDirection) }}</div>
+					</section>
+				{{ form_rest(form) }}
+				<section class="d-flex flex-wrap gap-2">
+					<button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+					<a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset to Defaults</a>
+				</section>
+			{{ form_end(form) }}
+			{# {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+				list: results
+			}) }} #}
+			<div class="row g-3">
+				{{ include('admin/components/stat.html.twig', {
+					key: 'Total Results',
+					value: results|length,
+				}) }}
+			</div>
+			<table class="table" id="offering-funding-progress-list">
+				<thead>
+					<tr>
+						<th>Offering Id</th>
+						<th>Seller Type</th>
+						<th>Asset</th>
+						<th class="text-end">Raised (£)</th>
+						<th class="text-end">Offered (£)</th>
+						<th class="text-end">Progress (%)</th>
+						<th>Status</th>
+						<th>Created</th>
+						<th>Published</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in results %}
+						<tr data-object-id="{{ row.offeringId }}">
+							<td><a href="{{ path('admin_offering_edit', { id: row.offeringId }) }}">{{ row.offeringId }}</a></td>
+							<td>{{ row.relistingInvestmentId ? 'Relisting' : 'First party' }}</td>
+							<td>
+								<a href="{{ path('admin_product_dashboard', { id: row.assetId }) }}">{{ row.assetId }}
+									//
+									{{ row.assetName }}
+									({{ row.assetSpv }})</a>
+							</td>
+							<td class="text-end tw-tabular-nums">{{ row.raisedAmount|number_format(2, '.', '') }}</td>
+							<td class="text-end tw-tabular-nums">{{ row.fundingGoal|number_format(2, '.', '') }}</td>
+							<td class="tw-tabular-nums">
+								<span class="d-flex gap-2 align-items-center justify-content-end">
+									{% set raisedPercent = 100 * row.raisedAmount / row.fundingGoal %}
+									{% if raisedPercent|round(2) >= 100 %}
+										{% set progressColor = 'green' %}
+									{% elseif raisedPercent|round(2) > 0 %}
+										{% set progressColor = 'yellow' %}
+									{% else %}
+										{% set progressColor = 'gray' %}
+									{% endif %}
+                                    {{ (100 * row.raisedAmount / row.fundingGoal)|number_format(2, '.', '') }}
+									{{ include('admin/components/_indicator.html.twig', {color: progressColor }) }}
+                                </span>
+							</td>
+							<td>{{ row.offeringStatus|capitalize }}</td>
+							<td>{{ row.createdAt|date("Y-m-d H:i:s") }}</td>
+							<td>{{ row.publishedAt ? row.publishedAt|date("Y-m-d H:i:s") : 'N/A' }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

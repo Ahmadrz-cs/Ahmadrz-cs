@@ -1,0 +1,64 @@
+include:
+    - ../auxiliaryProperties.yaml
+    - ../templates/baseTrade.yaml
+
+App\Entity\TradeOrder:
+    # eystar does not have an order yet, should be generated when launched
+    sell_order_initial_{clarence, kolness, partingdale, royalway, royalglade, sandfox, silverhood, orchid} (extends trade_order_initial):
+        asset: "@asset<current()>"
+        numberOfShares: "@asset<current()>->amountOfShares"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        createdBy: "$user"
+        createdAt: "@asset<current()>->createdAt"
+    # Prefunding is still an `initial` type, prefunding should be denoted by the asset's status (acquiring)
+    # Note is used here for dev purposes to help easily identify
+    sell_order_initial_{lodge, neptunis, nixis, saturna} (extends trade_order_initial):
+        asset: "@asset<current()>"
+        numberOfShares: "@asset<current()>->amountOfShares"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        notes: "prefunding"
+        createdBy: "$user"
+        createdAt: "@asset<current()>->createdAt"
+    # Solaris is special in that it is split into 2 listings
+    sell_order_initial_solaris_{35000, 45000} (extends trade_order_initial):
+        asset: "@assetsolaris"
+        numberOfShares: <current()>
+        pricePerShare: "@assetsolaris->pricePerShare"
+        createdBy: "$user"
+        createdAt: "@assetsolaris->createdAt"
+    # Novaplatz is only partially listed (100k out of 200k)
+    sell_order_initial_{nova} (extends trade_order_initial):
+        asset: "@assetnova"
+        numberOfShares: 100000
+        pricePerShare: "@assetnova->pricePerShare"
+        createdBy: "$user"
+        createdAt: "@assetnova->createdAt"
+
+App\Entity\TradeOrderStatusLog:
+    # Any that are launched
+    sell_order_status_initial_active_{clarence, kolness, lodge, neptunis, nixis, nova, partingdale, royalway, royalglade, sandfox, saturna, orchid}:
+        tradeOrder: "@sell_order_initial_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@sell_order_initial_<current()>->createdAt"
+    sell_order_status_initial_solaris_active_{35000, 45000}:
+        tradeOrder: "@sell_order_initial_solaris_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@sell_order_initial_solaris_<current()>->createdAt"
+    # Any orders that we want to suspend
+    sell_order_status_initial_suspended_{saturna}:
+        tradeOrder: "@sell_order_initial_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Suspended)>
+        occuredAt: "<dateTimeBetween('-2 months', '-1 months')>"
+    # Any orders that we want fully funded
+    sell_order_status_initial_completed_{lodge, royalglade}:
+        tradeOrder: "@sell_order_initial_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        # Occured at should be somewhat recent, based on the when an asset's last launch investment was
+        occuredAt: "<dateTimeBetween('-3 months', '-2 months')>"
+    # Orchid is exited, so we'll need to set an older occuredAt date for completion
+    sell_order_status_initial_completed_{orchid}:
+        tradeOrder: "@sell_order_initial_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "<dateTimeBetween('-19 months', '-18 months')>"
+    
+

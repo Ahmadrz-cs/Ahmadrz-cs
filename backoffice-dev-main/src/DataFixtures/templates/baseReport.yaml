@@ -1,0 +1,15 @@
+App\Entity\Report:
+    report_base (template):
+        origin: "merged"
+        status: "draft"
+        resourceId: "wlt_m_01HW3DH1PXVVGSP9634636PR48" # the dev deposit wallet
+        referenceId: null
+        url: null
+        step: null
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+        createdBy: "@userA1"
+    report_set_base (template):
+        reportSetType: "custom"
+        progress: 1
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+        createdBy: "@userA1"

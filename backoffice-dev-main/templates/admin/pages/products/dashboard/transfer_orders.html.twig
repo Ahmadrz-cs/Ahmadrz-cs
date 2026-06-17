@@ -1,0 +1,55 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfer-orders",
+        "sectionTitle": "Transfer Orders",
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Orders Made',
+                value: transferOrders.count|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {% include 'admin/components/pagerfanta_meta_slim.html.twig' with {'list': transferOrders} only %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Scheduled For</th>
+                        <th>Transfers</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferOrder in transferOrders|default([]) %}
+                    <tr>
+                        <td>{{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Manage",
+                                    "route": "admin_transfer_order_manage",
+                                    "params": { id: transferOrder.id },
+                                    "style": "btn-sm btn-outline-dark",
+                                },
+                            }) }}</td>
+                        <td>{{ transferOrder.id }}</td>
+                        <td>{{ transferOrder.transferType.value|capitalize }}</td>
+                        <td>{{ transferOrder.description }}</td>
+                        <td>{{ transferOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                        <td>{{ transferOrder.transfers|length }}</td>
+                        <td>{{ transferOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+            
+{% endblock dashboard_content %}

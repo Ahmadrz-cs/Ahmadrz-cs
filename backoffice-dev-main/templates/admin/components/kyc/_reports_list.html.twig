@@ -1,0 +1,35 @@
+<div class="table-responsive">
+    <table class="table datatable" id="kyc-reports-list">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Id</th>
+                <th>Outcome</th>
+                <th>KYC Provider</th>
+                <th>Reference Id</th>
+                <th>Check Type</th>
+                <th>Result</th>
+                <th>Score</th>
+                <th>Checked At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr data-object-id="{{ report.id }}">
+                <td>
+                    <a class="btn btn-outline-primary mt-1"
+                        href="{{ path('admin_kyc_report_view', { id: report.id }) }}">View</a>
+                </td>
+                <td>{{ report.id }}</td>
+                <td>{{ report.verified ? 'Verified' : 'Failed' }}</td>
+                <td>{{ report.providerName }}</td>
+                <td>{{ report.providerReferenceId }}</td>
+                <td>{{ report.checkType }}</td>
+                <td>{{ report.result }}</td>
+                <td>{{ report.score }}</td>
+                <td>{{ report.checkedAt|date("Y-m-d") }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,81 @@
+{% extends 'admin/pages/onboarding/assessments/new.html.twig' %}
+
+{% set user = assessment.profile.user %}
+
+{% set mainHeading = 'Edit Appropriateness Assessment #' ~ assessment.id|default() %}
+
+{% set statusToColor = statusToColor|default({
+    'Yes': 'green',
+    'No': 'red',
+}) %}
+
+{% block objectMeta %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "assessment-responses",
+        "sectionTitle": "Assessment Responses",
+        "linkActions": [
+            {
+                "text": "Simulate",
+                "route": 'admin_onboarding_assessment_simulate',
+                "params": {id: assessment.id},
+                "style": "btn-outline-dark text-nowrap",
+            },
+        ]       
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                title: "Marking the Assessment",
+                message: "If there are no further questions to answer in the assessment. 'Simulate' will automatically mark the assessment. Answers must be 100% correct to pass.",
+            }) }}
+            <table class="table" id="responses-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Question</th>
+                        <th>Choice (Answer)</th>
+                        <th>Correct?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rsp in assessment.responses %}
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Edit",
+                                            "route": 'admin_onboarding_assessment_response',
+                                            "params": {id: rsp.id},
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                                </div>
+                            </td>
+                            <td data-field="id">{{ rsp.id }}</td>
+                            <td data-field="question">{{ rsp.question.content }}</td>
+                            <td data-field="choice">{{ rsp.choice.content }}</td>
+                            <td data-field="correct">
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: statusToColor[rsp.choice.correct ? 'Yes' : 'No'],
+                                    value: rsp.choice.correct ? 'Yes' : 'No'
+                                }) }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="text-center" colspan="5">No responses yet</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_onboarding_profile', { id:  user.id }) }}">Discard
+        Changes</a>
+{% endblock %}

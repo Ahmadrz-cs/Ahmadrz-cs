@@ -1,0 +1,54 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_trade_system_porting_index' %}
+{% set areaHeading = 'Trade System Porting Tools' %}
+{% set mainHeading = 'Port Offerings' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "port-offerings",
+        "sectionTitle": "Port Offerings",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            title: "Batch Size",
+            message: "Defaults to 10. Will be clamped between 1 and 200, presets are available below. Click the batch size, then click 'Port' to port a non-default batch size.",
+        }) }}
+        <div class="d-flex gap-2">
+            {% for batchSize in [1,10,25,50,100, 200] %}
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": batchSize,
+                        "route": app.request.attributes.get('_route'),
+                        "params": {'batchSize': batchSize},
+                        "style": "btn-outline-dark text-nowrap",
+                    },
+                }) }}
+            {% endfor %}
+        </div>
+        {{ form_start(form) }}
+        {{ form_row(form.port) }}
+        {{ form_end(form) }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "aggregate-info",
+            title: "Aggregate Summary",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Max batch": (app.request.query.all.batchSize ?? 10)|number_format,
+                "Count in batch": offerings|length|number_format,
+            }
+        }) }}
+
+        {{ include('admin/pages/maintenance/porting/_compare_offerings_list.html.twig', {
+            offerings: offerings
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

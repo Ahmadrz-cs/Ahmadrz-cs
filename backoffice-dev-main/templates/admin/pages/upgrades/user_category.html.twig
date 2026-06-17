@@ -1,0 +1,60 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_user_index' %}
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Upgrade Mangopay User Category' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_alert.html.twig' with {
+        variant: "info",
+    } %}
+        {% block message %}Search for users whose <code class="fw-bold">walletUserVersion</code> is still on "Original". Note that users without MangopayUserId cannot be upgraded{% endblock message %}
+    {% endembed %}
+
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Total Users',
+            value: objects.count()|number_format(0, '.', ','),
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Total Users with Mangopay User Ids',
+            value: sitrep|reduce((carry, v) => carry + v),
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Original Users',
+            value: sitrep.0|default(0),
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'UserCategory Upgraded Users',
+            value: sitrep.1|default(0),
+        }) }}
+    </div>
+
+    {{ include('admin/pages/users/_list_w_filters.html.twig', {
+        options: {
+            showLinks: true,
+            showPresets: false,
+            showFilters: true,
+            links: [
+                {
+                    "text": "Review Upgrades",
+                    "route": "admin_upgrade_mangopay_user_category_review",
+                    "params": {},
+                    "style": "btn-primary",
+                },
+            ],
+            showFields: [
+                'name',
+                'username',
+                'contactEmail',
+                'createdAt',
+                'lastLogin',
+                'status',
+                'mangopayUserId',
+                'mangopayUserVersion',
+            ],
+        },
+        
+    }) }}
+{% endblock page_content %}

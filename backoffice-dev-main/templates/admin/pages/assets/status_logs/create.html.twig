@@ -1,0 +1,53 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = redirectRoute %}
+{% set backToRouteParams = {'id': redirectToId} %}
+{% set areaHeading = 'Asset' %}
+{% set mainHeading = mainHeading|default('Create Asset Status Log') %}
+{% set maturityLabel = 'alpha' %}
+
+{% block notices %}
+    {# {{ include('admin/components/_alert.html.twig', {
+        variant: "warning",
+        title: "Avoid fully manual state changes",
+        message: "You should avoid creating fully manual state changes unless absolutely necessary. It is recommended to perform state changes via the Product Hub dashboard instead.",
+    }) }} #}
+{% endblock %}
+
+{% block objectMeta %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "asset-metadata",
+        "sectionTitle": "About Asset",
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: "#" ~ asset.id ~ " // " ~ asset.companyNumber ~ " // " ~ asset.name,
+                    className: "col-12",
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Current Status',
+                    value: asset.currentStatus.value|capitalize,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Transitioned By',
+                    value: assetStatusLog.transitionedBy.userIdentifier|default('System'),
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block formContents %}
+    <div class="row">
+        <div class="col-md-6">{{ form_row(form.status) }}</div>
+        <div class="col-md-6">{{ form_row(form.occuredAt) }}</div>
+        <div class="col-12">{{ form_row(form.notes) }}</div>
+    </div>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success text-nowrap" id="submit" type="submit">Create New Asset Status Log</button>
+    <a class="btn btn-outline-secondary text-nowrap" href="{{ path(redirectRoute, {'id': redirectToId}) }}">Abandon</a>
+{% endblock %}

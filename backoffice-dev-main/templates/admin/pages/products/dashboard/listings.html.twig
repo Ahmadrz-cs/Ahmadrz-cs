@@ -1,0 +1,148 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "listings",
+        "sectionTitle": "Listings",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Replaced by Share Trade Order System",
+            message: "This section shows all legacy offerings. Offerings have been replaced by Trade Orders under the Share Trade Order System.",
+        }) }}
+        {# <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Listings',
+                value: offerings.count|number_format(0, '.', ','),
+            }) }}
+        </div> #}
+        {% include 'admin/components/_horizontal_nav_btn_group.html.twig' with {'links': {
+            navId: 'product-listing-filter',
+            navLabel: 'listing-filter-options',
+            linkDefinitions: [
+                {
+                    route: app.request.attributes.get('_route'),
+                    params: {
+                        id: asset.id,
+                    },
+                    text: 'All Listings',
+                    active: app.request.query.all.sell_investment is not defined
+                },
+                {
+                    route: app.request.attributes.get('_route'),
+                    params: {
+                        id: asset.id,
+                        sell_investment: 0,
+                    },
+                    text: 'First Party Only',
+                    active: app.request.query.all.sell_investment is defined and app.request.query.all.sell_investment == 0
+                },
+                {
+                    route: app.request.attributes.get('_route'),
+                    params: {
+                        id: asset.id,
+                        sell_investment: 1,
+                    },
+                    text: 'Relistings Only',
+                    active: app.request.query.all.sell_investment is defined and app.request.query.all.sell_investment == 1
+                },
+            ]
+        }} only %}
+        {% include 'admin/components/pagerfanta_meta_slim.html.twig' with {'list': offerings} only %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Created</th>
+                        <th>Seller</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Offered (£)</th>
+                        <th class="text-end">Sold (£)</th>
+                        <th>Investment</th>
+                        <th>Visibility</th>
+                        <th>Status</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offering in offerings %}
+                    <tr data-object-id="{{ offering.id }}">
+                        <td>
+                            <div class="d-flex gap-2">
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Edit",
+                                        "route": 'admin_offering_edit',
+                                        "params": {id: offering.id},
+                                        "style": "btn-outline-secondary text-nowrap",
+                                    },
+                                }) }}
+                                {% if is_granted('ROLE_OPERATIONS') %}
+                                    {% set to_visibility_name = "auto" %}
+                                    {% set to_visibility = constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') %}
+                                    {% if offering.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO')%}
+                                        {% set to_visibility_name = "admin" %}
+                                        {% set to_visibility = constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') %}
+                                    {% endif %}
+                                    {% set redirect_param_relisting = app.request.query.all.sell_investment is defined 
+                                        ? {redirectRelisting: app.request.query.all.sell_investment} 
+                                        : {} 
+                                    %}
+                                    {% set redirect_param_page = app.request.query.all.page is defined 
+                                        ? {redirectPage: app.request.query.all.page} 
+                                        : {} 
+                                    %}
+                                    {% set redirect_params = redirect_param_relisting|merge(redirect_param_page) %}
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Set visibility " ~ to_visibility_name,
+                                            "route": 'admin_offering_visibility',
+                                            "params": {
+                                                id: offering.id,
+                                                redirectRoute: 'admin_product_listings',
+                                                visibility: to_visibility,
+                                            }|merge(redirect_params),
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td data-field="id">{{ offering.id }}</td>
+                        <td data-field="created-at">{{ offering.createdAt|date("Y-m-d") }}</td>
+                        <td data-field="seller">
+                            {%- if offering.sellInvestment -%}
+                            <a href="{{ path('admin_user_edit', { id: offering.sellInvestment.user.id }) }}">{{ offering.sellInvestment.user.username }}</a>
+                            {%- else -%}
+                            Yielders
+                            {%- endif -%}
+                        </td>
+                        <td class="text-end tw-tabular-nums" data-field="offered">{{ offering.noOfShares|number_format(0, '.', '') }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="offered">{{ offering.fundingGoal|number_format(2, '.', '') }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="sold">{{ offering.raisedAmount|number_format(2, '.', '') }} ({{ offering.raisedPercent|number_format(2, '.', '') }}%)</td>
+                        <td data-field="investment-id">
+                            {%- if offering.sellInvestment -%}
+                            <a href="{{ path('admin_investment_edit', { id: offering.sellInvestment.id }) }}">
+                                {{ offering.sellInvestment.id }}
+                            </a>
+                            <span class="d-none">{{ offering.sellInvestment.user.username }}</span>
+                            {%- else -%}
+                            N/A
+                            {%- endif -%} 
+                        </td>
+                        <td data-field="visibility">{{ visibility_map[offering.visibility] }} ({{ offering.visibility }})</td>
+                        <td data-field="status">{{ offering.lifecycleStatus|capitalize }}</td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

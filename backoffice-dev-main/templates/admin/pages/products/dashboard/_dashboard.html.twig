@@ -1,0 +1,27 @@
+{% extends 'admin/layouts/products.html.twig' %}
+
+{% set backToRoute = 'admin_products_index' %}
+{% set areaHeading = 'Asset Products' %}
+{% set mainHeading = asset.name %}
+
+{% set visibility_map = {
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_AUTO')): "Auto",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_ADMIN')): "Admin Only",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_VIP')): "VIP",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_NORMAL')): "Normal",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_ALL')): "All",
+} %}
+
+{% set statusToColor = {
+    'Yes': 'green',
+    'No': 'red',
+    'Pending': 'gray',
+	'Missing': 'gray',
+    'Set': 'blue',
+} %}
+
+{% block page_content %}
+
+    {% block dashboard_content %}{% endblock dashboard_content %}
+
+{% endblock page_content %}

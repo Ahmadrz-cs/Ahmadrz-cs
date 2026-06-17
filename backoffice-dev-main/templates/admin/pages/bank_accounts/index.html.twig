@@ -1,0 +1,116 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Bank Account Registrations' %}
+{% set maturityLabel = 'alpha' %}
+{% set baseTemplate = 'ops' %}
+
+{% set statusToColor = statusToColor|default({
+    'pending': 'red',
+    'validated': 'yellow',
+    'approved': 'green',
+    'active': 'blue',
+    'closed': 'gray',
+    'rejected': 'gray',
+}) %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS') %}
+    {{ include('admin/components/button_link.html.twig', {
+        linkProps: {
+            "text": "Register New Bank Account",
+            "route": "admin_bank_account_create",
+            "params": {},
+            "style": "btn-success",
+        },
+    }) }}
+    {{ include('admin/components/button_link.html.twig', {
+        linkProps: {
+            "text": "Browse Recipient Schemas",
+            "route": "admin_bank_account_schema",
+            "params": {},
+            "style": "btn-outline-dark",
+        },
+    }) }}
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_bank_account_index', { status: [constant('App\\Entity\\Enum\\BankAccountStatus::Pending').value, constant('App\\Entity\\Enum\\BankAccountStatus::Validated').value] }) }}" class="btn btn-light">Pending Review</a>
+<a href="{{ path('admin_bank_account_index', { status: [constant('App\\Entity\\Enum\\BankAccountStatus::Approved').value] }) }}" class="btn btn-light">Ready to Activate</a>
+<a href="{{ path('admin_bank_account_index', { status: [constant('App\\Entity\\Enum\\BankAccountStatus::Active').value] }) }}" class="btn btn-light">Active only</a>
+<a href="{{ path('admin_bank_account_index', { status: [constant('App\\Entity\\Enum\\BankAccountStatus::Rejected').value] }) }}" class="btn btn-light">Rejected</a>
+<a href="{{ path('admin_bank_account_index', { status: [constant('App\\Entity\\Enum\\BankAccountStatus::Rejected').value, constant('App\\Entity\\Enum\\BankAccountStatus::Closed').value] }) }}" class="btn btn-light">Inactive</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.uuid) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.username) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.providerId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.fingerprint) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.displayName) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.status} only %}
+</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.accountType} only %}
+</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.accountHolderType} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+    <table class="table" id="bank-accounts-list">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Id</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Display Name</th>
+                <th>Mangopay Id</th>
+                <th>Owner Type</th>
+                <th>Status</th>
+                <th>Action Requests</th>
+                <th>Created</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in objects %}
+                <tr data-object-id="{{ account.id }}">
+                    <td>
+                        <a class="btn btn-outline-primary mt-1" href="{{ path('admin_bank_account_manage', { id: account.id }) }}">Manage</a>
+                    </td>
+                    <td>{{ account.id }}</td>
+                    <td>
+                        {%- if 'ROLE_SUPER_ADMIN' in account.user.roles -%}
+                            <span class="badge text-bg-dark">System</span>
+                        {%- else -%}
+                            <span class="badge text-bg-warning">User</span>
+                        {%- endif -%}
+                        <a class="ms-2" href="{{ path('admin_user_edit', { id: account.user.id }) }}">#{{ account.user.id }} // {{ account.user.username }}</a>
+                    </td>
+                    <td>{{ account.accountType.value }}</td>
+                    <td>{{ account.displayName }}</td>
+                    <td>{{ account.providerId }}</td>
+                    <td>{{ account.accountHolderType.value|capitalize }}</td>
+                    <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                            value: account.status.value|capitalize,
+                            color: statusToColor[account.status.value],
+                        }) }}</td>
+                    <td>{% if account.metadata.actionRequests is defined %}{{ account.metadata.actionRequests|json_encode }}{% endif %}</td>
+                    <td>{{ account.createdAt|date("Y-m-d") }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

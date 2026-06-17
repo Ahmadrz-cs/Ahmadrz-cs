@@ -1,0 +1,62 @@
+{% extends 'admin/layouts/income_transfer_builder.html.twig' %}
+
+{% set backToRoute = exitRoute|default('admin_monthend_income_transfer_manage') %}
+
+{% set originalTotal = transferOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfer-form",
+        "sectionTitle":  (transferRequest.id is not empty ? "Edit" : "Create") ~ " Transfer",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form, { attr: { class: "d-flex flex-column gap-3" }}) }}
+                <datalist id="{{ form.description.vars.attr.list|default(form.description.vars.name) }}">
+                    {% for descriptionOption in constant('App\\Service\\MonthEndService::DESCRIPTION_PRESETS') %}
+                        <option value="{{ descriptionOption }}">
+                    {% endfor %}
+                </datalist>
+                {{ form_row(form.description) }}
+                {{ form_row(form.creditWalletId) }}
+
+                {% embed 'admin/components/_alert.html.twig' with {
+                    variant: "notice",
+                    title: "How percentage works",
+                } %}
+                    {% block message %}
+                        <p class="mb-2">The behaviour of the <span class="fw-bold">percentage</span> amount type depends on the wallet being credited:</p>
+                        <ul>
+                            <li><span class="fw-bold">Expenses</span>: percentage of the starting balance (total to process)</li>
+                            <li><span class="fw-bold">Tax</span>: percentage of taxable income (starting balance minus all expenses)</li>
+                            <li><span class="fw-bold">Treasury</span>: percentage of net income (starting balance minus all expenses and taxes)</li>
+                            <li><span class="fw-bold">Distribution</span>: percentage of remaining balance (starting balance minus all other transfers)</li>
+                        </ul>
+                    {% endblock message %}
+                {% endembed %}
+
+                <div>
+                    {{ form_label(form.amount) }}
+                    <div class="d-flex flex-wrap gap-2">
+                        {{ form_widget(form.amountType) }}
+                        {{ form_widget(form.amount) }}
+                    </div>
+                </div>
+                {{ form_rest(form) }}
+                <div class="d-flex flex-wrap gap-2">
+                    {% if transferRequest.id is not empty %}
+                        <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+                    {% else %}
+                        <button class="btn btn-success" id="submit" type="submit">Create Transfer</button>
+                    {% endif %}
+                    <a class="btn btn-outline-secondary"
+                        href="{{ path(exitRoute, { id: transferOrder.id }) }}">Cancel</a>
+                </div>
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

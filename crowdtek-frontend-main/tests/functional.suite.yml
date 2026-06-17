@@ -1,0 +1,22 @@
+# Codeception Test Suite Configuration
+#
+# Suite for functional (integration) tests
+# Emulate web requests and make application process them
+# Include one of framework modules (Symfony2, Yii2, Laravel5) to use it
+
+actor: FunctionalTester
+modules:
+    enabled:
+        - PhpBrowser:
+            #url: 'http://local.qac.com'
+            url: 'https://test-front.yielderverse.co.uk'
+            #auth: ['crowdtek', 'London123!']
+        - Asserts
+        - Sequence
+        - \Helper\Functional
+        #- Db:
+            # db config in codeception.yml
+            # uncomment the dump and populate if running tests adhoc
+            #dump: tests/_data/test_dump.sql
+            #populate: true
+        

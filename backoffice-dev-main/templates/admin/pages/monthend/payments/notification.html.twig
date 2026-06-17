@@ -1,0 +1,103 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = exitRoute %}
+{% set backToRouteParams = {id: paymentOrder.id} %}
+{% set areaHeading = 'Monthend - ' ~ paymentOrder.paymentType ~ ' Notification' %}
+{% set mainHeading = paymentOrder.asset.name %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {# {{ include('admin/pages/monthend/order_actions.html.twig', {
+        order: paymentOrder,
+        originalTotal: originalTotal
+    }) }} #}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "email-notifications",
+        "sectionTitle": "Email Notifications",
+        "linkActions": [
+            {
+                "text": "Refresh Status",
+                "route": app.request.attributes.get('_route'),
+                "params": {id: paymentOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Payments',
+                value: paymentOrder.payments|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Remaining Notifications to Send',
+                value: paymentOrder.payments|filter(v => v.status == 'paid' and v.payeeNotifiedAt is null and v.amount > 0)|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Notifications Sent',
+                value: paymentOrder.payments|filter(v => v.payeeNotifiedAt is not null)|length
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Sending an email notification is only available for payments that have been paid. 'Send All Notifications' will only send notifications for payments that have not already sent one before. Payments with an amount of 0 will not need a notification.",
+        }) }}
+        {{ form_start(form, { attr: {class: "d-flex gap-2"} }) }}
+            {{ form_row(form.submit, { attr: {class: "btn btn-primary"} }) }}
+            {{ form_row(form.submitAsync, { attr: {class: "btn btn-outline-primary"} }) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        <div class="table-responsive">
+            <table class="table table-striped datatable" id="payments-notification-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Payee</th>
+                        <th>Payee Contact Email</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Shareholding</th>
+                        <th>Payment Status</th>
+                        <th>Notification Sent At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paymentRequest in paymentOrder.payments|default([])|filter(p => p.amount > 0) %}
+                    <tr data-object-id="{{ paymentRequest.id }}">
+                        <td>
+                            {% if is_granted('ROLE_OPERATIONS') and paymentRequest.status == 'paid' %}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": paymentRequest.payeeNotifiedAt ? "Resend" : "Send",
+                                        "route": "admin_monthend_payment_notification_send",
+                                        "params": {
+                                            id: paymentRequest.id,
+                                        },
+                                        "style": paymentRequest.payeeNotifiedAt ? "btn-outline-secondary" : "btn-outline-primary",
+                                    },
+                                }) }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td data-field="payee">
+                            <a href="{{ path('admin_user_edit', { id: paymentRequest.payee.id }) }}">#{{ paymentRequest.payee.id
+                                }} // {{ paymentRequest.payee.username }}</a>
+                        </td>
+                        <td data-field="payeeEmail">{{ paymentRequest.payee.email }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="amount">{{ paymentRequest.amount|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums" data-field="shareholding">{{ paymentRequest.shareholding|number_format(0, '', ',') }}</td>
+                        <td>{{ paymentRequest.status|capitalize }}{% if paymentRequest.statusInfo %} ({{ paymentRequest.statusInfo }}){% endif %}</td>
+                        <td>{{ paymentRequest.payeeNotifiedAt ? paymentRequest.payeeNotifiedAt|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

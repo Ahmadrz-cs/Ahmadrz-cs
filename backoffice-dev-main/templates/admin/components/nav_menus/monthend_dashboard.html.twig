@@ -1,0 +1,51 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: "admin_monthend_asset_dashboard",
+                text: "Overview",
+                params: {},
+            },
+            {
+                route: "admin_monthend_income_transfers",
+                text: "Income Transfers",
+                params: {},
+            },
+            {
+                route: "admin_monthend_dividends",
+                text: "Dividends",
+                params: {},
+            },
+            {
+                route: "admin_monthend_settlements",
+                text: "Settlements",
+                params: {},
+            },
+            {
+                route: "admin_monthend_repayments",
+                text: "Prefunder Repayments",
+                params: {},
+            },
+            {
+                route: "admin_monthend_divestments",
+                text: "Divestments and Exits",
+                params: {},
+            },
+            {
+                route: "admin_monthend_share_transfers",
+                text: "Share Transfers",
+                params: {},
+            },
+            {
+                route: "admin_monthend_dashboard_review",
+                text: "Review Activity",
+                params: {},
+            },
+        ]
+    }
+] %}
+
+{{ include('admin/components/_horizontal_nav.html.twig', {
+    navId: 'monthendDashboardNav',
+    links: menuLinks,
+}) }}

@@ -1,0 +1,43 @@
+include:
+    - templates/basePayout.yaml
+
+App\Entity\Payout:
+    inv1_payout{0..3} (extends payout_base):
+        asset: "@asset1"
+        creditedUser: "@userben"
+        shareholding: "@investment1->share_amount"
+        payoutAmount: "<randomFloat(2, 8, 12)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    inv2_payout{0..1} (extends payout_base):
+        asset: "@asset1"
+        creditedUser: "@userben"
+        shareholding: "@investment2->share_amount"
+        payoutAmount: "<randomFloat(2, 4, 6)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    inv1_payout_profit_share{0..1} (extends payout_base):
+        asset: "@asset1"
+        creditedUser: "@userben"
+        shareholding: "@investment1->share_amount"
+        payoutAmount: "<randomFloat(2, 4, 6)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        payoutType: 1
+    no_investment_payout1  (extends payout_base):
+        payoutAmount: "<randomFloat(2, 4, 6)>"
+        dueDate: "<(new DateTime('first day of this month'))>"
+        creditedUser: "@userben"
+        asset: "@assetlodge"
+    no_investment_payout2 (extends payout_base):
+        payoutAmount: "<randomFloat(2, 4, 6)>"
+        dueDate: "<(new DateTime('first day of this month'))>"
+        creditedUser: "@userholly"
+        asset: "@assetlodge"
+    no_investment_profit_share_payout (extends payout_base):
+        payoutAmount: "<randomFloat(2, 4, 6)>"
+        dueDate: "<(new DateTime('first day of this month'))>"
+        creditedUser: "@userben"
+        asset: "@assetlodge"
+        payoutType: 1
+    no_user_profit_share_payout (extends payout_base):
+        payoutAmount: "<randomFloat(2, 4, 6)>"
+        dueDate: "<(new DateTime('first day of this month'))>"
+        payoutType: 1

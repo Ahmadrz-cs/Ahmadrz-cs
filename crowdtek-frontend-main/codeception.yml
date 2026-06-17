@@ -1,0 +1,25 @@
+actor: Tester
+paths:
+    tests: tests
+    log: tests/_output
+    output: tests/_output
+    data: tests/_data
+    support: tests/_support
+    envs: tests/_envs
+bootstrap: bootstrap.php
+settings:
+    colors: true
+    memory_limit: 1024M
+extensions:
+    enabled:
+        - Codeception\Extension\RunFailed
+modules:
+    config:
+        Db:
+            dsn: "mysql:host=%TEST_DB_HOST%;dbname=%TEST_DB_DATABASE%"
+            user: "%TEST_DB_USERNAME%"
+            password: "%TEST_DB_PASSWORD%"
+            # define the dump file in test suite configs
+            
+params:
+ - env # load params from environment vars

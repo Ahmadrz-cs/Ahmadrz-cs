@@ -1,0 +1,159 @@
+# must use set methods for > 1 argument https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list
+
+App\Entity\UserClient:
+    userClient{001}:
+        __construct:
+            - "@userA1"
+            - "@client001"
+        alias: yielderverse
+        description: "Yielderverse development and test client"
+
+    userClient{002}:
+        __construct:
+            - "@userlorna"
+            - "@client<current()>"
+        alias: vendaland
+        description: "External vendor test client"
+
+League\Bundle\OAuth2ServerBundle\Model\Client:
+    client001:
+        __construct:
+            - "yielderverse"
+            - "904c1b4d9a15529ed70ff5e686345a9f"
+            - "71dcf8066c14b07a772a3c8af9217c318dc4385f9fa8215ab5eb11e511fd2cbda50714463088226b8ceefed0126482f2c36f2f4fe7ec4f5ba7c47935b02a9c8e"
+        active: true
+        allowPlainTextPkce: true
+        __calls:
+            - setRedirectUris:
+                  - "@redirect_dev_local"
+                  - "@redirect_dev_local_8001"
+                  - "@redirect_staging"
+                  - "@redirect_rc"
+                  - "@redirect_dev"
+                  - "@redirect_forerunner_localhost"
+                  - "@redirect_forerunner_127.0.0.1"
+                  - "@redirect_demo_yielders"
+                  - "@redirect_demo_yielderverse"
+            - setGrants:
+                  - "@grant_client_credentials"
+                  - "@grant_password"
+                  - "@grant_refresh_token"
+                  - "@grant_authorization_code"
+            - setScopes:
+                  - "@scope_asset_read"
+                  - "@scope_asset_write"
+                  - "@scope_offering_read"
+                  - "@scope_offering_write"
+                  - "@scope_investment_read"
+                  - "@scope_investment_write"
+                  - "@scope_payout_read"
+                  - "@scope_payout_write"
+                  - "@scope_user_read"
+                  - "@scope_user_write"
+    client002:
+        __construct:
+            - "vendaland"
+            - "79343e58d4a87af9c9b61ea8a57bad2b"
+            - "bfe242f58b97f7a6836987f4174710507c905062fdab82e5b07c675a808930691818f630dfaef1414fbbf678f552d64756678223f4ec3df859e18e65234ee7d6"
+        active: true
+        allowPlainTextPkce: true
+        __calls:
+            - setRedirectUris:
+                  - "@redirect_dev_local"
+                  - "@redirect_dev_local_8001"
+                  - "@redirect_staging"
+                  - "@redirect_rc"
+                  - "@redirect_dev"
+            - setGrants:
+                  - "@grant_client_credentials"
+                  - "@grant_password"
+                  - "@grant_refresh_token"
+                  - "@grant_authorization_code"
+            - setScopes:
+                  - "@scope_asset_read"
+                  - "@scope_offering_read"
+                  - "@scope_offering_write"
+                  - "@scope_investment_read"
+                  - "@scope_investment_write"
+                  - "@scope_payout_read"
+                  - "@scope_user_read"
+                  - "@scope_user_write"
+
+# Not clear how to adaptively set redirect uri, including all environments for now
+# if local environment is different, this will need to be tweaked
+League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri:
+    redirect_dev_local:
+        __construct:
+            - http://front.dev.local/auth/callback
+    # Default frontend HTTP port if not using Traefik reverse proxy
+    redirect_dev_local_8001:
+        __construct:
+            - http://front.dev.local:8001/auth/callback
+    # Envs that prefer HTTP (for now)
+    redirect_{dev, staging, rc}:
+        __construct:
+            - https://<current()>-front.yielderverse.co.uk/auth/callback
+    redirect_forerunner_{localhost, 127.0.0.1}:
+        __construct:
+            - http://<current()>:3000/api/auth/callback/yielders
+    redirect_demo_{yielders, yielderverse}:
+        __construct:
+            - https://demo.<current()>.co.uk/auth/callback
+
+# supported grants must be a subset of those configured in config.yaml
+League\Bundle\OAuth2ServerBundle\ValueObject\Grant:
+    grant_{client_credentials, password, refresh_token, authorization_code}:
+        __construct:
+            - <current()>
+
+# scopes are subject to change and MUST be defined in config as well
+# in Alice v3, alternative
+# __construct: "<str_replace('_', ':', $current)>"
+League\Bundle\OAuth2ServerBundle\ValueObject\Scope:
+    scope_{asset, offering, investment, payout, user}_read:
+        __construct:
+            - <current()>:read
+    scope_{asset, offering, investment, payout, user}_write:
+        __construct:
+            - <current()>:write
+
+# Populate some existing oauth2 artifacts
+League\Bundle\OAuth2ServerBundle\Model\AccessToken:
+    access_token_active{5..60, 8}:
+        __construct:
+            - "<uuid()>"
+            - "<(new DateTimeImmutable('+' . $current . 'minutes'))>"
+            - "@client001"
+            - null
+            - []
+    access_token_expired{10..100, 10}:
+        __construct:
+            - "<uuid()>"
+            - "<(new DateTimeImmutable('-' . $current . 'minutes'))>"
+            - "@client001"
+            - null
+            - []
+League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode:
+    auth_code_active{1..10, 3}:
+        __construct:
+            - "<uuid()>"
+            - "<(new DateTimeImmutable('+' . $current . 'minutes'))>"
+            - "@client001"
+            - null
+            - []
+    auth_code_expired{1..20, 5}:
+        __construct:
+            - "<uuid()>"
+            - "<(new DateTimeImmutable('-' . $current . 'minutes'))>"
+            - "@client001"
+            - null
+            - []
+League\Bundle\OAuth2ServerBundle\Model\RefreshToken:
+    refresh_token_active{5..30, 5}:
+        __construct:
+            - "<uuid()>"
+            - "<(new DateTimeImmutable('+' . $current . 'days'))>"
+    refresh_token_expired{10..50, 10}:
+        __construct:
+            - "<uuid()>"
+            - "<(new DateTimeImmutable('-' . $current . 'days'))>"

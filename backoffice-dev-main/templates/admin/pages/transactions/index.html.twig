@@ -1,0 +1,64 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Transactions' %}
+{% set mainHeading = 'Transactions List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block filterPresets %}
+<a href="{{ path(app.request.attributes.get('_route'), { payment_status: 'SUCCEEDED' }) }}" class="btn btn-light">Succeeded Only</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.external_id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.debited_wallet_id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.credited_wallet_id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.comments) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.payment_status) }}</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+    <table class="table table-striped" id="transactionlist">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Reference</th>
+            <th>Currency</th>
+            <th>Amount</th>
+            <th>Debit Wallet</th>
+            <th>Credit Wallet</th>
+            <th>Description</th>
+            <th>Debit User</th>
+            <th>Credit User</th>
+            <th>Investment Id</th>
+            <th>Created By</th>
+        </tr>
+        </thead>
+        <tbody class="tw-text-sm">
+        {% for transaction in objects %}
+            <tr>
+                <td><a href="{{ path('admin_transactions_view', { id: transaction.id }) }}">{{ transaction.id }}</a></td>
+                <td>{{ transaction.type }}</td>
+                <td>{{ transaction.paymentStatus }}</td>
+                <td>{{ transaction.referenceId }}</td>
+                <td>{{ transaction.currency }}</td>
+                <td>{{ (transaction.amount / 100)|number_format(2,'.')}}</td>
+                <td>{{ transaction.debitResourceId}}</td>
+                <td>{{ transaction.creditResourceId}}</td>
+                <td>{{ transaction.comments }}</td>
+                <td>{{ transaction.debitUserId }}</td>
+                <td>{{ transaction.creditUserId }} </td>
+                <td>{{ transaction.invId }}</td>
+                <td>{{ transaction.createdBy }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

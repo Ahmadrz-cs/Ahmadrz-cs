@@ -1,0 +1,215 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+	{% if investment.id %}
+		{% set titleText = 'Edit Investment' %}
+	{% else %}
+		{% set titleText = 'Add Investment' %}
+	{% endif %}
+{% else %}
+	{% set titleText = 'View Investment' %}
+{% endif %}
+
+{% set backToRoute = 'admin_investment_index' %}
+{% set areaHeading = 'Investments' %}
+{% set mainHeading = titleText %}
+
+{% block page_content %}
+
+	<div class="d-flex flex-wrap gap-2">
+		<a href="{{ path('admin_investment_index') }}" class="btn btn-secondary">Cancel</a>
+
+		{% if investment.id %}
+			<a href="{{ path('admin_investment_add_document', { id: investment.id }) }}" class="btn btn-success">Add Document</a>
+			{% if is_granted('ROLE_ADMIN', app.user) %}
+				<a href="{{ path('admin_investment_status_edit', { id: investment.id }) }}" class="btn btn-outline-dark">Modify Status (Admin)</a>
+			{% endif %}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "Trade System Porting Tool",
+					"route": "admin_trade_system_port_investment_single",
+					"params": {id: investment.id},
+					"style": "btn-outline-secondary text-nowrap",
+					"newTab": true,
+				},
+			}) }}
+		{% endif %}
+
+		{% if investment.transactionId is not empty %}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "View Transaction",
+					"route": "admin_transactions_mangopay_transfer",
+					"params": {transferId: investment.transactionId},
+					"style": "btn-outline-dark text-nowrap",
+					"newTab": true,
+				},
+			}) }}
+		{% endif %}
+	</div>
+
+	{{ form_start (form, {attr:{'ng-non-bindable': 'ng-non-bindable'}}) }}
+	<div class="nav-tabs-custom">
+		<ul class="nav nav-tabs">
+			<li class="nav-item">
+				<a class="nav-link active" class="nav-link" href="#main" data-bs-toggle="tab">Basic Details</a>
+			</li>
+			<!--<li class="nav-item"><a class="nav-link" href="#documents" data-bs-toggle="tab">Documents</a></li> issue #1012-->
+			<li class="nav-item">
+				<a class="nav-link" href="#custom-fields" data-bs-toggle="tab">Additional Fields</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#documents" data-bs-toggle="tab">Documents</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#status-record" data-bs-toggle="tab">Status Record</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="main">
+				{{ form_row( form.type ) }}
+				{{ form_row( form.user, {attr: {'class': 'searchable'}}
+				) }}
+				{{ form_row( form.offering, {attr: {'class': 'searchable'}}
+				) }}
+
+
+				{{ form_row( form.investmentValue ) }}
+				{{ form_row( form.share_amount ) }}
+				{{ form_row( form.orgPricePerShare ) }}
+				{# {{ form_row( form.numberOfShares ) }} #}
+				{# we use share_amount instead, removed as confusing #}
+				{# {{ form_row( form.interestRate ) }} #}
+					{% if investment.offering.id | default(null) %}
+						<div class="form-group row"> <label for="investment_investmentValue" class="col-form-label col-sm-2 required">
+							Offering ID</label>
+						<div class="col-sm-10">
+							<p style="padding-top: 7px;">
+								{{ investment.offering.id }}
+							</p>
+						</div>
+					</div>
+				{% endif %}
+				{{ form_row( form.term ) }}
+				{{ form_row( form.transaction_id ) }}
+				{{ form_row( form.divested_amount ) }}
+				{{ form_row( form.divested_shares ) }}
+				{{ form_row( form.extraSharesDivested ) }}
+				{{ form_row( form.comments ) }}
+				{{ form_row( form.numberOfShares ) }}
+
+				{% embed 'admin/components/_alert.html.twig' with {
+					variant: "info",
+				} %}
+					{% block message %}
+					<div class="d-flex flex-column gap-2">
+						<div>"Lifecycle status" can only be set manually during creation</div>
+						<div>"Settled On" is only for back-dating settled investments. It does nothing if the investment is in other states, e.g. approved</div>
+					</div>
+					{% endblock message %}
+				{% endembed %}
+
+				{{ form_row( form.status.lifecycleStatus ) }}
+
+				{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+					<div class="form-group row">
+						<label for="investment_status_isSettled" class="col-form-label col-sm-2 required">
+							Unlock Settled On
+						</label>
+						<div class="col-sm-10">
+							<button type="button" class="btn btn-outline-dark btn-sm mt-1" id="toggle-settled-on">Unlock</button>
+						</div>
+					</div>
+				{% endif %}
+
+				<div class="form-group row" id="settleOnWidget">
+					{{ form_label( form.status.settledOn) }}
+					<div class="col-sm-10">
+						{{ form_widget(form.status.settledOn) }}
+					</div>
+				</div>
+
+				{% if investment.forsale ==1 %}
+
+					<div class="form-group">
+						<label for="offering_sellinvestment" class="control-label col-sm-3 optional">
+							Sell investment
+						</label>
+
+					</div>
+				{% endif %}
+				{{ form_row( form.tradeOrder ) }}
+				{{ form_row( form.shareTrade ) }}
+			</div>
+			<!-- /.tab-pane -->
+			<!--<div class="tab-pane" id="documents">
+						
+						            </div> issue #1012-->
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="custom-fields">
+
+				{% embed 'admin/components/_alert.html.twig' with {
+						variant: "info",
+					} %}
+					{% block message %}
+					<div>Prefunding investments support the additional field "<code>capitalRepaid</code>" to denote the number of <span class="fw-bold">shares</span> that have been liquidated</div>
+					{% endblock message %}
+				{% endembed %}
+
+				{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+					<button type="button" class="btn btn-success mt-3" id="add-custom-field">Add New Field</button>
+				{% endif %}
+				
+				<div class="row mt-3" id="custom-fields-list" data-field-count={{ form.addFields | length }} data-prototype="{{ form_widget(form.addFields.vars.prototype)|e }}">
+					{% for field in form.addFields %}
+						<div id="custom-field-{{ loop.index0 }}" class="custom-field-container">
+							<div>
+								<i class="fa fa-times remove-custom-field pull-right "></i>
+							</div>
+							{{ form_widget( field ) }}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			<div class="tab-pane" id="documents">
+				{% include 'admin/components/document-list.html.twig' with {'documents':investment.documents,'permision':'CAN_UPDATE_INVESTMENT','add':'admin_investmentdocument_add','edit':'admin_investmentdocument_edit','actions':'investment_document'} only %}
+			</div>
+			<div class="tab-pane" id="status-record">
+				{{ include('admin/components/status_record_table.html.twig', {
+                    object: investment,
+                    places: [
+                        'open',
+                        'rejected',
+                        'approved',
+                        'withdrawn',
+                        'settled',
+                    ]}) 
+                }}
+			</div>
+			{% include 'admin/components/blame-timestamp.html.twig' with {'object': investment} only %}
+
+			{# Don't render any multifields that are empty #}
+			{% set multifields = [form.addFields] %}
+			{% for item in multifields %}
+				{% if item is empty  %}
+					{% do item.setRendered %}
+				{% endif %}
+			{% endfor %}
+
+
+		</div>
+		<!-- /.tab-content -->
+	</div>
+	{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+		{{ form_widget(form.submit) }}
+	{% endif %}
+    {{ form_end( form ) }}
+
+{% endblock page_content %}
+
+{% block javascripts %}
+	{{ parent() }}
+	{{ encore_entry_script_tags('investment') }}
+	{{ encore_entry_script_tags('field_custom') }}
+	{{ encore_entry_script_tags('form_required') }}
+{% endblock javascripts %}

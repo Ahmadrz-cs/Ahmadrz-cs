@@ -1,0 +1,31 @@
+include:
+    - ../templates/baseBankAccount.yaml
+
+App\Entity\BankAccount:
+    bankAccount_admin_GB_active (extends bankAccount_GB):
+        accountNumber: "55779911"
+        bankIdentifierCode: "200000"
+        accountHolderType: "business"
+        description: "Official Mangopay test GB account"
+        providerId: "bankacc_m_01HW5RE90QJTPFEAJG0J65638Q"
+        status: "active"
+        displayName: "GBP GB _ 9911"
+    bankAccount_admin_GB (extends bankAccount_GB):
+        status: "closed"
+    bankAccount_admin_IBAN (extends bankAccount_IBAN):
+        accountHolderType: "business"
+        bankName: "Santander"
+        status: "closed"
+    bankAccount_ben_GB_pending (extends bankAccount_GB):
+        user: "@userben"
+        accountNumber: "55779911"
+        bankIdentifierCode: "200000"
+        status: "pending"
+        description: "Official Mangopay test GB account for testing"
+        displayName: "GBP GB _ 9911"
+    bankAccount_ben_GB_closed{0..1} (extends bankAccount_GB):
+        user: "@userben"
+        status: "closed"
+        description: "Test closed registration <current()>"
+        displayName: "GBP GB _ 123<current()>"
+        

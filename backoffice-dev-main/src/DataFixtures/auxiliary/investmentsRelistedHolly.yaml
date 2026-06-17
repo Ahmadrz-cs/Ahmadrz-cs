@@ -1,0 +1,23 @@
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseInvestment.yaml
+
+App\Entity\Investment:
+    investment{lodge_relisted} (extends investment_base):
+        user: "@userholly"
+        offering: "@relistingben_lodge1_1"
+        orgPricePerShare: "@relistingben_lodge1_1->pricePerShare"
+        share_amount: 100
+        
+App\Entity\InvestmentStatus:
+    investmentstatus{lodge_relisted} (extends investmentstatus_base):
+        lifecycleStatus: "approved"
+
+App\Entity\InvestmentDocuments:
+    idoc_holly_lodge{lodge_relisted}:
+        investment: "@investment<current()>"
+        document: "@sharecert_holly_lodge<current()>"
+
+App\Entity\Document:
+    sharecert_holly_lodge{lodge_relisted} (extends doc_certificate):

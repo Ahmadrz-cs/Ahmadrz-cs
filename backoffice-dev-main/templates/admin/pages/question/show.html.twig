@@ -1,0 +1,113 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = app.session.get('questionBuilderMode') ? 'admin_onboarding_assessment_questions' : 'admin_question_index' %}
+{% set areaHeading = 'Questions' %}
+{% set mainHeading = 'Manage Question #' ~ question.id|default() %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": "question-overview",
+		"sectionTitle": "Question Overview",
+		"linkActions": [
+			{
+				"text": "Edit Question",
+				"route": "admin_question_edit",
+				"params": {id: question.id},
+				"style": "btn-secondary",
+				"roleRequired": "ROLE_OPERATIONS",
+			},
+		]
+	} %}
+		{% block sectionContent %}
+        {% if question.locked %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                title: "Restricted Editing",
+                message: "Questions has been answered by a user so is now in 'locked' state. You can no longer edit the question or any choice text, but you can disable the question or specific choices. You can also add new choices, but these cannot be edited once created.",
+            }) }}
+        {% endif %}
+		<div class="row g-3">
+			{{ include('admin/pages/question/_field_overview.twig') }}
+			{{ include('admin/components/blame-timestamp.html.twig', {
+				object: question,
+			}) }}
+		</div>
+		{% endblock %}
+	{% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": "question-choices",
+		"sectionTitle": "Question Choices",
+		"linkActions": [
+			{
+				"text": "Add Choice",
+				"route": "admin_question_add_choice",
+				"params": {id: question.id},
+				"style": "btn-primary",
+				"roleRequired": "ROLE_OPERATIONS",
+			},
+		]
+	} %}
+		{% block sectionContent %}
+        {% set correct_choices = question.choices|filter(c => c.correct) %}
+        {% if correct_choices|length != 1 %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                title: "Must have exactly ONE correct choice",
+                message: "Questions should have exactly one correct choice as the answer before being made active (publishing)",
+            }) }}
+        {% endif %}
+        <div class="row g-3">
+			{{ include('admin/components/stat.html.twig', {
+                key: 'Correct Choices',
+                value: correct_choices|length
+            }) }}
+		</div>
+        <table class="table" id="choices-list">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Id</th>
+                    <th>Content</th>
+                    <th>Active</th>
+                    <th>Correct</th>
+                    {# <th>CreatedAt</th> #}
+                    <th>UpdatedAt</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+            {% for choice in question.choices %}
+                <tr>
+                    <td>
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Edit",
+                                "route": 'admin_question_choice_edit',
+                                "params": {id: choice.id},
+                                "style": "btn-outline-primary text-nowrap",
+                            },
+                        }) }}
+                    </td>
+                    <td data-field="id">{{ choice.id }}</td>
+                    <td data-field="content">{{ choice.content }}</td>
+                    <td data-field="active">{{ choice.active ? 'Yes' : 'No' }}</td>
+                    <td data-field="correct">{{ choice.correct ? 'Yes' : 'No' }}</td>
+                    {# <td>{{ choice.createdAt ? choice.createdAt|date('Y-m-d H:i:s') : '' }}</td> #}
+                    <td>{{ choice.updatedAt ? choice.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                    
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6">No choices found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+		{% endblock %}
+	{% endembed %}
+
+    {# {{ include('admin/pages/question/_delete_form.html.twig') }} #}
+{% endblock %}

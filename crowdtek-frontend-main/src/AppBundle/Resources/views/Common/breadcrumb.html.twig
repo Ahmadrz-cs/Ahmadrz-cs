@@ -1,0 +1,21 @@
+ <!-- hero banner -->
+        <section id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
+            <h1 class="sr-only">Page Head</h1>
+            <div class="hero-banner properties-inner banner-medium bg-fixed bg-overlay">
+                <div class="container pt-6 pt-md-8 position-relative layer-z-1">
+
+                    <!-- breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <h3 class="sr-only">Breadcrumb</h3>
+                        <ol class="breadcrumb text-sm bg-transparent px-0">
+                            <li class="breadcrumb-item"><a href="/">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('profile') }}">My Profile</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{  pageinfo|default('') }}</li>
+                        </ol>
+                    </nav>
+
+                </div>
+            </div>
+        </section>
+
+      

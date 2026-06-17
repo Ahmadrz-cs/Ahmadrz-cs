@@ -1,0 +1,60 @@
+<div class="table-responsive">
+    <table class="table" id="{{ tableId|default('user-docs-list') }}">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>User doc id</th>
+                <th>File name</th>
+                <th>File description</th>
+                <th>Tag</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for userdocument in userdocs|default([]) %}
+            <tr>
+                <td>
+                    <div class="d-flex flex-wrap gap-1">
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Download",
+                                "route": 'admin_document_download',
+                                "params": {
+                                    id: userdocument.document.id,
+                                    "type": "private",
+                                },
+                                "style": "btn-outline-dark text-nowrap",
+                            },
+                        }) }}
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "View",
+                                "route": 'admin_document_download',
+                                "params": {
+                                    id: userdocument.document.id,
+                                    "type": "private",
+                                    'preview': 1,
+                                },
+                                "style": "btn-outline-dark text-nowrap",
+                                "newTab": true,
+                            },
+                        }) }}
+                    </div>
+                </td>
+                <td><a href="{{ path('admin_userdocument_edit', { id: userdocument.id }) }}">{{
+                        userdocument.id }}</a></td>
+                <td><a href="{{ path('admin_userdocument_edit', { id: userdocument.id }) }}">{{
+                        userdocument.document.filename }}</a></td>
+                <td>{{ userdocument.document.description }}</td>
+                <td>{{ userdocument.document.tag }}</td>
+                <td>
+                    <span class="text-nowrap tw-font-mono">{{ userdocument.document.createdAt ? userdocument.document.createdAt|date("Y-m-d H:i:s") : 'N/A' }}</span>
+                    {% if userdocument.document.createdAt and date("-" ~ recency|default("10 days")) < userdocument.document.createdAt %}
+                        <span class="badge text-bg-dark">New</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

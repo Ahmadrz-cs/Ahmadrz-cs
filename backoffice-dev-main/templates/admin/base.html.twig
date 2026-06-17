@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>{{ htmlTitle|default(mainHeading|default('-')) }} - {{ app_name }}</title>
+		<link rel="icon" type="image/png" href="{{ asset('build/images/favicon-96x96.png') }}" sizes="96x96" />
+		<link rel="icon" type="image/svg+xml" href="{{ asset('build/images/favicon.svg') }}" />
+		<link rel="shortcut icon" href="{{ asset('build/images/favicon.ico') }}" />
+		{% block stylesheets %}
+			{{ encore_entry_link_tags('app') }}
+		{% endblock stylesheets %}
+	</head>
+	<body>
+		{%- block app_content -%}{%- endblock app_content -%}
+		{% block modal %}{% endblock modal %}
+		{% block javascripts %}
+			{{ encore_entry_script_tags('app') }}
+		{% endblock javascripts %}
+	</body>
+</html>

@@ -1,0 +1,57 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Shareholdings' %}
+{% set mainHeading = mainHeading|default('Share Trades') %}
+
+{% block page_content %}
+
+	<p class="card card-body bg-light">Ordered by most recently settled then asset name alphabetically</p>
+	<div class="table-responsive">
+		<table class="table table-striped datatable" id="sharetradedlist">
+			<thead>
+				<tr>
+					<th>Asset</th>
+					<th>Buyer (username)</th>
+					<th>Seller (username)</th>
+					<th>Shares traded</th>
+					<th>Investment</th>
+					<th>Invested</th>
+					<th>Settled</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for entry in sharetrades %}
+
+					{% if entry.status.lifecycleStatus == "settled" %}
+						<tr>
+							<td>
+								<a href="{{ path('admin_asset_edit', { id: entry.offering.asset.id }) }}">{{ entry.offering.asset.name }}</a>
+							</td>
+							<td>
+								<a href="{{ path('admin_user_edit', { id: entry.user.id }) }}">{{ entry.user.username }}</a>
+							</td>
+							{% if entry.offering.investment is defined %}
+								{% set sellerId = entry.offering.investment.user.id %}
+								{% set seller = entry.offering.investment.user.username %}
+							{% else %}
+								{% set sellerId = entry.offering.createdById %}
+								{% set seller = entry.offering.createdBy %}
+							{% endif %}
+							<td>
+								<a href="{{ path('admin_user_edit', { id: sellerId }) }}">{{ seller }}</a>
+							</td>
+							<td>{{ entry.shareAmount }}</td>
+							<td>
+								<a href="{{ path('admin_investment_edit', { id: entry.id }) }}">{{ entry.id }}</a>
+							</td>
+							<td>{{ entry.createdAt|date("Y-m-d G:i:s") }}</td>
+							<td>{{ entry.status.settledOn|date("Y-m-d G:i:s") }}</td>
+						</tr>
+					{% endif %}
+
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+{% endblock page_content %}

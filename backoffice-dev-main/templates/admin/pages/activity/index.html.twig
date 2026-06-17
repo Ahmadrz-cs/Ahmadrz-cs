@@ -1,0 +1,67 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Platform Activity' %}
+{% set mainHeading = 'Activity Timeline' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path(app.request.get("_route"), { action: ["create"] }) }}" class="btn btn-light">Create Actions</a>
+<a href="{{ path(app.request.get("_route"), { action: ["update"] }) }}" class="btn btn-light">Update Actions</a>
+<a href="{{ path(app.request.get("_route"), { action: ["remove"] }) }}" class="btn btn-light">Remove Actions</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.action) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.objectId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.objectClass) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.username) }}</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.loggedAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.loggedAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+<div class="table-responsive" id="activity-log-list">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Actions</th>
+				<th>Id</th>
+				<th>Date</th>
+				<th>Action</th>
+				<th>By User</th>
+				<th>On Object</th>
+				<th>With Id</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for log in objects %}
+				<tr>
+					<td>
+						{{ include('admin/components/button_link.html.twig', {
+							linkProps: {
+								"text": "View",
+								"route": "admin_activity_log",
+								"params": {id: log.id},
+								"style": "btn-outline-dark text-nowrap",
+							},
+						}) }}
+					</td>
+					<td>{{ log.id }}</td>
+					<td>{{ log.loggedAt|date('Y-m-d H:i:s') }}</td>
+					<td>{{ log.action }}</td>
+					<td>{{ log.username }}</td>
+					<td>{{ log.objectClass }}</td>
+					<td>{{ log.objectId }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

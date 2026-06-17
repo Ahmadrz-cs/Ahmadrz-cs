@@ -1,0 +1,61 @@
+services:
+  frankenphp:
+    # image: dunglas/frankenphp:${BASE_FRANKENPHP_TAG:-latest}
+    build:
+      context: .
+      dockerfile: frankenphp/Dockerfile
+      args:
+        BASE_FRANKENPHP_TAG: "${BASE_FRANKENPHP_TAG:-latest}"
+    restart: unless-stopped
+    # Use Traefik proxy instead
+    # If you want to directly expose ports, avoid using the default ports 80 and 443
+    # ports:
+      # HTTP
+      # - target: 80
+      #   published: ${HTTP_PORT:-80}
+      #   protocol: tcp
+      # # HTTPS
+      # - target: 443
+      #   published: ${HTTPS_PORT:-443}
+      #   protocol: tcp
+      # # HTTP/3
+      # - target: 443
+      #   published: ${HTTP3_PORT:-443}
+      #   protocol: udp
+    labels:
+      # Explicitly tell Traefik to expose this container
+      traefik.enable: true
+      # The domain(s) the service will respond to
+      traefik.http.routers.frankenphp_back.rule: "Host(`back.dev.local`) || Host(`account.dev.local`) || Host(`api.dev.local`)"
+      # Allow request only from the predefined entry point named "web"
+      traefik.http.routers.frankenphp_back.entrypoints: "web"
+      # Specify the network Traefik should use
+      traefik.docker.network: "yielderverse-back_net-common"
+      # Fix for port-is-missing issue - note that the service name itself does not matter, it's a "dummy" service
+      # See https://stackoverflow.com/questions/58580782/traefik-2-0-port-is-missing-for-internal-dashboard
+      traefik.http.services.frankenphp_back.loadbalancer.server.port: "80"
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-http://localhost}, php:80
+      CADDY_GLOBAL_OPTIONS: "auto_https off"
+    networks:
+      net-database:
+      net-common:
+        aliases:
+          - back.dev.local
+          - account.dev.local
+          - api.dev.local
+    volumes:
+      - ..:/app # mount project files
+      - ./frankenphp/Caddyfile:/etc/caddy/Caddyfile # customised Caddyfile to change document root to web/ instead of public/
+      - ./php/conf.d/development.ini:/usr/local/etc/php/conf.d/development.ini # custom PHP config
+      - caddy_data:/data
+      - caddy_config:/config
+
+
+networks:
+  net-database:
+  net-common:
+
+volumes:
+  caddy_data:
+  caddy_config:

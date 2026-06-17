@@ -1,0 +1,53 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_saturna_ben_1: 496
+    shares_saturna_holly_1: 319
+
+App\Entity\TradeOrder:
+    buy_order_saturna_{ben_1} (extends trade_order_invest):
+        asset: "@assetsaturna"
+        user: "@userben"
+        numberOfShares: 531
+        pricePerShare: "@assetsaturna->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last thursday of -1 months')>"
+        createdBy: "$user"
+        notes: "off market to settle"
+        type: <(App\Entity\Enum\TradeOrderType::OffMarket)>
+    buy_order_saturna_{holly_1} (extends trade_order_invest):
+        asset: "@assetsaturna"
+        user: "@userholly"
+        numberOfShares: 319
+        pricePerShare: "@assetsaturna->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -1 months', 'last thursday of -1 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_saturna_{ben_1, holly_1}:
+        tradeOrder: "@buy_order_saturna_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_saturna_<current()>->createdAt"
+    buy_order_status_completed_saturna_{ben_1, holly_1}:
+        tradeOrder: "@buy_order_saturna_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_saturna_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_saturna_{ben_1, holly_1}:
+        buyOrder: "@buy_order_saturna_<current()>"
+        sellOrder: "@sell_order_initial_saturna"
+        numberOfShares: "@buy_order_saturna_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_saturna_<current()>->pricePerShare"
+        createdAt: "@buy_order_saturna_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_saturna_{ben_1, holly_1}:
+        shareTrade: "@share_trade_saturna_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_saturna_<current()>->createdAt"

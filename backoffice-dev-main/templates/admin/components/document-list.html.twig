@@ -1,0 +1,26 @@
+<div class="nav-tabs-custom">
+    <div class="tab-content p-3">
+        <table class="table table-striped datatable " id="assetlist_doc">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>file name</th>
+                    <th>description</th>
+                    <th>tag</th>
+                    {# <th>Actions</th> #}
+                </tr>
+            </thead>
+            <tbody>
+            {% for entitydoc in documents %}
+            <tr>
+                    <td><a href="{{ path(edit, { id: entitydoc.id }) }}">{{ entitydoc.id }}</a></td>
+                    <td><a href="{{ path(edit, { id: entitydoc.id }) }}">{{ entitydoc.document.filename }}</a></td>
+                    <td>{{ entitydoc.document.description }}</td>
+                    <td>{{ entitydoc.document.tag }}</td>
+                    {# <td>{% include 'admin/pages/documents/asset/_actions.html.twig' %}</td> #}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

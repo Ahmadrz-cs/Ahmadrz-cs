@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <title>Yielders Onboarding {% block title %}{# Add title by extending base template #}{% endblock %}</title>
+    {% set favPathIco=asset('bundles/app/images/ico/') %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ favPathIco }}favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ favPathIco }}favicon.svg" />
+    <link rel="shortcut icon" href="{{ favPathIco }}favicon.ico" />
+    <link rel="stylesheet" href="{{ asset('bundles/app/css/onboarding/bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ asset('bundles/app/css/onboarding/style-limited.css') }}">
+    {% set cssPath=asset('bundles/app/css/')%}
+    <link rel="stylesheet" href="{{ cssPath }}main.css?v={{ version }}" />
+    {% block stylesheets %}
+        {# Add any additional stylesheets when extending #}
+    {% endblock %}
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-58ZGRVT');</script>
+    <!-- End Google Tag Manager -->
+</head>
+
+<body {% block bodystyle %} {# Add custom body style when extending #} {% endblock %}>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-58ZGRVT"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+{% block body %}
+    {# Extend base template with page content #}
+{% endblock %}
+
+<script src="{{ asset('bundles/app/js/onboarding/jquery.min.js') }}"></script>
+<script src="{{ asset('bundles/app/js/onboarding/bootstrap4.min.js') }}"></script>
+
+{% block scripts %}
+    {# Add any additional scripts when extending #}
+{% endblock %}
+</body>
+</html>

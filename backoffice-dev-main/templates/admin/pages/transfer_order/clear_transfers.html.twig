@@ -1,0 +1,79 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = app.request.query.get('redirectRoute') ?? 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = 'Confirm Deletion of All Transfers' %}
+{% set htmlTitle = 'Clear All Transfers' %}
+{% set baseTemplate = 'cms' %}
+
+{% block notices %}
+    {% embed 'admin/components/_alert.html.twig' with {
+        role: "alert",
+        variant: "warning",
+        showType: true,
+    } %}
+        {% block message %}
+            You are about to delete all transfers from a transfer order. <span class="fw-bold">This cannot be undone!</span>
+        {% endblock message %}
+    {% endembed %}
+{% endblock %}
+
+{# Configure page blocks #}
+{% block objectMeta %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "order-summary",
+        "sectionTitle": "Transfer Order #" ~ transferOrder.id|default(),
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3" data-object-id="{{ transferOrder.id|default() }}">
+            {% set asset = transferOrder.asset %}
+            {% if asset is not empty %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: '#%s // %s (%s)'|format(asset.id, asset.name, asset.companyNumber),
+                    className: 'col-12 col-md-6'
+                }) }}
+            {% else %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: 'None',
+                    className: 'col-12 col-md-6'
+                }) }}
+            {% endif %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Type',
+                value: transferOrder.transferType.value|capitalize
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled For',
+                value: transferOrder.scheduledFor|date('Y-m-d', false)
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Status',
+                value: transferOrder.status|capitalize|replace({'_':'-'})
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Transfers',
+                value: transferOrder.transfers|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfers Pending',
+                value: transferOrder.transfers|filter(p => p.status == 'pending')|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfers Paid',
+                value: transferOrder.transfers|filter(p => p.status == 'paid')|length
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-danger" id="submit" type="submit">Clear All Transfers</button>
+    <a class="btn btn-outline-secondary"
+        href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_transfer_order_manage', { id: transferOrder.id }) }}">Discard Changes</a>
+{% endblock %}

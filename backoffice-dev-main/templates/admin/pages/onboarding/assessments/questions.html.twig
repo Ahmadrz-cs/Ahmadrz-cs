@@ -1,0 +1,99 @@
+{% extends 'admin/layouts/onboarding.html.twig' %}
+
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = 'Assessment Questions' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'onboarding' %}
+
+{% set statusToColor = {
+    'Yes': 'blue',
+    'No': 'gray',
+} %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "question-area-summary",
+        "sectionTitle": "Summary",
+    } %}
+        {% block sectionContent %}
+            <ul>
+                <li>At least 1 active question in a question area is required for the area to show up in assessments</li>
+                <li>There is no obligation to have an active question in any question area</li>
+                <li>You can remove a question area from the assessment by setting all questions in that area to inactive</li>
+                <li>Contact the tech team if there are new question areas you want support for</li>
+            </ul>
+            {% set assessedAreas = questionsByArea|filter(a => a|filter(q => q.active)|length > 0)|length %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Total Supported Question Areas',
+                    value: questionsByArea|length,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Assessed Areas',
+                    value: assessedAreas,
+                }) }}
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Area</th>
+                        <th>Total Questions</th>
+                        <th>Active Questions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for area, questions in questionsByArea %}
+                        <tr>
+                            {% set activeQuestions = questions|filter(q => q.active)|length %}
+                            <td><a href="{{ path(app.request.attributes.get('_route')) }}#{{ "question-area-" ~ questionArea[area].name }}">{{ questionArea[area].name|humanize }}</a></td>
+                            <td>{{ questions|length }}</td>
+                            <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                                color: statusToColor[activeQuestions > 0 ? 'Yes' : 'No'],
+                                value: activeQuestions
+                            }) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="10">no records found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {% endblock %}
+    {% endembed %}
+
+    {% for area, questions in questionsByArea %}
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "question-area-" ~ questionArea[area].name,
+            "sectionTitle": questionArea[area].name|humanize,
+            "linkActions": [
+                {
+                    "text": "Add Question",
+                    "route": 'admin_question_new',
+                    "params": {
+                        area: area,
+                        builderMode: 1,
+                    },
+                    "style": "btn-outline-dark text-nowrap",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+            ] 
+        } %}
+            {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Number of Questions',
+                        value: questions|length,
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Number of Action Questions',
+                        value: questions|filter(q => q.active)|length,
+                    }) }}
+                </div>
+                {{ include('admin/components/onboarding/_question_list.html.twig') }}
+            {% endblock %}
+        {% endembed %}
+
+    {% endfor %}
+{% endblock %}

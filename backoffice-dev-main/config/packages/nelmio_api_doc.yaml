@@ -1,0 +1,70 @@
+nelmio_api_doc:
+    areas:
+        default:
+            path_patterns: # an array of regexps
+                - ^/v2/yielders
+        v2:
+            name_patterns:
+                - get_assets_v2
+                - get_asset_v2
+                - get_asset_offerings_v2
+                - get_asset_documents_v2
+                - get_asset_document_v2
+                - get_offerings_v2
+                - get_offering_v2
+                - get_offering_documents_v2
+                - get_offering_document_v2
+                - get_user_v2
+                - post_users_v2
+                - post_users_documents_v2
+                - patch_user_v2
+                - post_users_payin_v2
+                - get_users_wallet_v2
+                - post_email_verification_v2
+                - get_investment_v2
+                - get_investments_v2
+                - post_investment_v2
+                - patch_investment_v2
+                - get_investment_document_v2
+                - get_investment_documents_v2
+                - post_investment_documents_v2
+                - patch_investment_documents_v2
+                - delete_investment_documents_v2
+    documentation:
+        info:
+            version: 1.0.0
+            title: Yielders API Doc
+        components:
+            securitySchemes:
+                PasswordOAuth2:
+                    type: oauth2
+                    description: provides a password flow access_token
+                    name: Authorization
+                    flows:
+                        password:
+                            tokenUrl: /oauth2/token
+                            scopes:
+                                asset:read: "read assets"
+                                offering:read: "read offerings"
+                                user:read: "read users"
+                                user:write: "write users"
+                                investment:read: "read investments"
+                                investment:write: "write investments"
+
+        # securityDefinitions:
+        #     password:
+        #         type: oauth2
+        #         description: provides a password flow access_token
+        #         flow: oauth2
+        #         tokenUrl: /oauth2/token
+        #         name: Authorization
+        #         scopes:
+                    # asset:read: "read assets"
+                    # offering:read: "read offerings"
+                    # user:read: "read users"
+                    # user:write: "write users"
+                    # investment:read: "read investments"
+                    # investment:write: "write investments"
+        security:
+            - Bearer: []
+            - PasswordOAuth2: []

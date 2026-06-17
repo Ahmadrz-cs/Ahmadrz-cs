@@ -1,0 +1,79 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_export_hub' %}
+{% set areaHeading = 'Reports and Exports Hub' %}
+{% set mainHeading = app.request.attributes.get('_route_params')['report']|replace({'_': ' '})|title %}
+{% set htmlTitle = 'Report Builder' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "report-builder",
+        "sectionTitle": "Report Builder",
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form, {attr:{class:"d-flex flex-column gap-4"}}) }}
+			<section class="d-flex flex-column gap-3">
+				<header>
+					<h5 class="fw-bold">Customise fields</h5>
+					<div class="d-flex flex-wrap gap-2">
+						<a href="{{ app.request.pathinfo }}" class="btn btn-outline-dark text-nowrap">Enable all fields</a>
+						<a href="{{ app.request.pathinfo }}?clear=1" class="btn btn-outline-dark text-nowrap">Clear all fields</a>
+					</div>
+					<p class="">{{ form_help(form.reportFields) }}</p>
+				</header>
+				<div class="row">
+					{% for key, choice in form.reportFields.children %}
+						<div class="col-sm-6 col-md-4 col-lg-3 py-1">{{ form_widget(choice) }}</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section class="d-flex flex-column gap-3">
+				<header>
+					<h5 class="fw-bold">Available filters</h5>
+					<div class="tw-text-sm">Note that not all reports support filters</div>
+				</header>
+				<div class="row">
+					{% if 'createdAt' in supportedFields %}
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+					{% endif %}
+					{% if 'assetId' in supportedFields %}
+						<div class="col-md-8 col-xl-6">{{ form_row(form.assetId) }}</div>
+					{% endif %}
+					{% for userField in supportedUserFields %}
+						{% if userField in supportedFields %}
+							<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form[userField]) }}</div>
+						{% endif %}
+					{% endfor %}
+
+				</div>
+				<div class="row">
+					{% if 'tradeStatus' in reportSpecificFilters or 'tradeOrderStatus' in reportSpecificFilters %}
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.status) }}</div>
+					{% endif %}
+					{% if 'tradeOrderType' in reportSpecificFilters %}
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.type) }}</div>
+					{% endif %}
+					{% if 'direction' in reportSpecificFilters %}
+						<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.direction) }}</div>
+					{% endif %}
+				</div>
+			</section>
+
+			<section>
+				<div class="row">
+					<div class="col-sm-6 col-md-4 col-lg-3">{{ form_row(form.exportFormat) }}</div>
+				</div>
+				<button type="submit" id="submit" class="btn-primary btn">
+					<i class="fas fa-download me-2"></i>Export Report
+				</button>
+			</section>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

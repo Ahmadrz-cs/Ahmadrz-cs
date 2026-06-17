@@ -1,0 +1,76 @@
+include:
+    - templates/baseInvestment.yaml
+    - templates/baseDocument.yaml
+
+App\Entity\Investment:
+    investment{1..2} (extends investment_base):
+        user: "@userben"
+        offering: "@offering1"
+        orgPricePerShare: "@offering1->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+    investment{3..4} (extends investment_base):
+        user: "@userholly"
+        offering: "@offering1"
+        orgPricePerShare: "@offering1->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+    investment{5} (extends investment_base):
+        user: "@userben"
+        offering: "@offering2"
+        orgPricePerShare: "@offering2->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+    investment{6} (extends investment_base):
+        user: "@userben"
+        offering: "@offering3"
+        orgPricePerShare: "@offering3->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+    investment{7} (extends investment_base):
+        user: "@userben"
+        offering: "@offering3"
+        orgPricePerShare: "@offering3->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+    investment{8} (extends investment_base):
+        user: "@userben"
+        offering: "@offering3"
+        orgPricePerShare: "@offering3->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+    investment_settled_pastA1{1..12} (extends investment_base):
+        user: "@userben"
+        offering: "@offering1"
+        orgPricePerShare: "@offering1->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+        createdAt: "<(new DateTime('first day of -' . $current . 'month'))>"
+        status: "@investmentstatus_settled_pastA1<current()>"
+        comments: "Varied settlement date asset 1"
+    investment_settled_pastA2{1..8} (extends investment_base):
+        user: "@userben"
+        offering: "@offering2"
+        orgPricePerShare: "@offering2->pricePerShare"
+        share_amount: "<randomNumber(3, true)>"
+        createdAt: "<(new DateTime('first day of -' . $current . 'month'))>"
+        status: "@investmentstatus_settled_pastA2<current()>"
+        comments: "Varied settlement date asset 2"
+
+App\Entity\InvestmentStatus:
+    investmentstatus{1..4} (extends investmentstatus_base):
+    investmentstatus{5} (extends investmentstatus_base):
+        lifecycleStatus: "open"
+    investmentstatus{6} (extends investmentstatus_base):
+        lifecycleStatus: "approved"
+    investmentstatus{7} (extends investmentstatus_base):
+        lifecycleStatus: "withdrawn"
+    investmentstatus{8} (extends investmentstatus_base):
+        lifecycleStatus: "rejected"
+    investmentstatus_settled_pastA1{1..12} (extends investmentstatus_base):
+        lifecycleStatus: "settled"
+        settledOn: "<(new DateTime('first day of -' . $current . 'month'))>"
+    investmentstatus_settled_pastA2{1..8} (extends investmentstatus_base):
+        lifecycleStatus: "settled"
+        settledOn: "<(new DateTime('first day of -' . $current . 'month'))>"
+    
+App\Entity\InvestmentDocuments:
+    investmentdoc{1..2}:
+        investment: "@investment<current()>"
+        document: "@idoc<current()>"
+
+App\Entity\Document:
+    idoc{1..2} (extends doc_certificate):

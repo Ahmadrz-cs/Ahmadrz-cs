@@ -1,0 +1,48 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set question = question_choice.question %}
+
+{% set backToRoute = 'admin_question_show' %}
+{% set backToRouteParams = { id: question.id } %}
+{% set areaHeading = 'Questions' %}
+{% set mainHeading = mainHeading|default('New Question Choice') %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'cms' %}
+
+{% block objectMeta %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": "question-overview",
+		"sectionTitle": "Question Overview",
+	} %}
+		{% block sectionContent %}
+		<div class="row g-3">
+			{{ include('admin/pages/question/_field_overview.twig') }}
+		</div>
+		{% endblock %}
+	{% endembed %}
+{% endblock %}
+
+{% block formContents %}
+	<section class="row">
+		<div class="col-12">{{ form_row(form.content) }}</div>
+		<div class="col-md-6">
+			<label class="card card-body bg-light shadow-none border mb-3">
+				{{ form_widget(form.active) }}
+				<span class="">{{ form_help(form.active) }}</span>
+			</label>
+		</div>
+		<div class="col-md-6">
+			<label class="card card-body bg-light shadow-none border mb-3">
+				{{ form_widget(form.correct) }}
+				<span class="">{{ form_help(form.correct) }}</span>
+			</label>
+		</div>
+	</section>
+{% endblock %}
+
+{% block formSubmit %}
+	<button class="btn btn-success" id="submit" type="submit">Create Question Choice</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_question_show', {
+        id: question_choice.question.id
+    }) }}">Cancel</a>
+{% endblock %}

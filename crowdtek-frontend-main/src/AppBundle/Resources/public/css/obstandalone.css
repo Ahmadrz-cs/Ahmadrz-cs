@@ -1,0 +1,355 @@
+section {
+  margin-bottom: 24px;
+}
+
+.container--narrow {
+  width: 100%;
+  max-width: 768px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* New generally useful styles*/
+section .section__title {
+  color: #2e2e2e;
+}
+.small {
+  font-size: 12px;
+}
+.btn {
+  transition: .2s;
+}
+.btn--wire {
+  color: #2e2e2e;
+  border: 2px solid #2e2e2e;
+  border-color: currentColor; 
+  border-radius: 20px;
+}
+.btn--white {
+  background-color: #ffffff;
+}
+.btn--wire:hover { 
+  color: #4da19a;
+}
+.btn--gradient-teal {
+  background-color: #4da19a;
+  background-image: linear-gradient(to right, #4da19a 0%, #67beb6 51%, #4da19a 100%);
+  background-size: 200% auto;
+}
+.btn--gradient-teal:hover { 
+  background-position: right center; 
+}
+.btn--round {
+  padding: 12px 24px;
+  border-radius: 40px;
+  max-width: 100%;
+  letter-spacing: 1.15px;
+  font-weight: bold;
+}
+.btn--lod, .btn--lod:hover, .btn--lod:active, .btn--lod:focus {
+  color: white;
+}
+.btn.uppercase {
+  font-size: 0.7em;
+}
+
+.text-center {
+  text-align: center;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+.bg-offwhite {
+  background-color: #fafafa;
+}
+.bg-lightgrey {
+  background-color: #ececec;
+}
+.bg-midteal {
+  background-color: #4da19a;
+}
+.box-btm-grey-border {
+  border-bottom: 2px solid #ececec;
+}
+.fill-width {
+  width: 100%;
+}
+
+/* Port custom checkbox styles */
+.control {
+  display: block;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  font-size: 18px;
+}
+label.control {
+  font-weight: normal;
+  font-size: 12px;
+}
+.control input {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+}
+.control__indicator {
+  position: absolute;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background: #fff;
+  border: solid thin #4da19a;
+  border-radius: 3px;
+}
+.control input:checked ~ .control__indicator {
+  background: #4da19a;
+}
+.control__indicator:after {
+  content: '';
+  position: absolute;
+  display: none;
+}
+.control input:checked ~ .control__indicator:after {
+  display: block;
+}
+.control--checkbox .control__indicator:after {
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.control__indicator.warn-highlight, .warn-highlight {
+  box-shadow: 0 0 3px 4px rgba(217,83,79, 0.6);
+}
+.control input:checked ~ .control__indicator.warn-highlight {
+  box-shadow: none;
+}
+
+/* Investment box styling */
+.modal-content.investbox {
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 32px 16px;
+}
+.investbox p {
+  margin-bottom: 0;
+}
+.investbox a:not(.btn) {
+  color: #337ab7;
+  text-decoration: none;
+}
+.investbox a:hover {
+  text-decoration: underline;
+}
+.investbox label,  .investbox i{
+  color: #2e2e2e;
+}
+.investbox .modal-header {
+  padding: 8px 0 8px;
+  text-align: left;
+}
+.investbox .close {
+  margin-top: -12px;
+}
+.investbox .investbox__title {
+  font-weight: bold;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.investbox .control, .investbox .investbox__input {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.investbox .investbox__input {
+  text-align: center;
+}
+.investbox .investbox__input input {
+  text-align: center;
+  height: 40px;
+  margin: 0px 0 10px 0;
+  border: none;
+  border-bottom: solid thin #ccc;
+  font-size: 16px;
+  color: #2e2e2e;
+  max-width: 100%;
+}
+.investbox .investbox__input input:read-only {
+  border: none;
+  border-radius: 20px;
+  background: #e4f6f4;
+  cursor: pointer;
+  padding: 0 12px;
+}
+.investbox .investbox__input input:read-only:active {
+  box-shadow: inset 0 0 6px 4px rgba(0,0,0,0.1);
+}
+.investbox .investbox__input input.small {
+  font-size: 12px;
+}
+.investbox .investbox__input-label {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.investbox .investbox__input-note {
+  margin-bottom: 16px;
+}
+.investbox .investbox__summary {
+  margin-top: 16px;
+  margin-bottom: 24px;
+  border: 2px solid #dadada;
+  background-color: #e4f6f4;
+}
+.investbox .investbox__summary-row {
+  padding: 16px;
+}
+.investbox .investbox__summary-row .row:not(:last-child){
+  margin-bottom: 12px;
+}
+.investbox .investbox__summary-total {
+  padding: 16px;
+  border-top: 2px solid #dadada;
+  font-weight: bold;
+}
+.investbox .investbox__summary-value {
+  text-align: right;
+}
+.investbox .investbox__input .fa {
+  font-size: 24px;
+  opacity: 0.4;
+}
+.investbox .investbox__input .fa-plus-circle {
+  color: green;
+}
+
+
+/* calculator styling*/
+.calc {
+  border: 2px solid #dadada;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+.calc p {
+  color: #2e2e2e;
+}
+.calc__slider {
+  margin-top: 20px;
+  margin-bottom: 36px;
+}
+.calc > .row {
+  padding: 24px 16px;
+}
+.calc .calc__subtitle {
+  font-size: 14px;
+}
+.calc .calc__intro {
+  font-size: 20px;
+}
+.calc .calc__note {
+  font-size: 12px;
+  opacity: 0.5;
+}
+.calc .calc__value {
+  font-size: 32px;
+  font-weight: bold;
+}
+.calc .calc__value--accented {
+  opacity: 0.75;
+}
+.calc .bg-midteal p {
+  color: white;
+}
+
+.calc p, .investbox p {
+  color: #2e2e2e;
+}
+
+@media screen and (min-width: 360px) {
+  label.control {
+    font-size: 14px;
+  }
+  .modal-content.investbox {
+    padding: 32px 24px;
+  }
+  .investbox .investbox__input-label {
+    font-size: 18px;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .calc > .row {
+    padding: 32px;
+  }
+  .calc .calc__value {
+    margin-bottom: 0;
+  }
+  .modal-content.investbox {
+    padding: 48px;
+  }
+  .investbox .investbox__input-note {
+    margin-bottom: 0;
+  }
+  .investbox .investbox__summary {
+    margin-top: 8px;
+  }
+  .investbox .investbox__summary > * {
+    padding: 24px 32px;
+  }
+  .investbox .investbox__summary-total p {
+    font-size: 1.2em;
+  }
+  .btn--round {
+    padding: 14px 48px;
+    border-radius: 40px;
+    max-width: 100%;
+    letter-spacing: 1.5px;
+    font-weight: bold;
+  }
+  .btn.uppercase {
+    font-size: 0.9em;
+  }
+}
+
+/* calculator specific noUiSlider styling*/
+.calc .noUi-horizontal .noUi-tooltip  {
+  bottom: -130%;
+  font-size: 14px;
+  border-radius: 16px;
+  border-color: #c0d4d2;
+}
+.calc .noUi-horizontal {
+  height: 6px;
+}
+.calc .noUi-target  {
+  background: #4da19a;
+  border: none;
+  border-radius: 8px;
+}
+.calc .noUi-horizontal .noUi-handle {
+  width: 30px;
+  height: 30px;
+  left: -2px;
+  top: -12px;
+  box-shadow: none;
+  border: 2px solid #fff;
+  border-radius: 100%;
+  background-color: #67beb6;
+  background-image: linear-gradient(135deg, #4da19a, #67beb6);
+}
+/* Add padding to start of slider */
+.calc .noUi-target {
+  padding: 0 17px;
+}
+.calc .noUi-connects {
+  margin: 0 -17px;
+  width: calc(100% + 34px);
+}
+/* Hide default stripe styling */
+.calc .noUi-handle:before,
+.calc .noUi-handle:after {
+  display: none;
+}

@@ -1,0 +1,27 @@
+# Alternative to the payouts by user fixtures
+# This is payouts by asset, similar to the demo dividends
+
+include:
+    - ../templates/basePayout.yaml
+
+# For some reason, cannot use $shareholding in the payoutAmount identity/function
+App\Entity\Payout:
+    # Orchid House
+    payout_ben_orchid{24} (extends payout_base):
+        asset: "@assetorchid"
+        creditedUser: "@userben"
+        shareholding: 8701
+        payoutAmount: "<(round((8701 / 100000) * (@assetorchid->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_orchid{6..23} (extends payout_base):
+        asset: "@assetorchid"
+        creditedUser: "@userben"
+        shareholding: 15614
+        payoutAmount: "<(round((15614 / 100000) * (@assetorchid->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_freya_orchid{6..18} (extends payout_base):
+        asset: "@assetorchid"
+        creditedUser: "@userfreya"
+        shareholding: 84386
+        payoutAmount: "<(round((84386 / 100000) * (@assetorchid->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"

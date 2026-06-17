@@ -1,0 +1,42 @@
+{% if feeWallets is empty
+    or feeWallets.yieldersFeeWallet is not defined %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "warning",
+        title: "Default fee wallet is superadmin",
+        message: "The superadmin wallet will be the default for fee collections until a dedicated yielders fee wallet has been configured.",
+    }) }}
+    {% set defaultWallet = 'superadmin' %}
+{% else %}
+    {% set defaultWallet = constant('\\App\\Service\\FeeCollectionService::PREFERRED_FEE_WALLET') %}
+{% endif %}
+
+{% set feeWalletsUsed = [] %}
+{% if transfers is defined and transfers is not empty %}
+    {% set feeWalletsUsed = transfers|map(t => t.creditWalletId) %}
+{% endif %}
+
+<div class="table-responsive">
+    <table class="table" id="available-fee-wallets">
+        <thead>
+            <tr>
+                <th>Available Fee Wallets</th>
+                <th>Wallet Id</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for walletName, walletValue in feeWallets %}
+                <tr class="tw-text-sm">
+                    <td>{{ walletName|humanize }}
+                        {% if walletName|lower == defaultWallet|lower %}
+                            <span class="badge text-bg-dark">Default</span>
+                        {% endif %}
+                        {% if walletValue in feeWalletsUsed %}
+                            <span class="badge text-bg-primary">In-use</span>
+                        {% endif %}
+                    </td>
+                    <td class="tw-font-mono">{{ walletValue }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

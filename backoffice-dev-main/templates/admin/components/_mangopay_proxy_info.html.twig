@@ -1,0 +1,15 @@
+{% embed 'admin/components/_alert.html.twig' with {
+    variant: "info",
+    title: "What is Mangopay Proxy Consent?",
+} %}
+    {% block message %}
+        <p>Mangopay introduce the concept of "proxy actions" where the we, the platform (Yielders), can perform actions that would otherwise require SCA verification on a user's behalf. You can read more about this on <a href="https://docs.mangopay.com/guides/sca/proxy-management" target="_blank">Mangopay's documentation <i class="ms-1 fa-solid fa-fw fa-arrow-up-right-from-square"></i></a>.</p>
+        <p>Proxy management for specific actions requires the following:</p>
+        <ul class="mb-3">
+            <li>Activation on our platform (Yielders) by Mangopay themselves</li>
+            <li>Consent by a user to allow the platform (Yielders) to perform specific actions</li>
+        </ul>
+        <p>Note that the user must be enrolled in SCA to actually manage proxy consent.</p>
+        <p class="mb-0">BizOps staff can edit the proxy consent for a user if they know can pass the SCA verification. Direct staff management of user proxy consent is restricted to admins for now, and is realistically only intended for the superadmin user that owns all the asset wallets.</p>
+    {% endblock message %}
+{% endembed %}

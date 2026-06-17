@@ -1,0 +1,237 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Service Integration Statuses' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "check-services",
+        "sectionTitle": "Check Service Statuses",
+        "linkActions": [
+            {
+                "text": "Refresh All",
+                "route": "admin_service_status_refresh_all",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "Go to Message Queue Tester",
+                "route": "admin_service_status_debug_log",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'PHP Version',
+                value: constant('PHP_MAJOR_VERSION') ~ '.' ~ constant('PHP_MINOR_VERSION') ~ '.' ~ constant('PHP_RELEASE_VERSION'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Memory Limit',
+                value: memoryLimit|default("N/A"),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Execution Time Limit (s)',
+                value: executionTimeLimit|default("N/A"),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Server Time',
+                value: date('now')|date('Y-m-d H:i:s O'),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="service-status">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Last Checked</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="{{ path('admin_service_status_refresh_mangopay') }}"
+                                class="btn btn-outline-dark">Check Mangopay Service</a>
+                        </td>
+                        <td>MangoPay</td>
+                        <td>{{ mangopayStatus.active|default('N/A') }}</td>
+                        <td>{{ mangopayStatus.lastChecked|default('N/A') }}</td>
+                        
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{{ path('admin_service_status_refresh_contego') }}"
+                                class="btn btn-outline-dark">Check Contego Service</a>
+                        </td>
+                        <td>Contego</td>
+                        <td>{{ contegoStatus.active|default('N/A') }}</td>
+                        <td>{{ contegoStatus.lastChecked|default('N/A') }}</td>
+                        
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{{ path('admin_service_status_refresh_salesforce') }}"
+                                class="btn btn-outline-dark">Check Salesforce Service</a>
+                        </td>
+                        <td>Salesforce</td>
+                        <td>{{ salesforceStatus.active|default('N/A') }}</td>
+                        <td>{{ salesforceStatus.lastChecked|default('N/A') }}</td>
+                        
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{{ path('admin_service_status_refresh_mailchimp') }}"
+                                class="btn btn-outline-dark">Check Mailchimp Service</a>
+                        </td>
+                        <td>Mailchimp Transactional</td>
+                        <td>{{ mailchimpStatus.active|default('N/A') }}</td>
+                        <td>{{ mailchimpStatus.lastChecked|default('N/A') }}</td>
+                        
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{{ path('admin_service_status_refresh_docstore') }}"
+                                class="btn btn-outline-dark">Check Document Storage Service</a>
+                        </td>
+                        <td>Document Storage (S3) - Public</td>
+                        <td>{{ publicDocstoreStatus.active|default('N/A') }}</td>
+                        <td>{{ publicDocstoreStatus.lastChecked|default('N/A') }}</td>
+                        
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{{ path('admin_service_status_refresh_docstore') }}"
+                                class="btn btn-outline-dark">Check Document Storage Service</a>
+                        </td>
+                        <td>Document Storage (S3) - Private</td>
+                        <td>{{ privateDocstoreStatus.active|default('N/A') }}</td>
+                        <td>{{ privateDocstoreStatus.lastChecked|default('N/A') }}</td>
+                        
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mangopay-api-rate-limits",
+        "sectionTitle": "Mangopay API Rate Limits",
+        "linkActions": [
+            {
+                "text": "Check Mangopay Service",
+                "route": "admin_service_status_refresh_mangopay",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Last Updated',
+                value: mangopayStatus.lastChecked|default('N/A'),
+                valueClassName: 'fw-bold'
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="mangopay-rate-limits">
+                <thead>
+                    <tr>
+                        <th>Time Period (minutes)</th>
+                        <th>Calls Made</th>
+                        <th>Calls Remaining</th>
+                        <th>Next Reset</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rateLimit in mangopayStatus.rateLimits|default([]) %}
+                    <tr>
+                        <td>{{ rateLimit.IntervalMinutes|default('N/A') }}</td>
+                        <td>{{ rateLimit.CallsMade|default('N/A') }}</td>
+                        <td>{{ rateLimit.CallsRemaining|default('N/A') }}</td>
+                        <td>
+                            {{ rateLimit.ResetTimeTimestamp is empty
+                            ? 'N/A'
+                            : rateLimit.ResetTimeTimestamp|date(constant('\DateTimeInterface::RFC2822')) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mailchimp-account-info",
+        "sectionTitle": "Mailchimp Transactional Account Info",
+        "linkActions": [
+            {
+                "text": "Check Mailchimp Service",
+                "route": "admin_service_status_refresh_mailchimp",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Mailchimp Transactional was formerly known as Mandrill. Although there are still references to Mandrill in their product.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Last Updated',
+                value: mailchimpStatus.lastChecked|default('N/A'),
+                valueClassName: 'fw-bold'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Account Reputation',
+                value: mailchimpStatus.userInfo.reputation|default('N/A'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Hourly Quota',
+                value: mailchimpStatus.userInfo.hourly_quota|default('N/A'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Backlog',
+                value: mailchimpStatus.userInfo.backlog|default('N/A'),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="mailchimp-account-stats">
+                <thead>
+                    <tr>
+                        <th>Time Period</th>
+                        <th>Sent</th>
+                        <th>Hard Bounce</th>
+                        <th>Soft Bounce</th>
+                        <th>Rejects</th>
+                        <th>Complaints</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period, periodStats in mailchimpStatus.userInfo.stats|default([]) %}
+                    <tr data-stat-raw="{{ periodStats|json_encode }}">
+                        <td>{{ period|replace({'_':' '})|humanize }}</td>
+                        <td>{{ periodStats.sent|default('N/A') }}</td>
+                        <td>{{ periodStats.hard_bounces|default('N/A')}}</td>
+                        <td>{{ periodStats.soft_bounces|default('N/A') }}</td>
+                        <td>{{ periodStats.rejects|default('N/A') }}</td>
+                        <td>{{ periodStats.complaints|default('N/A') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

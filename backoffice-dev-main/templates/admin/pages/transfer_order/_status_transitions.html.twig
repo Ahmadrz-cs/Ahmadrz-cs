@@ -1,0 +1,74 @@
+{% if additionalParams is not defined %}
+{% set additionalParams = {} %}
+{% endif %}
+
+<div class="d-flex flex-wrap gap-2">
+    {% if is_granted('ROLE_FINANCIAL_OPS') %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE')) %}
+            <a class="btn btn-primary text-nowrap"
+                href="{{ path('admin_transfer_order_transition_edit', {
+                    id: transferOrder.id, transition: constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE')
+                }|merge(additionalParams)) }}">
+                Approve Transfer Order
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN')) %}
+            <a class="btn btn-primary text-nowrap"
+                href="{{ path('admin_transfer_order_run', {
+                    id: transferOrder.id
+                }|merge(additionalParams)) }}">
+                Run Transfer Order
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN')) %}
+            <a class="btn btn-outline-primary text-nowrap"
+                href="{{ path('admin_transfer_order_run_batch', {
+                    id: transferOrder.id
+                }|merge(additionalParams)) }}">
+                Run Transfer Order in Background
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_REOPEN')) %}
+            <a class="btn btn-outline-secondary text-nowrap"
+                href="{{ path('admin_transfer_order_transition_edit', {
+                    id: transferOrder.id, transition: constant('App\\Entity\\AbstractOrder::TRANSITION_REOPEN')
+                }|merge(additionalParams)) }}">
+                Reopen Transfer Order
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_REQUEST_CHANGE')) %}
+            <a class="btn btn-outline-secondary text-nowrap"
+                href="{{ path('admin_transfer_order_transition_edit', {
+                    id: transferOrder.id, transition: constant('App\\Entity\\AbstractOrder::TRANSITION_REQUEST_CHANGE')
+                }|merge(additionalParams)) }}">
+                Unapprove Transfer Order
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_REJECT')) %}
+            <a class="btn btn-outline-danger text-nowrap"
+                href="{{ path('admin_transfer_order_transition_confirm', {
+                    id: transferOrder.id, transition: constant('App\\Entity\\AbstractOrder::TRANSITION_REJECT')
+                }|merge(additionalParams)) }}">
+                Reject Transfer Order
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_ABANDON')) %}
+            <a class="btn btn-danger text-nowrap"
+                href="{{ path('admin_transfer_order_transition_confirm', {
+                    id: transferOrder.id, transition: constant('App\\Entity\\AbstractOrder::TRANSITION_ABANDON')
+                }|merge(additionalParams)) }}">
+                Abandon Transfer Order
+            </a>
+        {% endif %}
+        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_COMPLETE')) %}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Force Complete Transfer Order",
+                    "route": 'admin_transfer_order_force_complete',
+                    "params": {id: transferOrder.id}|merge(additionalParams),
+                    "style": "btn-outline-danger text-nowrap",
+                }
+            }) }}
+        {% endif %}
+    {% endif %}
+</div>

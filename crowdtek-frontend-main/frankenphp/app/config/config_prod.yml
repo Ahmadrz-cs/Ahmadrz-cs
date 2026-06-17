@@ -1,0 +1,23 @@
+imports:
+    - { resource: config.yml }
+    - { resource: services_prod.yml }
+
+framework:
+    session:
+        gc_probability: 0
+        
+monolog:
+    channels:
+        - crowdtek
+        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+    handlers:
+        main:
+            type: fingers_crossed
+            action_level: debug
+            handler: nested
+            buffer_size: 50
+            channels: ["!deprecation"]
+        nested:
+            type: stream
+            path: php://stderr
+            level: debug

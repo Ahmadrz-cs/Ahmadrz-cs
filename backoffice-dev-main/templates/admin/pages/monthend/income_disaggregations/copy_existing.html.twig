@@ -1,0 +1,97 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_income_disaggregation_copy_existing' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Income Disaggregation' %}
+{% set mainHeading = 'Setup Transfers' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set originalTotal = copyFromOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+{% set walletIds = copyFromOrder.transfers|map(t => t.creditWalletId) %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfer-generation-preview",
+        "sectionTitle": "Generate Income Disaggregation Transfers",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Transfers',
+                value: copyFromOrder.transfers|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Value to Transfer',
+                value: '£' ~ copyFromOrder.transfers|reduce((carry, v) => carry + v.amount)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Copying from Order Id',
+                value: copyFromOrder.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Copying from Order Monthend',
+                value: copyFromOrder.scheduledFor|date('Y-m'),
+            }) }}
+        </div>
+
+        {{ form_start(form) }}
+            <div class="d-flex gap-2">
+                {{ form_widget(form.submit) }}
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": "Cancel",
+                        "route": "admin_monthend_income_disaggregation_manage",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-secondary",
+                    },
+                }) }}
+            </div>
+            {{ form_rest(form) }}
+        {{ form_end(form) }}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Transfer Descriptions",
+            message: "The descriptions will only be regenerated from scratch (based on the asset and scheduled monthend) if an asset is set for the transfer. For (older) transfers without an asset relation (shows as N/A), it is recommended that they be deleted and re-added manually.",
+        }) }}
+
+        <table class="table table-striped datatable" id="transfers-preview-list">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Asset</th>
+                    <th>Original Description</th>
+                    <th>Transfer From Wallet</th>
+                    <th>Transfer To Wallet</th>
+                    <th>Original Amount (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in copyFromOrder.transfers|default([]) %}
+                    <tr data-object-id="{{ transfer.id }}">
+                        <td data-field="transferId">{{ transfer.id }}</td>
+                        <td data-field="asset">
+                            {% if transfer.asset is not null %}
+                                <a href="{{ path('admin_product_dashboard', {
+                                    id: transfer.asset.id
+                                }) }}">#{{ transfer.asset.id }} 
+                                // {{ transfer.asset.name }}
+                                ({{ transfer.asset.companyNumber }})</a>
+                            {% else %}N/A{% endif %}
+                        </td>
+                        <td data-field="description">{{ transfer.description }}</td>
+                        <td data-field="debitWalletId">{{ transfer.debitWalletId }}</td>
+                        <td data-field="creditWalletId">{{ transfer.creditWalletId }}</td>
+                        <td data-field="amount">{{ transfer.amount|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

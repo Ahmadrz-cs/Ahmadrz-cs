@@ -1,0 +1,157 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Sell My Investment{% endblock %}
+
+{% block body %}
+<section id="relisting">
+    <!-- hero banner -->
+    <div class="hero-banner how-itworks banner-medium bg-fixed bg-overlay">
+        <div class="container pt-6 pt-md-8 position-relative layer-z-1">
+            <div class="hero-banner-content pr-2 py-4 text-center">
+                <div class="row">
+                    <div class="col-lg-9 mx-auto">
+                        <h2 class="h1 hero-banner-hd text-light mb-3">
+                            Sell my investment
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {% set price_per_share = offering.pricePerShare|default(0) %}
+    {% if (price_per_share + 0) is empty or price_per_share == 0 %}
+        {% set price_per_share = organization|get_info('price_per_share') %}
+    {% endif %}
+
+    {% if price_per_share > 0.01 %}
+    {% set price_per_share = price_per_share|number_format(2) %}
+    {% endif %}
+
+    {% if isAllowedToRelist|default(false) %}
+    <form class="container my-4" id="sell-investment" name="sell-investment" method="post"
+        data-shareholding="{{ current_holding }}" data-share-price="{{ price_per_share }}"
+        data-fee-exempt="{{ fee_exempt | default (0) }}"
+        data-projected-return="{{ offering|get_info('gross_projected_return',0)|default(0) }}"
+        data-projected-rent="{{ offering|get_info('net_rent_projected',0)|default(0) }}"
+        data-wallet-balance="{{ wallet_balance|default(0) }}">
+        <div class="row justify-content-center text-center border-bottom pb-3">
+            <div class="col-12 col-sm-4">
+                <p class="small text-uppercase font-medium mb-1">Asset Name</p>
+                <p class="h4">{{ investment.asset_name|default('N/A') }}</p>
+            </div>
+            <div class="col-6 col-sm-4 mt-2 mt-sm-0">
+                <p class="small text-uppercase font-medium mb-1">Shares Available to Sell</p>
+                <p class="h4"><span id="shares-available">{{ current_holding }} Shares</span></p>
+            </div>
+            <div class="col-6 col-sm-4 mt-2 mt-sm-0">
+                <p class="small text-uppercase font-medium mb-1">Current Share Price</p>
+                <p class="h4">£<span id="price-per-share">{{ price_per_share }}</span></p>
+            </div>
+        </div>
+        <div class="row justify-content-center text-center my-4">
+            <div class="col-sm-6 col-lg-4">
+                <a class="font-medium" href="http://help.yielders.co.uk/en/articles/3436312-our-fees"
+                    target="_blank">Learn more about relisting charges
+                </a>
+                {% if organization.fees.relisting|length > 0 and organization.fees.relisting|first > 0 and not fee_exempt %}
+                <table class="table table-bordered table-sm mt-2">
+                    <thead class="small">
+                        <tr>
+                            <th>Relisted this month (£)</th>
+                            <th>Monthly fee limit (£)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for band, fee in organization.fees.relisting %}
+                        <tr class="fee-band-info" data-fee-band={{ fee }}>
+                            <td>{{ band }}+</td>
+                            <td>{{ fee }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+                <span class="hidden" id="relisting-data" data-fee-bands={{ organization.fees.relisting|json_encode }}
+                    data-monthly-relisting={{monthly_relistings}}></span>
+            </div>
+            <div class="col-sm-6 col-lg-4 mt-4 mt-sm-0" id="share_box">
+                <div class="form-group">
+                    <label for="offered_shares">Number of Shares to Sell</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-secondary " id="click-decrement" data-action="decrement"
+                                type="button" style="width: 52px;">-</button>
+                        </div>
+                        <input class="form-control text-center" id="sale-shares" name="offered_shares" type="number"
+                            aria-describedby="helpBlock" value="0" step="1" required="">
+                        <div class="input-group-append">
+                            <button class="btn btn-secondary" id="click-increment" data-action="increment" type="button"
+                                style="width: 52px;">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="investment-input">Value of Sale</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text px-2">£</span>
+                        </div>
+                        <input class="form-control rounded-right" id="sale-value" name="investment-input"
+                            data-action="calc" type="number" aria-describedby="helpBlock" value="0.00" step="0.01"
+                            required="">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mt-2 mt-lg-0">
+                <table class="table text-left">
+                    <tbody>
+                        <tr>
+                            <td class="text-right">Potential return at end of investment life to be missed:</td>
+                            <td>£<span id="total-yield">0.00</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">Potential annual dividend to be missed:</td>
+                            <td>£<span id="annual-yield">0.00</span></td>
+                        </tr>
+                        <tr class="bg-light font-medium">
+                            <td class="text-right">Charge for relisting:</td>
+                            <td>
+                                {% if is_normal_user is defined and is_normal_user and not fee_exempt %}
+                                £<span id="charge_listing">{{ organization.fees.relisting|first }}</span>
+                                {% else %}
+                                £<span id="charge_listing">0.00</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {# 
+                        <tr class="bg-light">
+                            <th class="text-right">Summary</th>
+                            <th>£<span id="subtotal">0.00</span></th>
+                        </tr> 
+                        #}
+                    </tbody>
+                </table>
+            </div>
+            <div
+                class="col d-flex flex-column flex-sm-row justify-content-between justify-content-md-end mt-2">
+                <a class="btn btn-light rounded-pill px-5 mr-sm-2"
+                    href="{{ path('my_portfolio') }}">Cancel</a>
+                <button type="submit" class="btn btn-primary rounded-pill px-3 mt-2 mt-sm-0">Proceed & Sell my
+                    investment</button>
+            </div>
+        </div>
+    </form>
+    {% else %}
+        {{ include('@AppBundle/Common/_relisting_requirements.html.twig') }}
+    {% endif %}
+
+</section>
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript" src="{{ asset('bundles/app/js/hashtable.js') }}"></script>
+<script type="text/javascript" src="{{ asset('bundles/app/js/jquery.numberformatter-1.2.3.js') }}"></script>
+<script type="text/javascript" src="{{ asset('bundles/app/js/relisting.js') }}"></script>
+{% endblock %}

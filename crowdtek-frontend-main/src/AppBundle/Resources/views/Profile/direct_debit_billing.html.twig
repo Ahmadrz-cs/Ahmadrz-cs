@@ -1,0 +1,349 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{% block title %}
+    My Wallet
+{% endblock %}
+{% block body %}
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<!-- profile detail -->
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{% include('@AppBundle/Common/profilenav.html.twig')%}
+					</div>
+					<div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<!-- add new fund -->
+							<div class="tab-pane fade show active">
+								<div class="row mt-3">
+
+									<!-- status -->
+									<div class="col-lg-12">
+										{# <div class="profile-banner portfolio-head wallet-profile">
+
+											<div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+												<div class="row">
+													<div class="col-md-6 u-name">
+														<h3>Hi
+															{{ userInfo.given_name }}
+														</h3>
+													</div>
+													<div class="col-md-6 p-wal">
+														<ul class="list-inline mb-0">
+															<li>
+																<p class="h3 mb-0">£
+																	<span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+																</p>in my wallet
+															</li>
+															{% if wallet.id|default() %}
+																<li class="">
+																	<a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+																	<a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+																</li>
+															{% endif %}
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div> #}
+									</div>
+
+									<!-- add dettails -->
+									<div class="col-lg-12">
+										<div class="transaction-history-block t-history">
+											<div class="com-block">
+												<section id="profile">
+													<h4 class="mb-3">Direct Debit Settings</h4>
+                                                    <hr class="mb-4">
+
+													<div class="page-inner">
+													<!-- .page-title-bar -->
+													<header class="page-title-bar">
+													</header>
+													<!-- /.page-title-bar -->
+													<!-- .page-section -->
+													<div class="page-section">
+														<!-- grid row -->
+														<div class="flex-row mb-2 d-none d-lg-block">
+															<!-- .card -->
+															<div class="card card-fluid" id="links-card">
+															<h6 class="card-header"> Your Details </h6>
+															<!-- .nav -->
+															<nav class="nav nav-tabs">
+																<a href="{{ path('direct_debit_summary') }}" id="summaryLink" class="col nav-link">Summary</a>
+																<a href="{{ path('direct_debit_details') }}" id="detailsLink" class="col nav-link active">Billing Details</a>
+																<a href="{{ path('direct_debit_cancel') }}" id="cancelLink" class="col nav-link">Cancel Direct Debit</a>
+															</nav>
+															<!-- /.nav -->
+															</div>
+															<!-- /.card -->
+														</div>
+														<!-- /.grid row -->
+														<!-- grid row -->
+														<div class="row mb-2 d-lg-none">
+															<div class="col-lg-4">
+																<!-- .card -->
+																<div class="card card-fluid" id="links-card">
+																<h6 class="card-header"> Your Details </h6>
+																<!-- .nav -->
+																<nav class="nav nav-tabs flex-column">
+																	<a href="{{ path('direct_debit_summary') }}" id="mobileSummaryLink" class="nav-link">Summary</a>
+																	<a href="{{ path('direct_debit_details') }}" id="mobileDetailsLink" class="nav-link active">Billing Details</a>
+																	<a href="{{ path('direct_debit_cancel') }}" id="mobileCancelLink" class="nav-link">Cancel Direct Debit</a>
+																</nav>
+																<!-- /.nav -->
+																</div>
+																<!-- /.card -->
+															</div>
+														</div>
+														<!-- /grid row -->
+														<!-- grid row -->
+														<div class="flex-row">
+															<!-- .card -->
+															<div class="card card-fluid">
+															<h6 class="card-header"> Billing Details</h6>
+															<!-- .card-body -->
+															<div class="card-body">
+																<!-- form -->
+																<form method="post">
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input01" class="col-md-3 mb-3 align-self-center">First Name</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input01" value="{{ userInfo.given_name }}" required="" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input02" class="col-md-3 mb-3 align-self-center">Last Name</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input02" value="{{ userInfo.family_name }}" required=""  disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input04" class="col-md-3 mb-3 align-self-center">Address Line 1</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input04" value="{{ userInfo.address.building }}" required="" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input05" class="col-md-3 mb-3 align-self-center">Address Line 2</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input05" value="{{ userInfo.address.street_address }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input06" class="col-md-3 mb-3 align-self-center">Address Line 3</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input06" value="Eldaside" required="" value="{{ userInfo.address.address_locality }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input07" class="col-md-3 mb-3 align-self-center">City</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input07" required="" value="{{ userInfo.address.city }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input08" class="col-md-3 mb-3 align-self-center">Postal Code</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input08" required="" value="{{ userInfo.address.postal_code }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input08" class="col-md-3 mb-3 align-self-center">Country</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input08" required="" value="{{ userInfo.address.country }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<hr>
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input08" class="col-md-3 mb-3 align-self-center">Account Number</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input08" required="" value="{{ accountIban }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<!-- form row -->
+																<div class="form-row">
+																	<!-- form column -->
+																	<label for="input08" class="col-md-3 mb-3 align-self-center">Sort Code</label>
+																	<!-- /form column -->
+																	<!-- form column -->
+																	<div class="col-md-9 mb-3">
+																	<input type="text" class="form-control" id="input08" required="" value="{{ sortBic }}" disabled> </div>
+																	<!-- /form column -->
+																</div>
+																<!-- /form row -->
+																<hr>
+																<!-- .form-actions -->
+																<div>
+																	<span style="font-weight:bold;">To change any of these details such as a change of address or bank account, cancel this Direct Debit and set up a new Direct Debit with the new details.</span>
+																</div>
+																{# <div class="form-actions">
+																	<button type="submit" class="btn btn-primary ml-auto">Update Billing</button>
+																</div> #}
+
+																<!-- /.form-actions -->
+																</form>
+																<!-- /form -->
+															</div>
+															<!-- /.card-body -->
+															</div>
+															<!-- /.card -->
+														</div>
+														<!-- /grid row -->
+													</div>
+													<!-- /.page-section -->
+													</div>
+
+												</section>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<style>
+
+	.nav-tabs.flex-column .nav-link {
+		border-width: 0 0 0 3px;
+		border-radius: 0;
+	}
+
+	.nav-tabs .nav-link {
+		padding: 1rem;
+		border-width: 0 0 3px;
+	}
+
+	@media (min-width: 768px)
+	.nav-link {
+		font-size: .875rem;
+		line-height: 1.6;
+	}
+
+	#links-card .nav-link {
+		outline: 0;
+    	color: #686f76;
+	}
+
+	.active> .nav-link, .nav-link.active, .nav-link:focus, .nav-link:hover {
+		color: #6cbcb6;
+	}
+
+	.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+		color: #28313b;
+    	background-color: transparent;
+    	border-color: #6cbcb6;
+	}
+
+	.nav-tabs {
+		border-bottom: transparent;
+	}
+
+	.card-header:first-child {
+		border-radius: 0 0;
+	}
+
+	.card {
+		border-radius: 0 0;
+	}
+
+	.col-lg-12 {
+		padding-left: 10px;
+	}
+
+
+
+
+
+
+	</style>
+
+{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+<!-- Include Font Awesome -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"/>
+
+
+<script type="text/javascript">
+	$(document).ready(function () {
+
+	});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'share-trades',
+        "sectionTitle": 'Share Trades',
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/pages/share_trades/_list_w_filters.html.twig', {
+                options: {
+                    showPresets: true,
+                    showFilters: true,
+                    showAsset: true,
+                },
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

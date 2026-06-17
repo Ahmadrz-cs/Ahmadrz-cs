@@ -1,0 +1,245 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{% block title %}My Wallet
+{% endblock %}
+
+{% block body %}
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div
+                                class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+                            <!-- add new fund -->
+                            <div class="tab-pane fade show active">
+                                <div class="row mt-3">
+
+                                    <!-- status -->
+                                    <div class="col-lg-12">
+                                        {# <div class="profile-banner portfolio-head wallet-profile">
+
+                                            <div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+                                                <div class="row">
+                                                    <div class="col-md-6 u-name">
+                                                        <h3>Hi
+                                                            {{ userInfo.given_name }}
+                                                        </h3>
+                                                    </div>
+
+                                                    <div class="col-md-6 p-wal">
+                                                        <ul class="list-inline mb-0">
+                                                            <li>
+                                                                <p class="h3 mb-0">£
+                                                                    <span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+                                                                </p>in my wallet
+                                                            </li>
+                                                            {% if wallet.id|default() %}
+                                                                <li class="">
+                                                                    <a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+                                                                    <a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+                                                                </li>
+                                                            {% endif %}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+
+                                            </div>
+
+                                        </div> #}
+                                    </div>
+
+                                    <!-- Direct debit form -->
+                                    <div class="col-lg-12">
+                                        <div class="transaction-history-block t-history">
+                                            <div class="com-block">
+                                                <section id="profile">
+                                                    <h4 class="mb-3">Your Direct Debit has been cancelled</h4>
+                                                    <hr>
+                                                    {% if warningMessage == true %}
+													<div class="shadow">
+														<div class="note-box">
+															<p><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> We are currently processing a direct debit payment from your account, which may still be taken. If you wish to request a refund please contact  <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a> when the amount appears in your account.</p>
+													    </div>
+													</div>
+													{% endif %}
+
+
+                                                </section>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <style>
+            .color-box {
+                margin: 15px 0;
+
+            }
+            .shadow {
+                background: #F7F8F9;
+                padding: 3px;
+                margin: 10px 0;
+            }
+
+            .info-tab {
+                width: 40px;
+                height: 40px;
+                display: inline-block;
+                position: relative;
+                top: 8px;
+            }
+
+            .info-tab {
+                float: left;
+                margin-left: -23px;
+            }
+
+            .note-icon {
+                background: #47ADE0;
+            }
+
+            .note-box {
+                color: rgba(63, 110, 106, 0.9376);
+                background-color: #d6eceb;
+                padding: 8px 8px 3px 14px;
+            }
+            .note-box a {
+                color: #337ab7;
+            }
+
+            .note-box a:hover {
+                background-color: transparent;
+                text-decoration: underline;
+            }
+
+
+        </style>
+
+    </main>
+{% endblock %}
+
+
+{% block pagejs %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"></script>
+
+
+    <script type="text/javascript">
+
+        var inp = $("#setup_direct_debit_type_amount")[0];
+
+        inp.addEventListener("input", function () {
+
+            checkAmountValid();
+
+            var value = parseFloat(this.value) + 0.60;
+            console.log(parseFloat(value));
+            if (Number.isNaN(value)) {
+                document.querySelector('#first-payment-amount').innerHTML = ''
+                document.querySelector('#second-payment-amount').innerHTML = ''
+                document.querySelector('#third-payment-amount').innerHTML = ''
+            }
+            else {
+                document.querySelector('#first-payment-amount').innerHTML = '£' + value.toFixed(2);
+                document.querySelector('#second-payment-amount').innerHTML = '£' + value.toFixed(2);
+                document.querySelector('#third-payment-amount').innerHTML = '£' + value.toFixed(2);
+
+            }
+        }, false);
+
+        // Restricts input for the given textbox to the given inputFilter.
+        function setInputFilter(textbox, inputFilter) {
+            ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop"].forEach(function(event) {
+                textbox.addEventListener(event, function() {
+                    if (inputFilter(this.value)) {
+                        this.oldValue = this.value;
+                        this.oldSelectionStart = this.selectionStart;
+                        this.oldSelectionEnd = this.selectionEnd;
+                    } else if (this.hasOwnProperty("oldValue")) {
+                        this.value = this.oldValue;
+                        this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+                    } else {
+                        this.value = "";
+                    }
+                });
+            });
+        }
+
+        setInputFilter(document.getElementById("setup_direct_debit_type_amount"), function(value) {
+            return /^-?\d*[.,]?\d{0,2}$/.test(value); });
+
+
+        $(document).ready(function () {
+
+            $('input:radio[name="setup_direct_debit_type[bankAccountType]"]').change(function() {
+                if (this.value == 'eu bank account') {
+                    $("label[for=account-iban-number]").html("IBAN");
+                    $("label[for=sort-bic]").html("BIC/SWIFT");
+                    $('#small-account-helper').html("(IBAN) International Bank Account Number");
+                    $('#small-sort-helper').html(" 8 or 11 character BIC/SWIFT code");
+                } else if (this.value == 'uk bank account') {
+                    $("label[for=account-iban-number]").html("Account Number");
+                    $("label[for=sort-bic]").html("Sort Code");
+                    $('#small-account-helper').html("8 Digit Acccount Number");
+                    $('#small-sort-helper').html("6 Digit Sort Code");
+                }
+            });
+
+        });
+
+        var form = $("form[name='setup_direct_debit_type']");
+
+        form.addEventListener("submit", checkAmountValid(), false);
+
+        function checkAmountValid() {
+            var amount=parseFloat(document.getElementById("setup_direct_debit_type_amount").value);
+            if(amount < 50) {
+                $('#setup_direct_debit_type_amount').addClass('input_error_highlight');
+                $('div#belowMinPrompt').removeClass('d-none');
+                return false;
+            }
+            else {
+                $('#setup_direct_debit_type_amount').removeClass('input_error_highlight');
+                $('div#belowMinPrompt').addClass('d-none');
+                return true;
+            }
+        }
+
+        function check(e){
+            e.preventDefault();
+            if (checkAmountValid()){
+                submit.submit();
+            }
+        }
+
+    </script>
+{% endblock %}

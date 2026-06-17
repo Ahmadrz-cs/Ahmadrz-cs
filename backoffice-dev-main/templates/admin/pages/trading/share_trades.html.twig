@@ -1,0 +1,16 @@
+{% extends 'admin/layouts/trading_hub.html.twig' %}
+
+{% set baseTemplate = 'col_1' %}
+{% set areaHeading = 'Trading' %}
+{% set mainHeading = 'Pending Trades' %}
+
+{% block page_content %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        title: "Guidelines for Processing Pending Share Trades",
+        message: "Trades in 'Draft' or 'Reserved' state should usually be cancelled. Most commonly caused by payment not being taken successfully.
+        Trades in 'Unsettled' state can be cancelled (either at the discretion of BizOps or at the request of the investor) and a refund issued to the original investor.",
+    }) }}
+
+{% endblock page_content %}

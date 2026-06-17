@@ -1,0 +1,10 @@
+<div class="card p-3 border rounded text-center mb-4" id="sca-wallet-verification-prompt">
+    <div><span class="badge badge-warning ml-1 ml-lg-0 mb-1">Verification Required</span></div>
+    <h4 class="mb-2">Wallet balance and transactions</h4>
+    <p>Access to your wallet balance and transactions requires verification with Strong Customer Authentication (SCA).</p>
+    <p>Once verified, you can freely access your wallet balance and transactions for up to 6 months before you need to verify again.</p>
+    {# <p>Read more about this in <a target="_blank" href="https://help.yielders.co.uk/en">our help centre</a>.</p> #}
+    <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+        <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('wallet_access_sca_verification', {'from' : sourceRoute|default('profile')}) }} role="button">Start SCA Verification</a>
+    </div>
+</div>

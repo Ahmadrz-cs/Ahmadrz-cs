@@ -1,0 +1,174 @@
+@supports (display: grid) {
+  @media (max-width: 575px) {
+    /* overrides of fallback styles*/
+    tr[class*=grid-table-] .grid-text-left .table-custom-value {
+      text-align: left;
+    }
+
+    tr[class*=grid-table-] .grid-text-right .table-custom-value {
+      text-align: right;
+    }
+  }
+  @media (max-width: 992px) {
+    .grid-table .table-custom-data{
+      padding: 0 1rem;
+      border: 0;
+      margin: 0;
+    }
+    
+    .grid-table.table-custom {
+      background-color: transparent;
+    }
+
+    .grid-table .table-custom-data.show-label::before {
+      width: 100%;
+      opacity: 0.6;
+      font-size: 0.75rem;
+      font-weight: normal;
+      padding-top: 0.25rem;
+      padding-right: 0;
+    }
+
+    .grid-table .table-custom-data.show-label.show-label-inline::before {
+      opacity: 1;
+      padding-top: 0;
+      padding-right: 0.25rem;
+      width: auto;
+    }
+
+    .grid-table .table-custom-data:not(.show-label)::before {
+      display: none;
+    }
+    
+    .grid-table .table-custom-value {
+      display: block;
+      width: 100%;
+    }
+
+    .grid-table .table-custom-value.d-inline-block {
+      width: auto;
+    }
+
+    /* core grid utilities*/
+    table.grid-table {
+      display: grid;
+      font-family: "DM Sans", "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      font-size: 16px;
+    }
+
+    .grid-table .align-end {
+      align-items: end;
+    }
+
+    .grid-table thead {
+      display: none;
+    }
+  
+    .grid-table tbody {
+      display: flex;
+      flex-direction: column;
+    }
+  
+    .grid-table tr {
+      display: grid;
+      padding: 1rem 0;
+    }
+
+    .grid-table tr td {
+      display: block;
+      background-color: transparent;
+      padding-bottom: 0.5rem;
+    }
+    
+    .grid-table td[data-empty] {
+      display: none;
+    }
+
+
+    /* grid templating classes */
+    .grid-table-2 {
+      grid-template-columns: repeat(2, 1fr);
+      justify-content: space-between;
+    }
+
+    .grid-table-4 {
+      grid-template-columns: repeat(4, 1fr);
+      justify-content: space-between;
+    }
+
+    /* Grid item alignment utilities*/
+    *[class*=grid-table-] .grid-text-left {
+      text-align: left;
+    }
+
+    *[class*=grid-table-] .grid-text-right {
+      text-align: right;
+    }
+
+    /* grid ordering classes */
+    .grid-order-1 {
+      order: 1;
+    }
+    .grid-order-2 {
+      order: 2;
+    }
+    .grid-order-3 {
+      order: 3;
+    }
+    .grid-order-4 {
+      order: 4;
+    }
+    .grid-order-5 {
+      order: 5;
+    }
+    .grid-order-6 {
+      order: 6;
+    }
+    .grid-order-7 {
+      order: 7;
+    }
+    .grid-order-8 {
+      order: 8;
+    }
+    .grid-order-9 {
+      order: 9;
+    }
+
+    /* grid span classes */
+    .grid-table-4 > * {
+      grid-column-start: span 2;
+    }
+
+    .grid-span-1 {
+      grid-column-start: span 1;
+    }
+
+    .grid-span-2 {
+      grid-column-start: span 2;
+    }
+
+    .grid-span-3 {
+      grid-column-start: span 3;
+    }
+
+    .grid-span-4 {
+      grid-column-start: span 4;
+    }
+
+    /* Custom responsive styling*/
+    .grid-table .subtext {
+      opacity: 0.67;
+      font-size: 0.75rem;
+    }
+
+    .grid-table .rsp-small {
+      font-size: 0.75rem;
+    }
+
+    .grid-table .rsp-upper {
+      text-transform: uppercase;
+    }
+
+  }
+  
+}

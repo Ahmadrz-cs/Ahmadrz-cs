@@ -1,0 +1,74 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Documents' %}
+{% set mainHeading = 'Offering Documents List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS', app.user) %}
+    <a href="{{ path('admin_offeringdocument_add') }}" class="btn btn-success">Add Document</a>
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_offeringdocument_index', { documentTag: 'calculations' }) }}" class="btn btn-light">Calculations</a>
+<a href="{{ path('admin_offeringdocument_index', { compare: true }) }}"
+    class="btn btn-light">Comparison Mode</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.documentTag) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.offeringId) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped" id="offeringlist_doc">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Offering</th>
+            <th>File name</th>
+            <th>File description</th>
+            <th>Tag</th>
+            <th>Has Url</th>
+            {% if app.request.query.all.compare ?? false %}
+                <th>Internal Doc Id</th>
+                <th>Matching Asset Doc</th>
+                <th>Matching Asset</th>
+            {% endif %}
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for offeringdocument in objects %}
+        <tr>
+            <td><a href="{{ path('admin_offeringdocument_edit', { id: offeringdocument.id }) }}">{{
+                    offeringdocument.id }}</a></td>
+            <td>{{ offeringdocument.offering }}</td>
+            <td><a href="{{ path('admin_offeringdocument_edit', { id: offeringdocument.id }) }}">{{
+                    offeringdocument.document.filename }}</a></td>
+            <td>{{ offeringdocument.document.description }}</td>
+            <td>{{ offeringdocument.document.tag }}</td>
+            <td>
+                {% set has_url = offeringdocument.document.documentUrl ? 'Set' : 'Missing' %}
+                {{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[has_url],
+                    value: has_url
+                }) }}
+            </td>
+            {% if app.request.query.all.compare ?? false %}
+                <td>{{ offeringdocument.document.id }}</td>
+                <td>{% if offeringdocument.document.id in compare|keys %}
+                    <a href="{{ path('admin_assetdocument_edit', { id: compare[offeringdocument.document.id].id }) }}">{{
+                        compare[offeringdocument.document.id].id }}</a>{% endif %}</td>
+                <td>{% if offeringdocument.document.id in compare|keys %}
+                    <a href="{{ path('admin_product_dashboard', { id: compare[offeringdocument.document.id].asset.id }) }}">{{
+                        compare[offeringdocument.document.id].asset.id }}</a>{% endif %}</td>
+            {% endif %}
+            <td>{% include 'admin/pages/documents/offering/_actions.html.twig' %}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

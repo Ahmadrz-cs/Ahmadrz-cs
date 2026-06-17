@@ -1,0 +1,298 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Bank Accounts' %}
+
+{% set statusToColor = statusToColor|default({
+    'Yes': 'blue',
+    'No': 'gray',
+}) %}
+
+{% set existingAccounts = user.bankAccounts|map(b => b.providerId)|filter(i => i is not empty) %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "bank-account-registrations",
+        "sectionTitle": "Bank Account Registrations",
+        "linkActions": [
+            {
+                "text": "Batch Sync Registrations",
+                "route": 'admin_bank_account_create_sync_multi',
+                "params": { userId: user.id },
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_FINANCIAL_OPS"
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Registrations',
+                value: user.bankAccounts|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Most Recent Sync',
+                value: user.bankAccountsSyncedAt ? user.bankAccountsSyncedAt|date : "N/A",
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Only registrations made from the CMS are shown. Banks accounts already created on Mangopay independently are shown in the Mangopay sections below. You can use the 'Batch Sync' (up to 5 at once) or individual syncs to generate registrations from existing Mangopay records.",
+        }) }}
+        <div class="table-responsive">
+            <table class="table datatable" id="bank-accounts-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Mangopay Id</th>
+                        <th>Display Name</th>
+                        <th>Owner Type</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in user.bankAccounts %}
+                    <tr data-object-id="{{ account.id }}">
+                        <td>
+                            <a class="btn btn-outline-primary mt-1"
+                                href="{{ path('admin_bank_account_manage', { id: account.id }) }}">Manage</a>
+                        </td>
+                        <td>{{ account.id }}</td>
+                        <td>{{ account.accountType.value }}</td>
+                        <td class="tw-font-mono">{{ account.providerId }}</td>
+                        <td class="tw-font-mono">{{ account.displayName }}</td>
+                        <td>{{ account.accountHolderType.value|capitalize }}</td>
+                        <td>{{ account.status.value|capitalize }}</td>
+                        <td>{{ account.createdAt|date("Y-m-d") }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mangopay-bank-accounts",
+        "sectionTitle": "Active Mangopay Bank Accounts",
+        "linkActions": [
+            {
+                "text": "Refresh Bank Accounts",
+                "route": app.request.attributes.get('_route'),
+                "params": app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({loadBankAccounts: true}),
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_FINANCIAL_OPS"
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Total Bank Accounts',
+                    value: pagination.TotalItems|number_format(0, '.', ','),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Mangopay User Id',
+                    value: user.mangopayUserId|default("Not Set"),
+                }) }}
+            </div>
+            {% if is_granted('ROLE_FINANCIAL_OPS') %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Only ACTIVE banks accounts already created on Mangopay are shown. Up to 10 accounts will be loaded.",
+                }) }}
+                {% if not app.request.query.get('loadBankAccounts') %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "notice",
+                        message: "Bank accounts are loaded on demand. Click 'Refresh Bank accounts' to load.",
+                    }) }}
+                {% endif %}  
+                <div class="table-responsive">
+                    <table class="table" id="-mangopay-bank-accounts-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Id</th>
+                                <th>Type</th>
+                                <th>Creation Date</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                                <th>Tag</th>
+                                <th>Synced</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in mangopayBankAccounts %}
+                            <tr data-object-id="{{ account.Id }}">
+                                <td>{% if account.Id not in existingAccounts %}
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "Create Registration via Sync",
+                                            "route": 'admin_bank_account_create_sync',
+                                            "params": {
+                                                userId: user.id,
+                                                providerId: account.Id,
+                                            },
+                                            "style": "btn-outline-dark text-nowrap",
+                                        },
+                                    }) }}
+                                {% else %}-{% endif %}</td>
+                                <td class="tw-font-mono">{{ account.Id }}</td>
+                                <td>{{ account.Type }}</td>
+                                <td class="tw-tabular-nums" data-field="CreationDate">{{ account.CreationDate|date("Y-m-d H:i:s") }}</td>
+                                <td>{{ account.Active ? "Active" : "Deactivated" }}</td>
+                                <td class="tw-font-mono">{{ account.Details|json_encode(constant('JSON_PRETTY_PRINT')) }}</td>
+                                <td>{{ account.Tag }}</td>
+                                <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                                        color: statusToColor[account.Id in existingAccounts ? 'Yes' : 'No'],
+                                        value: account.Id in existingAccounts ? 'Yes' : 'No'
+                                    }) }}</td>
+                            </tr>
+                            {% else %}
+                                <tr>
+                                    <td class="text-center" colspan="12">No Mangopay bank accounts to show</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "You must have at least \"Financial Ops\" permissions to view a user's active Mangopay bank accounts",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mangopay-recipients",
+        "sectionTitle": "Mangopay Recipients",
+        "linkActions": [
+            {
+                "text": "Refresh Recipients",
+                "route": app.request.attributes.get('_route'),
+                "params": app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({loadRecipients: true}),
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_FINANCIAL_OPS"
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Total Active Recipients',
+                    value: mangopayRecipients|length|number_format(0, '.', ','),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Recipients To Sync',
+                    value: recipientsToSync|length|number_format(0, '.', ','),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Mangopay User Id',
+                    value: user.mangopayUserId|default("Not Set"),
+                }) }}
+            </div>
+            {% if is_granted('ROLE_FINANCIAL_OPS') %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Only ACTIVE recipients already created on Mangopay are shown.",
+                }) }}
+                {% if not app.request.query.get('loadRecipients') %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "notice",
+                        message: "Recipients are loaded on demand. Click 'Refresh Recipients' to load.",
+                    }) }}
+                {% endif %}  
+                <div class="table-responsive">
+                    <table class="table" id="mangopay-recipients-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Id</th>
+                                <th>Display Name</th>
+                                <th>Payout Method</th>
+                                <th>Recipient Type</th>
+                                <th>Currency</th>
+                                <th>Country</th>
+                                <th>Allowed Actions</th>
+                                <th>Creation Date</th>
+                                <th>Status</th>
+                                <th>Tag</th>
+                                <th>Synced</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for recipient in mangopayRecipients %}
+
+                            {% set details = {"error": "Unknown Payout Method"} %}
+                            {% if recipient.PayoutMethodType == "LocalBankTransfer" %}
+                                {% set details = recipient.LocalBankTransfer %}
+                            {% elseif recipient.PayoutMethodType == "InternationalBankTransfer" %}
+                                {% set details = recipient.InternationalBankTransfer %}
+                            {% endif %}
+                            
+                            <tr data-object-id="{{ recipient.Id }}">
+                                <td><div class="d-flex flex-wrap gap-1">
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "View",
+                                            "route": 'admin_bank_account_mangopay_recipient_view',
+                                            "params": {
+                                                recipientId: recipient.Id,
+                                            },
+                                            "style": "btn-outline-dark text-nowrap",
+                                            "newTab": true,
+                                        },
+                                    }) }}
+                                    {% if recipient.Id not in existingAccounts %}
+                                        {{ include('admin/components/button_link.html.twig', {
+                                            linkProps: {
+                                                "text": "Create Registration via Sync",
+                                                "route": 'admin_bank_account_create_sync',
+                                                "params": {
+                                                    userId: user.id,
+                                                    providerId: recipient.Id,
+                                                },
+                                                "style": "btn-outline-dark text-nowrap",
+                                            },
+                                        }) }}
+                                    {% endif %}
+                                </div></td>
+                                <td class="tw-font-mono">{{ recipient.Id }}</td>
+                                <td class="tw-font-mono">{{ recipient.DisplayName }}</td>
+                                <td>{{ recipient.PayoutMethodType }}</td>
+                                <td>{{ recipient.RecipientType }}</td>
+                                <td>{{ recipient.Currency }}</td>
+                                <td>{{ recipient.Country }}</td>
+                                <td>{{ recipient.RecipientScope }}</td>
+                                <td class="tw-tabular-nums" data-field="CreationDate">{{ recipient.CreationDate ? recipient.CreationDate|date("Y-m-d H:i:s") : 'N/A' }}</td>
+                                <td>{{ recipient.Status }}</td>
+                                
+                                <td>{{ recipient.Tag|default('-') }}</td>
+                                <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                                        color: statusToColor[recipient.Id in existingAccounts ? 'Yes' : 'No'],
+                                        value: recipient.Id in existingAccounts ? 'Yes' : 'No'
+                                    }) }}</td>
+                            </tr>
+                            {% else %}
+                                <tr>
+                                    <td class="text-center" colspan="12">No recipients to show</td>
+                                </tr> 
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "You must have at least \"Financial Ops\" permissions to view a user's active Mangopay bank accounts",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

@@ -1,0 +1,12 @@
+# include:
+#     - ../standardUsers.yaml
+#     - ../templates/baseOffering.yaml
+#     - ../templates/baseInvestment.yaml
+
+# App\Entity\Investment:
+
+# App\Entity\InvestmentStatus:
+
+# App\Entity\InvestmentDocuments:
+
+# App\Entity\Document:

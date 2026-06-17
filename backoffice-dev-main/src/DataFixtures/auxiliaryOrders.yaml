@@ -1,0 +1,5 @@
+include:
+    - auxiliary/paymentOrders.yaml
+    - auxiliary/transferOrders.yaml
+    - auxiliary/shareTransferOrders.yaml
+    - auxiliary/transactions.yaml

@@ -1,0 +1,107 @@
+include:
+    - ../templates/baseTransferOrder.yaml
+
+App\Entity\TransferOrder:
+    transferOrder_status{draft, closed} (extends transferOrder_base):
+        asset: "@assetroyalglade"
+        status: "<current()>"
+        description: "Transfer in <current()> state"
+    transferOrder_status{approved, abandoned, in_progress, completed} (extends transferOrder_base):
+        asset: "@assetroyalglade"
+        status: "<current()>"
+        description: "Transfer in <current()> state"
+        approvedBy: "@userfinops"
+    transferOrder_historical{1..12} (extends transferOrder_base):
+        description: "HistoricalTransferOrder"
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+    transferOrder_{zero} (extends transferOrder_base):
+        asset: "@assetclarence"
+        status: "approved"
+        description: "SingleZeroTransferRequest"
+    transferOrder_{noasset} (extends transferOrder_base):
+        description: "NoAssetTransferOrder"
+    transferOrder_incomeTransfer_{royalglade, lodge} (extends transferOrder_income_transfer):
+        asset: "@asset<current()>"
+    transferOrder_incomeTransfer_fee{royalglade, lodge, clarence, royalway} (extends transferOrder_income_transfer):
+        asset: "@asset<current()>"
+        approvedBy: "@userfinops"
+        status: "completed"
+    transferOrder_fee_collection{1} (extends transferOrder_fee_collection):
+    transferOrder_settlement{lodge} (extends transferOrder_settlement):
+        asset: "@asset<current()>"
+    transferOrder_income_disaggregation_prev_{1} (extends transferOrder_income_disaggregation):
+        approvedBy: "@userfinops"
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        status: "completed"
+    transferOrder_income_disaggregation_{completed} (extends transferOrder_income_disaggregation):
+        approvedBy: "@userfinops"
+        status: "<current()>"
+    transferOrder_settlement_{completed} (extends transferOrder_settlement):
+        approvedBy: "@userfinops"
+        status: "<current()>"
+    transferOrder_fee_collection_{completed} (extends transferOrder_fee_collection):
+        approvedBy: "@userfinops"
+        status: "<current()>"
+
+
+App\Entity\TransferRequest:
+    transferRequest_status{draft, approved, closed, abandoned, in_progress} (extends transferRequest_base):
+        transferOrder: "@transferOrder_status<current()>"
+        description: "Demo transfer"
+    transferRequest_status{completed} (extends transferRequest_base):
+        transferOrder: "@transferOrder_status<current()>"
+        description: "Demo transfer"
+        status: "complete"
+        debitWalletId: "wlt_m_01HW3DETE9YHAGN7GEGAH1PF65"
+        creditWalletId: "wlt_m_01HW3DD8S6MFPYGVC0FPBHXAF2" 
+        amount: "8.42"
+        transaction: "@transfer_transaction"
+    transferRequest_{zero} (extends transferRequest_base):
+        transferOrder: "@transferOrder_<current()>"
+        amount: "0.00"
+        description: "Empty transfer example"
+    transferRequest_{noasset} (extends transferRequest_base):
+        transferOrder: "@transferOrder_<current()>"
+        description: "Demo transfer"
+    transferRequest_historical{1..12} (extends transferRequest_base):
+        transferOrder: "@transferOrder_historical<current()>"
+        description: "Historical transfer <current()>"
+    transferRequest_fee_collection_paid{1..2} (extends transferRequest_fee_collection):
+        transferOrder: "@transferOrder_fee_collection_completed"
+        description: "Fee collection <current()>"
+        status: "complete"
+    
+    transferRequest_accountancy_{royalglade, lodge} (extends transferRequest_accountacy):
+        transferOrder: "@transferOrder_incomeTransfer_<current()>"
+    transferRequest_insurance_{royalglade, lodge} (extends transferRequest_insurance):
+        transferOrder: "@transferOrder_incomeTransfer_<current()>"
+    transferRequest_corptax_{royalglade, lodge} (extends transferRequest_corptax):
+        transferOrder: "@transferOrder_incomeTransfer_<current()>"
+    transferRequest_maintenance_{royalglade, lodge} (extends transferRequest_maintenance):
+        transferOrder: "@transferOrder_incomeTransfer_<current()>"
+    transferRequest_dividend_{royalglade, lodge} (extends transferRequest_dividend):
+        transferOrder: "@transferOrder_incomeTransfer_<current()>"
+    transferRequest_management_{royalglade, lodge} (extends transferRequest_management):
+        transferOrder: "@transferOrder_incomeTransfer_<current()>"
+    transferRequest_fee{royalglade, lodge, clarence, royalway} (extends transferRequest_management):
+        transferOrder: "@transferOrder_incomeTransfer_fee<current()>"
+        amount: "<randomFloat(2, 0, 4)>"
+        status: "complete"
+    transferRequest_deposit_prev{royalglade, lodge, clarence, royalway} (extends transferRequest_income_disaggregation):
+        transferOrder: "@transferOrder_income_disaggregation_prev_1"
+        asset: "@asset<current()>"
+        amount: "<randomFloat(2, 400, 2400)>"
+        status: "complete"
+    transferRequest_deposit{royalglade, lodge, clarence, royalway} (extends transferRequest_income_disaggregation):
+        transferOrder: "@transferOrder_income_disaggregation_completed"
+        asset: "@asset<current()>"
+        amount: "<randomFloat(2, 400, 2400)>"
+        status: "complete"
+
+App\Entity\Transaction:
+    transfer_transaction (extends transaction_base):
+        debitResourceId: "@transferRequest_statuscompleted->debitWalletId"
+        creditResourceId: "@transferRequest_statuscompleted->creditWalletId"
+        amount: 842 # This is in pence!
+        comments: "@transferRequest_statuscompleted->description"
+        createdAt: "@transferRequest_statuscompleted->createdAt"

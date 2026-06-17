@@ -1,0 +1,59 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Payments Received' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'payments',
+        "sectionTitle": 'Payments',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Payments Received',
+                value: payments.count|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: payments
+        }) }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Due Date</th>
+                        <th>Type</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Shareholding</th>
+                        <th>Transaction Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in payments %}
+                    {% set asset = payout.asset ?: payout.investment.offering.asset %}
+                    <tr>
+                        <td><a href="{{ path('admin_payout_edit', { id: payout.id }) }}">{{ payout.id }}</a></td>
+                        <td><a href="{{ path('admin_product_dashboard', { id: asset.id }) }}">{{ asset.name }}</a></td>
+                        <td>{{ payout.dueDate|date("Y-m-d") }}</td>
+                        <td data-payout-type={{ payout.payoutType }}>
+                            {% if payout.payoutType == 1 %}
+                            Divestment
+                            {% else %}
+                            Dividend
+                            {% endif %}
+                        </td>
+                        <td class="text-end tw-tabular-nums">{{ payout.payoutAmount|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ payout.shareholding|number_format(0, '.', ',') }}</td>
+                        <td>{{ payout.transactionId}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

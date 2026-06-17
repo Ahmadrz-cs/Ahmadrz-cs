@@ -1,0 +1,15 @@
+App\Entity\BaseEntity:
+    exclusion_policy: ALL
+    properties:
+      id:
+        expose: true
+        groups: [minimum,standard,admin]
+      createdAt:
+        expose: true
+        groups: [minimum,standard,admin]
+      updatedAt:
+        expose: true
+        groups: [minimum,standard,admin]
+      createdBy:
+        expose_if: is_granted('CAN_VIEW_ADMIN')
+        groups: [admin]

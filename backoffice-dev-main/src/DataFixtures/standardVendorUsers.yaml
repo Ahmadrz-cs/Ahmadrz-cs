@@ -1,0 +1,73 @@
+include:
+    - templates/baseUsers.yaml
+    - templates/baseDocument.yaml
+
+App\Entity\User:
+    user{lorna} (extends user_female):
+        roles: ["ROLE_VENDOR"]
+        mangoPayUserId: "user_m_01HW3G0P840MFJ1TCRJ2K2DCXE"
+        mangoPayWalletId: "wlt_m_01HW3G0YE9X0740YZGP23CY2P4"
+        contego_score: "@contegoscore<current()>"
+        company: "@usercompany<current()>"
+        kycProfile: "@kycProfile<current()>"
+        onboardingProfile: "@onboardingProfile<current()>"
+        scaStatus: "active"
+        scaEnrolledAt: "<dateTimeInInterval('-1 week', '+3 days')>"
+
+App\Entity\Investor:
+    userinvestor{lorna} (extends investors_base):
+        corporateInvestor: true
+        wordsOfOwn: "Top yielder application comments"
+
+App\Entity\Company:
+    usercompany{lorna} (extends company_base):
+        name: "Eversea Estates"
+        registrationNumber: '<numberBetween(1000000,9000000)>'
+        companyWebsite: 'www.example.com'
+        buildingName:  'Eversea Hall'
+        regAddress1: "<numberBetween(1,128)> <streetName()>"
+        regAddress2: "<city()>"
+        postCode: "<postcode()>"
+        regCountry: 'GB'
+
+App\Entity\Status:
+    userstatus{lorna} (extends userstatus_base):
+
+App\Entity\UserSecurity:
+    usersecurity{lorna} (extends usersecurity_base):
+
+App\Entity\Address:
+    useraddress{lorna}:
+        user: "@user<current()>"
+        address1: "<numberBetween(1,128)> <streetName()>"
+        city: "<city()>"
+        postCode: "<postcode()>"
+        country: "GB"
+
+App\Entity\UserDocument:
+    userdoc{lorna}:
+        user: "@user<current()>"
+        document: "@doc_poi<current()>"
+    userdoc_{poa, poc}:
+        user: "@userlorna"
+        document: "@doc_<current()>"
+
+App\Entity\Document:
+    doc_poi{lorna} (extends doc_poi):
+    doc_poa (extends doc_pdf):
+        tag: "proof_of_address"
+    doc_poc (extends doc_pdf):
+        tag: "proof_of_company"
+
+App\Entity\ContegoScore:
+    contegoscore{lorna} (extends contegoscore_base):
+
+App\Entity\KycProfile:
+    kycProfile{lorna} (extends kycProfile_verified):
+
+App\Entity\OnboardingProfile:
+    onboardingProfile{lorna} (extends onboardingProfile_complete):
+
+App\Entity\UserStatusLog:
+    userstatuslog_active_{lorna} (extends userstatuslog_active):
+        occuredAt: "@userstatus<current()>->emailValidatedOn"

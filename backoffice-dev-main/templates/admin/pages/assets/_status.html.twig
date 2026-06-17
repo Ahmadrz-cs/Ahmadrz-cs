@@ -1,0 +1,5 @@
+{% if asset.lifecyclestatus %}
+    <span class="badge text-bg-success">{{ asset.lifecyclestatus }}</span>
+{% else %}
+    <span class="badge text-bg-warning">{{ asset.lifecyclestatus }}</span>
+{% endif %}

@@ -1,0 +1,4 @@
+# This is the release number.  It should only be updated when a release is pushed from
+# stable to master
+parameters:
+    app.version: 2.17.0.1

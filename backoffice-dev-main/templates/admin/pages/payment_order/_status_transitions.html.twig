@@ -1,0 +1,50 @@
+{% if additionalParams is not defined %}
+{% set additionalParams = {} %}
+{% endif %}
+
+<div class="d-flex flex-wrap gap-2">
+    {% if is_granted('ROLE_FINANCIAL_OPS') %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE')) %}
+            <a class="btn btn-primary text-nowrap"
+                href="{{ path('admin_payment_order_approve', {
+                    id: paymentOrder.id
+                }|merge(additionalParams)) }}">Approve Payment Order</a>
+        {% endif %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN')) %}
+            <a class="btn btn-primary text-nowrap"
+                href="{{ path('admin_payment_order_run', {
+                    id: paymentOrder.id
+                }|merge(additionalParams)) }}">Run Payment Order</a>
+        {% endif %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN')) %}
+            <a class="btn btn-outline-primary text-nowrap"
+                href="{{ path('admin_payment_order_run_batch', {
+                    id: paymentOrder.id
+                }|merge(additionalParams)) }}">Run Payment Order in Background</a>
+        {% endif %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_REOPEN')) %}
+            <a class="btn btn-outline-secondary text-nowrap"
+                href="{{ path('admin_payment_order_reopen', {
+                    id: paymentOrder.id
+                }|merge(additionalParams)) }}">Reopen Payment Order</a>
+        {% endif %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_REQUEST_CHANGE')) %}
+            <a class="btn btn-outline-secondary text-nowrap"
+                href="{{ path('admin_payment_order_request_changes', {
+                    id: paymentOrder.id
+            }|merge(additionalParams)) }}">Unapprove Payment Order</a>
+        {% endif %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_REJECT')) %}
+            <a class="btn btn-outline-danger text-nowrap"
+                href="{{ path('admin_payment_order_close', {
+                    id: paymentOrder.id
+                }|merge(additionalParams)) }}">Close Payment Order</a>
+        {% endif %}
+        {% if workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_ABANDON')) %}
+            <a class="btn btn-danger text-nowrap"
+                href="{{ path('admin_payment_order_abandon', {
+                    id: paymentOrder.id
+                }|merge(additionalParams)) }}">Abandon Payment Order</a>
+        {% endif %}
+    {% endif %}
+</div>

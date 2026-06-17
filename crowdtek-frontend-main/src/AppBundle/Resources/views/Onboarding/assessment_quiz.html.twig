@@ -1,0 +1,46 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% extends '@AppBundle/onboarding-base-bs4.html.twig' %}
+
+
+{% block body %}
+    <section class="row">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/bs4_flash.html.twig' %}
+            <div style="padding:10px 0; border-bottom:solid thin #333; text-transform:uppercase">
+                <div class="font-medium">SELF ASSESSMENT</div>
+            </div>
+            <div class="row mt-4 ">
+                <div class="offset-md-2 col-md-8">
+                    <h3>Investor Appropriateness Test</h3>
+                    <p>If you would like more information about how Yielders works, <b><a href="https://help.yielders.co.uk/en" target="_blank">please visit the help centre</a></b>.</p>
+                    {{ form_start(form, {attr:{class:"text-left, my-4"}}) }}
+                    {{ form_rest(form) }}
+                    <div class="d-flex py-2" style="gap: 0.5rem;">
+                        <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Submit Answers</button>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

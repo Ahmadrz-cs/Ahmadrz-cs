@@ -1,0 +1,68 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_report_mangopay_sets' %}
+{% set areaHeading = 'Reports' %}
+{% set mainHeading = 'Mangopay Reports' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'mangopay-reports',
+        "sectionTitle": 'All Mangopay Reports',
+        "linkActions": [
+            {
+				"text": "Create Transaction Report",
+				"route": "admin_reports_create_mangopay",
+				"params": {},
+				"style": "btn-success",
+			},
+            {
+				"text": "Merge Mangopay Reports",
+				"route": "admin_reports_mangopay_merger",
+				"params": {},
+				"style": "btn-outline-dark",
+			}
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "If the report is 'EXPIRED', the download link will no longer work. Mangopay only keep reports available for 24 hours before they expire. You can save reports for later in 'More Info' if you need them for longer.",
+        }) }}
+        {{ include('admin/components/_mangopay_pagination.html.twig') }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Report Id</th>
+                        <th>Type</th>
+                        <th>Creation Date</th>
+                        <th>Date Range</th>
+                        <th>Status</th>
+                        <th>Tag/Description</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in results %}
+                    <tr class="tw-text-sm">
+                        <td><a class="btn btn-outline-primary text-nowrap"
+                            href="{{ path('admin_reports_mangopay_view', { 
+                            id: report.Id }
+                        ) }}">More Info</a></td>
+                        <td>{{ report.Id }}</td>
+                        <td>{{ report.ReportType|capitalize }}</td>
+                        <td class="tw-tabular-nums">{{ report.CreationDate|date('Y-m-d H:i') }}</td>
+                        <td class="tw-tabular-nums">{{ report.Filters.AfterDate|date('Y-m-d H:i') }} <br /> {{ report.Filters.BeforeDate|date('Y-m-d H:i') }}</td>
+                        <td>{{ report.Status }}</td>
+                        <td>{{ report.Tag }}</td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock page_content %}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- http://phpunit.de/manual/4.1/en/appendixes.configuration.html -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" backupGlobals="false" colors="true" bootstrap="tests/bootstrap.php">
+  <coverage>
+    <include>
+      <directory>../src</directory>
+    </include>
+    <exclude>
+      <directory>src/*Bundle/Resources</directory>
+      <directory>src/*Bundle/Tests</directory>
+      <directory>src/*/*Bundle/Resources</directory>
+      <directory>src/*/*Bundle/Tests</directory>
+      <directory>src/*/Bundle/*Bundle/Resources</directory>
+      <directory>src/*/Bundle/*Bundle/Tests</directory>
+    </exclude>
+  </coverage>
+  <testsuites>
+    <testsuite name="AppBundle Unit">
+      <directory>tests/AppBundle/</directory>
+    </testsuite>
+    <testsuite name="ClientBundle Unit">
+      <directory>tests/ClientBundle/</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <server name="APP_ENV" value="test" force="true"/>
+    <server name="KERNEL_DIR" value="app/"/>
+    <server name="KERNEL_CLASS" value="AppKernel"/>
+  </php>
+</phpunit>

@@ -1,0 +1,19 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: 'admin_trading_hub_sell_orders_pending',
+                text: 'Pending Sell Orders',
+            },
+            {
+                route: 'admin_trading_hub_share_trades_pending',
+                text: 'Pending Trades',
+            },
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_horizontal_nav') ~'.html.twig', {
+    navId: 'tradingHubNav',
+    links: menuLinks,
+}) }}

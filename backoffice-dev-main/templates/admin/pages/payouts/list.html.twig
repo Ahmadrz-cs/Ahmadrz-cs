@@ -1,0 +1,97 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Payouts' %}
+{% set mainHeading = 'Payouts List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS', app.user) %}
+<a href="{{ path('admin_payout_add') }}" class="btn btn-success">Create Retrospective Payout</a>
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_payout_index', { payoutType: [0] }) }}" class="btn btn-light">Dividends</a>
+<a href="{{ path('admin_payout_index', { payoutType: [1] }) }}" class="btn btn-light">Any non-dividend</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetName) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.investmentId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.payoutType} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped" id="payoutlist">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Asset</th>
+            <th>Due Date (d/m/Y)</th>
+            <th>Investor</th>
+            <th>Investment Id</th>
+            <th>Currency</th>
+            <th>Payout Amount</th>
+            <th>Payout Type</th>
+            <th>Transaction Id</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payout in objects %}
+        <tr>
+            <td><a href="{{ path('admin_payout_edit', { id: payout.id }) }}">{{ payout.id }}</a></td>
+            <td>
+                {% if payout.asset %}
+                <a href="{{ path('admin_asset_edit', { id: payout.asset.id }) }}">{{ payout.asset }}</a>
+                {% elseif payout.investment %}
+                {% if payout.investment.assetId %}
+                <a href="{{ path('admin_asset_edit', { id: payout.investment.assetId }) }}">{{
+                    payout.investment.offering.asset }}</a>
+                {% endif %}
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+            <td>{{ payout.dueDate|date("d/m/Y") }}</td>
+            <td>
+                {% if payout.investment %}
+                <a href="{{ path('admin_user_edit', { id: payout.investment.user.id }) }}">{{ payout.investment.user
+                    }}</a>
+                {% elseif payout.creditedUser %}
+                <a href="{{ path('admin_user_edit', { id: payout.creditedUser.id }) }}">{{ payout.creditedUser }}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if payout.investment %}
+                <a href="{{ path('admin_investment_edit', { id: payout.investment.id }) }}">{{ payout.investment.id
+                    }}</a>
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+            <td>{{ payout.currency }}</td>
+            <td>{{ payout.payoutAmount }}</td>
+            <td data-payout-type={{ payout.payoutType }}>
+                {% if payout.payoutType == 1 %}
+                Profit Share
+                {% else %}
+                Dividend
+                {% endif %}
+            </td>
+            <td>{{ payout.transactionId }}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Shareholdings' %}
+{% set mainHeading = mainHeading|default('Share Trades') %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{{ include('admin/components/_alert.html.twig', {
+		variant: "info",
+		message: "No filters by default. Results ordered by most recently settled then asset name alphabetically",
+	}) }}
+
+	{{ form_start(form, {'attr': {'class': 'd-flex flex-column gap-3'}}) }}
+	<div class="row g-3">
+		<div class="col-sm-6 col-md-4">{{ form_row(form.assetId) }}</div>
+	</div>
+	<div class="row g-3">
+		<div class="col-sm-6 col-md-4">{{ form_row(form.buyerId) }}</div>
+		<div class="col-sm-6 col-md-4">{{ form_row(form.sellerId) }}</div>
+	</div>
+	<div class="row g-3">
+		<div class="col-sm-6 col-md-4">{{ form_row(form.settledFrom) }}</div>
+		<div class="col-sm-6 col-md-4">{{ form_row(form.settledTo) }}</div>
+	</div>
+	<div class="row g-3">
+		<div class="col-sm-6 col-md-4 mb-3">
+			<label class="card card-body bg-light shadow-none border">
+				{{ form_widget(form.aggregate) }}
+				<small class="mt-2">Aggregated share sales by asset-seller</small>
+			</label>
+		</div>
+	</div>
+	{{ form_rest(form) }}
+
+	<div>
+		<button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+		<a href="{{ path('admin_holding_trades') }}" class="btn-secondary btn">Clear Filters</a>
+	</div>
+	
+	{{ form_end(form) }}
+
+	<div class="table-responsive">
+        {% block table %}
+		<table class="table table-striped datatable" id="sharetradedlist">
+			<thead>
+				<tr>
+					<th>Asset</th>
+					<th>Buyer (username)</th>
+					<th>Seller (username)</th>
+					<th>Shares traded</th>
+					<th>Investment</th>
+					<th>Invested</th>
+					<th>Settled</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for entry in sharetrades %}
+					<tr>
+						<td>
+							<a href="{{ path('admin_asset_edit', { id: entry.assetId }) }}">{{ entry.asset }}</a>
+						</td>
+						<td>
+							<a href="{{ path('admin_user_edit', { id: entry.buyerId }) }}">{{ entry.buyer }}</a>
+						</td>
+						<td>
+							<a href="{{ path('admin_user_edit', { id: entry.sellerId }) }}">{{ entry.seller }}</a>
+						</td>
+						<td>{{ entry.numberOfShares }}</td>
+						<td>
+							<a href="{{ path('admin_investment_edit', { id: entry.investment }) }}">{{ entry.investment }}</a>
+						</td>
+						<td>{{ entry.investedOn }}</td>
+						<td>{{ entry.settledOn }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+        {% endblock table %}
+	</div>
+
+{% endblock page_content %}

@@ -1,0 +1,47 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_report_index' %}
+{% set areaHeading = 'KYC Reports' %}
+{% set mainHeading = 'View KYC Report' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "immutable-warning",
+        "sectionTitle": "View Only",
+        "sectionStyle": "border rounded-3 p-4 border-warning",
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_alert.html.twig', {
+				variant: "warning",
+				message: "KYC reports cannot be edited after creation. They act like a log of previous KYC checks.",
+			}) }}
+		{% endblock %}
+	{% endembed %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'kyc-report',
+        "sectionTitle": 'KYC Report',
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_kv_table.html.twig', {
+				valueDefaultStyle: "tw-font-mono",
+				kv: {
+					"Report Id": kycReport.id|default("N/A"),
+					"KYC Check Subject": "#" ~ kycReport.subject.id ~ " // " ~ kycReport.subject.username,
+					"Provider": kycReport.providerName,
+					"Reference Id": kycReport.providerReferenceId,
+					"Check Type": kycReport.checkType,
+					"Result": kycReport.result,
+					"Score": kycReport.score,
+					"Is KYC Verified?": kycReport.verified ? 'Verified' : 'Failed',
+					"Checked At": kycReport.checkedAt|date('Y-m-d H:i:s'),
+					"Notes": kycReport.note,
+					"Created At": kycReport.id|default(null) ? kycReport.createdAt|date('Y-m-d H:i:s') : "N/A",
+				}
+			}) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

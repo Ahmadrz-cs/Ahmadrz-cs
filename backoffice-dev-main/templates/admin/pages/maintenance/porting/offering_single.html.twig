@@ -1,0 +1,63 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Activity Logs Cleanup' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "port-offering",
+        "sectionTitle": "Port Offering",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+        {{ form_row(form.port) }}
+        {{ form_end(form) }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            title: title|default(null),
+            tableId: tableId|default("trade-order-info"),
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Id": offering.id,
+                "Type": offering.offeringType|capitalize,
+                "Additional Type": offering.additionalType|capitalize,
+                "Status": offering.lifecycleStatus|capitalize,
+                "Created By Id": offering.createdById|default('N/A'),
+                "Linked Investment": offering.sellInvestment.id|default('N/A'),
+                "Asset": "#" ~ offering.asset.id ~ " // " ~ offering.asset.name,
+                "Offering Share Quantity": offering.noOfShares|default(0)|number_format,
+                "Offering Share Price": offering.pricePerShare|default(0)|string|format_currency('GBP', {fraction_digit: 6}),
+                "Offering Funding Goal": offering.fundingGoal|default(0)|string|format_currency('GBP'),
+                "Asset Share Quantity": offering.asset.amountOfShares|default(0)|number_format,
+                "Asset Share Price": offering.asset.pricePerShare|default(0)|string|format_currency('GBP', {fraction_digit: 6}),
+                "Asset Funding Goal": offering.asset.fundingGoal|default(0)|string|format_currency('GBP'),
+                "Min Commit": offering.minCommitUser|default('N/A'),
+                "Max Commit": offering.maxCommitUser|default('N/A'),
+                "Created At": offering.createdAt ? offering.createdAt|date : 'N/A',
+                "Created By": offering.createdBy|default('N/A'),
+                "Updated At": offering.updatedAt ? offering.createdAt|date : 'N/A',
+                "Updated By": offering.updatedBy|default('N/A'),
+            }
+        }) }}
+        {{ include('admin/components/status_record_table.html.twig', {
+            object: offering,
+            places: [
+                'draft',
+                'submitted',
+                'approved',
+                'published',
+                'archived',
+                'cancelled',
+                'rejected',
+                'closed',
+                'restricted'
+            ]})
+        }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

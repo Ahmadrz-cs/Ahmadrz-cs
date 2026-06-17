@@ -1,0 +1,18 @@
+{% set sectionTodo = launchTodo|filter((v, k) => k in sectionRequirements|default([])) %}
+
+{% if sectionTodo is not empty %}
+    <div class="section-issues">
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+            title: "Issues Found",
+        } %}
+            {% block message %}
+                <ul class="mb-0">
+                {% for req, desc in sectionTodo %}
+                    <li data-launch-req="{{ req }}">{{ desc }}</li>
+                {% endfor %}
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+    </div>
+{% endif %}

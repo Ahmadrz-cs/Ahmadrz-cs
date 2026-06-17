@@ -1,0 +1,55 @@
+{% extends 'admin/layouts/income_transfer_builder.html.twig' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "starting-balance",
+        "sectionTitle": "Starting Balance",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The starting balance is the gross income you are trying to process. The guided setup will help you configure transfers such that the full balance is used up.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Deposit Wallet Id',
+                value: walletIds.deposit|default('N/A'),
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Deposit Wallet Balance (£)',
+                value: depositWalletBalance|number_format(2, '.', ','),
+                className: 'col-md-6'
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            message: "The amount to process should equal the deposit wallet balance. If you intend to use a different amount, you should modify the transfer order description to provide a reason why.",
+        }) }}
+
+        {% if transferOrder.targetTotal == 0  %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "No starting balance set",
+            message: "A starting balance is required to use percentage based transfers configurations.",
+        }) }}
+        {% endif %} 
+
+        {{ form_start(form) }}
+            <div class="row">
+                <div class="col-12">{{ form_row(form.amountToProcess) }}</div>
+            </div>
+            <div class="">
+                <button class="btn btn-dark" id="submit" type="submit">{% block saveActionText %}Save and Continue{% endblock %}</button>
+                <a class="btn btn-outline-secondary"
+                    href="{{ path('admin_monthend_income_transfer_manage', { id: transferOrder.id }) }}">{% block cancelActionText %}Cancel{% endblock %}</a>
+            </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

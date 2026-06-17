@@ -1,0 +1,41 @@
+{% set statuses = {
+    (constant('App\\Entity\\Enum\\TaskStatus::Pending').value): {
+        'bg': 'warning',
+        'border': 'warning',
+    },
+    (constant('App\\Entity\\Enum\\TaskStatus::Started').value): {
+        'bg': 'primary',
+        'border': 'primary',
+    },
+    (constant('App\\Entity\\Enum\\TaskStatus::Completed').value): {
+        'bg': 'success',
+        'border': 'success',
+    },
+    (constant('App\\Entity\\Enum\\TaskStatus::Skipped').value): {
+        'bg': 'light',
+        'border': 'dark-subtle',
+    },
+} %}
+
+{% set barSize = (100 / tasks|length)|round(2, 'floor') %}
+
+{% if showLabels ?? false %}
+<div class="d-flex align-items-end gap-2">
+    {%- for taskName, taskState in tasks -%}
+        <div class="fw-medium text-center tw-text-xs" style="width: {{ barSize }}%">{{ taskName|humanize }}</div>
+    {%- endfor -%}
+</div>
+{% endif %}
+
+<div class="progress d-flex gap-2 bg-transparent task-tracker{% if showState ?? false %} tw-min-h-[1.25rem]{% endif %}">
+    {%- for taskName, taskState in tasks -%}
+        <div
+            class="progress-bar rounded-2 text-bg-{{ statuses[taskState.value].bg }} border border-2 border-{{ statuses[taskState.value].border }}"
+            data-task-name="{{ taskName }}"
+            data-task-state="{{ taskState.value }}"
+            title="{{ taskName|humanize }} - {{ taskState.value|humanize }}"
+            style="width: {{ barSize }}%"
+        >{% if showState ?? false %}<span class="fw-medium tw-text-xs">{{ taskState.value|humanize }}</span>{% endif %}
+        </div>
+    {%- endfor -%}
+</div>

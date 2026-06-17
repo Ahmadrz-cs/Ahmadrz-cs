@@ -1,0 +1,10 @@
+include:
+
+App\Entity\AppSetting:
+    appsetting_yielders_fee_wallet:
+        __construct:
+            name: "yieldersFeeWallet"
+        value: "wlt_m_01HW3DC5APRJ5N8KWSBHMBYX48"
+        createdBy: "@userA1"
+        updatedBy: "@userA1"
+        

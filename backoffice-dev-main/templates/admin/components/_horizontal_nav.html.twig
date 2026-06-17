@@ -1,0 +1,25 @@
+{% set defaultParams = {} %}
+
+{% if asset is defined %}
+	{% set defaultParams = { 'id': asset.id } %}
+{% endif %}
+
+{% if user is defined %}
+	{% set defaultParams = { 'id': user.id } %}
+{% endif %}
+
+{% set currentPath = app.request.get("_route") %}
+
+{% block menu_content %}
+	{% for linkGroup in links %}
+		<ul class="nav nav-pills nav-fill d-flex flex-wrap gap-2 border rounded-3 p-2 tw-text-sm tw-place-self-start {{ navStyles ?? '' }}" id="hub-nav">
+			{% for link in linkGroup.linkDefinitions %}
+				<li class="nav-item">
+					<a class="nav-link fw-medium text-body {% if currentPath is same as(link.route) %}active{% endif %}" href="{% if link.isRelative ?? false %}#{{ link.route }}{% else %}{{ path(link.route, link.params|default(defaultParams) ) }}{% endif %}">
+						{{ link.text }}
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% endfor %}
+{% endblock menu_content %}

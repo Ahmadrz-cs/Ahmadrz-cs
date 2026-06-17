@@ -1,0 +1,35 @@
+App\Entity\Investment:
+    investment_base (template):
+        for_sale: 0
+        currency: GBP
+        transaction_id (unique): "<randomNumber(8, true)>"
+        type: "normal"
+        user: "@userA1"
+        name: "@self->user" # our system fills this with username, but seems odd
+        createdBy: "$user"
+        offering: "@offeringclarence" # should override
+        # term: null # unused
+        orgPricePerShare: 1 # must manually override
+        share_amount: 100
+        PricePerShare: "$orgPricePerShare"
+        numberOfShares: "$share_amount"
+        investmentValue: "<($orgPricePerShare * $numberOfShares)>"
+        lifecyclestatus: "settled"
+        status: "@investmentstatus<current()>"
+        
+App\Entity\InvestmentStatus:
+    investmentstatus_base (template):
+        isOpen: false
+        lifecycleStatus: "settled"
+
+App\Entity\InvestmentAddFields:
+    # prefunding related fields are arbitrary
+    # we just need a non-empty value for testing
+    prefundingId_base (template):
+        investment: "@investment<current()>"
+        fieldKey: "prefundingId"
+        fieldValue (unique): "<randomNumber(2, true)>"
+    sharesToKeep_base (template):
+        investment: "@investment<current()>"
+        fieldKey: "sharesToKeep"
+        fieldValue: 100

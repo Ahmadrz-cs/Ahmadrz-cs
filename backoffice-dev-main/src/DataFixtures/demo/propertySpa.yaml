@@ -1,0 +1,64 @@
+# This is completed and exited
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{spa} (extends asset_base):
+        name: Vermont Grove - Leamington Spa
+        briefDescription: A deceptive large three bedroom bungalow in Sydenham, Leamington Spa. The accommodation comprises of entrance porch, hallway, living/dining room, fitted kitchen, conservatory, three bedrooms, a wet room and separate toilet
+        pricePerShare: 2.26
+        amountOfShares: 100000
+        companyNumber: SPVDM00001
+        investmentTerm: 24
+        netProjectedYield: '0.0476'
+        netProjectedIncome: '10765'
+        buyRestricted: true
+        sellRestricted: true
+        termStart: "@self->createdAt"
+        createdAt: "<dateTimeBetween('-30 months', '-27 months')>"
+
+App\Entity\AssetAddress:
+    assetaddress{spa} (extends assetaddress_base):
+        address1: 2 Vermont Grove
+        city: Leamington Spa
+        postCode: TCV31 1SE
+        longitude: -1.5081065
+        latitude: 52.281146
+
+App\Entity\AssetMember:
+    assetmember{spa} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc_spa_{AoA, IM, Cover, Financials, photo1, photo2, photo3, photo4}:
+        asset: "@assetspa"
+        document: "@doc_spa_<current()>"
+
+App\Entity\Document:
+    doc_spa_{AoA} (extends doc_aoa):
+        filename: "<('SPVY0001_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_spa_{IM} (extends doc_im):
+        filename: "<('SPVY0001_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_spa_{Cover} (extends doc_logo):
+        filename: "<('SPVY0001_' . $current . '.jpg')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_spa_{Financials} (extends doc_calculations):
+        filename: "<('SPVY0001_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_spa_{photo1, photo2, photo3, photo4} (extends doc_property_photo):
+        filename: "<('SPVY0001_' . $current . '.jpg')>"
+        documentUrl: "<('demo/' . $filename)>"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{spa} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>
+        occuredAt: "@asset<current()>->termStart"
+    assetstatuslog_closing_{spa} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Closing)>
+        occuredAt: "<dateTimeBetween('-9 months', '-8 months')>"
+    assetstatuslog_archived_{spa} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Archived)>
+        occuredAt: "<dateTimeBetween('-6 months', '-6 months')>"

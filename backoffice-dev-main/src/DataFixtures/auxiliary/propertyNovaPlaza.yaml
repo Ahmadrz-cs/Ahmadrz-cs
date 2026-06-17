@@ -1,0 +1,76 @@
+# This is Wayward Plaza
+# Unique traits - 1 partial offering - asset shares not fully listed, 1 year deal (development)
+# Notes - Commercial
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{nova} (extends asset_base):
+        name: Novaplatz - London
+        alternateName: Wayward Plaza Co-working space
+        briefDescription: Newly renovated co-working space nestled in an up-and-coming part of London.
+        pricePerShare: 3.32
+        amountOfShares: 200000
+        companyNumber: SPVAF00005
+        assetType: "Commercial"
+        investmentTerm: 12
+        visibility: 2
+        additionalType: "development"
+        treasuryWalletId: null
+        netProjectedYield: '0.1254'
+        netProjectedIncome: '83265'
+        createdAt: "<dateTimeBetween('-1 months', '-1 weeks')>"
+        termStart: "@self->createdAt"
+        
+App\Entity\AssetAddress:
+    assetaddress{nova} (extends assetaddress_base):
+        address1: Wayward Plaza
+        address2: 4 Crossbank Road
+        city: London
+        postCode: GW64 7HG
+        longitude: -0.081691
+        latitude: 51.511723
+
+App\Entity\AssetMember:
+    assetmember{nova} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{nova_aoa, nova_im}:
+        asset: "@assetnova"
+        document: "@doc<current()>"
+    assetdoc{nova_logo}:
+        asset: "@assetnova"
+        document: "@doc<current()>"
+    assetdoc{nova_calc}:
+        asset: "@assetnova"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{nova} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: 100000
+        netRentProjected: 12.54
+        grossProjectReturn: 12.54
+        visibility: 2
+
+App\Entity\OfferingDocuments:
+    offeringdoc{nova_calc}:
+        offering: "@offeringnova"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{nova_aoa} (extends doc_aoa):
+    doc{nova_im} (extends doc_im):
+    doc{nova_logo} (extends doc_logo):
+        description: "Glass office towers of modernity"
+        filename: "sotckoffice.jpg"
+    doc{nova_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{nova} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Acquiring)>

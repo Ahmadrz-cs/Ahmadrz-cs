@@ -1,0 +1,21 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_profile_mfa_manage' %}
+{% set areaHeading = 'Profile' %}
+{% set mainHeading = '2FA Code Checker Tool' %}
+
+{% block page_content %}
+
+    <p>Submit you current 2FA authentication code to check 2FA is setup properly on your account.</p>
+
+	<br>
+	{{ form_start(form, {'action': path('admin_profile_mfa_check'), }) }}
+	{{ form_row( form.code1 ) }}
+	<div class="form-group">
+		<div class="col-sm-offset-3 col-sm-9">
+			{{ form_widget( form.submit ) }}
+		</div>
+	</div>
+	{{ form_end(form) }}
+
+{% endblock page_content %}

@@ -1,0 +1,178 @@
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseInvestment.yaml
+
+App\Entity\Investment:
+    investment{ben_lodge1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 9655
+        # for_sale: 1
+        createdAt: "<(new DateTime('last monday of last month'))>"
+    investment{ben_lodge2} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 690
+        createdAt: "<(new DateTime('last monday of last month'))>"
+    investment{ben_royalway1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringroyalway"
+        orgPricePerShare: "@offeringroyalway->pricePerShare"
+        share_amount: 755
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{ben_partingdale1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringpartingdale"
+        orgPricePerShare: "@offeringpartingdale->pricePerShare"
+        share_amount: 1900
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{ben_partingdale2} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringpartingdale"
+        orgPricePerShare: "@offeringpartingdale->pricePerShare"
+        share_amount: 100
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{ben_saturna1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringsaturna"
+        orgPricePerShare: "@offeringsaturna->pricePerShare"
+        share_amount: 531
+        type: "off-market"
+    investment{ben_kolness1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringkolness"
+        orgPricePerShare: "@offeringkolness->pricePerShare"
+        share_amount: 1282
+    investment{ben_sandfox1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringsandfox"
+        orgPricePerShare: "@offeringsandfox->pricePerShare"
+        share_amount: 496
+        # for_sale: 1
+    investment{ben_neptunis1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringneptunis"
+        orgPricePerShare: "@offeringneptunis->pricePerShare"
+        share_amount: 5681
+        type: "prefunding"
+    investment{ben_clarence1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringclarence"
+        orgPricePerShare: "@offeringclarence->pricePerShare"
+        share_amount: 500
+    investment{ben_kolness2} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringkolness"
+        orgPricePerShare: "@offeringkolness->pricePerShare"
+        share_amount: 1000
+    investment{ben_kolness3} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringkolness"
+        orgPricePerShare: "@offeringkolness->pricePerShare"
+        share_amount: 1000
+    investment{ben_royalglade1} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 7312
+    investment{ben_royalglade2} (extends investment_base):
+        user: "@userben"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 4638
+        
+App\Entity\InvestmentStatus:
+    investmentstatusben_{lodge1, lodge2, royalway1, partingdale1, partingdale2, sandfox1, neptunis1, royalglade1, royalglade2} (extends investmentstatus_base):
+    investmentstatusben_{saturna1, kolness1, clarence1, kolness2, kolness3} (extends investmentstatus_base):
+        lifecycleStatus: "approved"
+
+App\Entity\InvestmentDocuments:
+    idoc_ben_lodge{1..2}:
+        investment: "@investmentben_lodge<current()>"
+        document: "@sharecert_ben_lodge<current()>"
+    idoc_ben_royalway{1}:
+        investment: "@investmentben_royalway<current()>"
+        document: "@sharecert_ben_royalway<current()>"
+    idoc_ben_partingdale{1..2}:
+        investment: "@investmentben_partingdale<current()>"
+        document: "@sharecert_ben_partingdale<current()>"
+    idoc_ben_sandfox{1}:
+        investment: "@investmentben_sandfox<current()>"
+        document: "@sharecert_ben_sandfox<current()>"
+    idoc_ben_neptunis{1}:
+        investment: "@investmentben_neptunis<current()>"
+        document: "@sharecert_ben_neptunis<current()>"
+    idoc_ben_royalglade{1..2}:
+        investment: "@investmentben_royalglade<current()>"
+        document: "@sharecert_ben_royalglade<current()>"
+
+App\Entity\Offering:
+    relisting{ben_lodge1}_1 (extends offering_base):
+        sell_investment: "@investment<current()>"
+        asset: "@assetlodge"
+        name: "@offeringlodge->name"
+        pricePerShare: "@offeringlodge->pricePerShare"
+        noOfShares: 1034
+        createdBy: "@userben"
+    relisting{ben_royalway1} (extends offering_base):
+        sell_investment: "@investment<current()>"
+        asset: "@assetroyalway"
+        name: "@offeringroyalway->name"
+        pricePerShare: "@offeringroyalway->pricePerShare"
+        noOfShares: 105
+        netRentProjected: "@offeringroyalway->netRentProjected"
+        grossProjectReturn: "@offeringroyalway->grossProjectReturn"
+        createdBy: "@userben"
+        lifecyclestatus: "submitted"
+#     relisting{ben_lodge1}_2 (extends offering_base):
+#         sell_investment: "@investment<current()>"
+#         asset: "@assetlodge"
+#         name: "@offeringlodge->name"
+#         pricePerShare: "@offeringlodge->pricePerShare"
+#         noOfShares: 345
+#         netRentProjected: "@offeringlodge->netRentProjected"
+#         grossProjectReturn: "@offeringlodge->grossProjectReturn"
+#         createdBy: "@userben"
+#         lifecyclestatus: "submitted"
+#     relisting{ben_sandfox1}_1 (extends offering_base):
+#         sell_investment: "@investment<current()>"
+#         asset: "@assetsandfox"
+#         name: "@offeringsandfox->name"
+#         pricePerShare: "@offeringsandfox->pricePerShare"
+#         noOfShares: 496
+#         netRentProjected: "@offeringsandfox->netRentProjected"
+#         grossProjectReturn: "@offeringsandfox->grossProjectReturn"
+#         createdBy: "@userben"
+
+App\Entity\OfferingDocuments:
+    relistingdoc{ben_lodge1_1}:
+        offering: "@relisting<current()>"
+        document: "@doc_rel<current()>"
+    relistingdoc{ben_royalway1}:
+        offering: "@relisting<current()>"
+        document: "@doc_rel<current()>"
+
+App\Entity\Document:
+    sharecert_ben_lodge{1..2} (extends doc_certificate):
+    sharecert_ben_royalway{1} (extends doc_certificate):
+    sharecert_ben_partingdale{1..2} (extends doc_certificate):
+    sharecert_ben_sandfox{1} (extends doc_certificate):
+    sharecert_ben_neptunis{1} (extends doc_certificate):
+    sharecert_ben_royalglade{1..2} (extends doc_certificate):
+    doc_rel{ben_lodge1_1, ben_royalway1} (extends doc_calculations):
+        description: "Relisted auto-duplicate calcs"
+
+App\Entity\InvestmentAddFields:
+    investmentaddfields{1}:
+        investment: "@investmentben_clarence<current()>"
+        fieldKey: "invSettleState"
+        fieldValue: "stamp duty transfer pending"
+    investmentaddfields{2, 3}:
+        investment: "@investmentben_kolness<current()>"
+        fieldKey: "invSettleState"
+        fieldValue: "stamp duty transfer pending"
+
+        

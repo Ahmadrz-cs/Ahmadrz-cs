@@ -1,0 +1,125 @@
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% embed 'admin/layouts/embeddable_filtered_list.html.twig' with options|default({}) %}
+    {% block createActions %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Create Trade Order",
+                "route": "admin_trade_order_create",
+                "params": {},
+                "style": "btn-success",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+        }) }}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Manage Pending Relistings",
+                "route": "admin_trading_hub_sell_orders_pending",
+                "params": {},
+                "style": "btn-outline-secondary",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+        }) }}
+    {% endblock %}
+    {% block filterPresets %}
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ direction: [
+                enum('App\\Entity\\Enum\\TradeDirection').Buy.value
+            ] })
+        ) }}" class="btn btn-light">Buy Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ direction: [
+                enum('App\\Entity\\Enum\\TradeDirection').Sell.value
+            ] })
+        ) }}" class="btn btn-light">Sell Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\TradeOrderStatus').Active.value
+            ] })
+        ) }}" class="btn btn-light">Active Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\TradeOrderStatus').Completed.value
+            ] })
+        ) }}" class="btn btn-light">Completed Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ 
+                type: [enum('App\\Entity\\Enum\\TradeOrderType').Initial.value],
+                direction: [-1], 
+            })
+        ) }}" class="btn btn-light">First Party Listings Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ 
+                type: [enum('App\\Entity\\Enum\\TradeOrderType').Market.value],
+                direction: [-1],
+            })
+        ) }}" class="btn btn-light">Secondary Market Listings Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ type: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Market.value,
+                enum('App\\Entity\\Enum\\TradeOrderType').Limit.value,
+                enum('App\\Entity\\Enum\\TradeOrderType').StopLoss.value,
+            ] })
+        ) }}" class="btn btn-light">Retail Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ type: [
+                enum('App\\Entity\\Enum\\TradeOrderType').OffMarket.value
+            ] })
+        ) }}" class="btn btn-light">Off Market Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ type: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Prefunding.value
+            ] })
+        ) }}" class="btn btn-light">Prefunding Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ type: [
+                enum('App\\Entity\\Enum\\TradeOrderType').Proxy.value
+            ] })
+        ) }}" class="btn btn-light">Prefunding Buy Back Only</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ type: [
+                enum('App\\Entity\\Enum\\TradeOrderType').BuyBack.value
+            ] })
+        ) }}" class="btn btn-light">Exit Buy Back Only</a>
+    {% endblock %}
+
+    {% block collapsibleFilters %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.uuid) }}</div>
+        {% if form.assetId is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>{% endif %}
+        {% if form.assetName  is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetName) }}</div>{% endif %}
+        {% if form.userId is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>{% endif %}
+        {% if form.userUsername is defined %}<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userUsername) }}</div>{% endif %}
+    {% endblock %}
+
+    {% block collapsibleFiltersExpandedChoice %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.direction) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.status) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.type) }}</div>
+    {% endblock %}
+
+    {% block collapsibleFiltersRange %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+    {% endblock %}
+
+    {% block table %}
+        {{ include('admin/components/trade_orders/_list_table.html.twig', {
+            showAsset: showAsset ?? true,
+            showUser: showUser ?? true,
+            showDirection: true,
+            objects: objects,
+        }) }}
+    {% endblock %}
+{% endembed %}

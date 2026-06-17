@@ -1,0 +1,11 @@
+include:
+    - ../standardUsers.yaml
+    - ../templates/basePayout.yaml
+
+App\Entity\Payout:
+    payout_lorna_royalglade_dividend{1..12} (extends payout_base):
+        asset: "@assetroyalglade"
+        creditedUser: "@userlorna"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        payoutAmount: "<(5.17 * 1162 / 1200)>"
+        shareholding: "1028"

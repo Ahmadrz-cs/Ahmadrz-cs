@@ -1,0 +1,16 @@
+{% if link ?? false %}<a class="text-body card-link-hover" href="{{ path('my_portfolio_asset_position', { id: position.assetId}) }}">{% endif %}
+	<article class="border rounded-lg tw-p-4 {% if current ?? false %}current{% endif %}">
+		<div class="d-flex flex-column text-md gap-y-2">
+			<div class="d-flex justify-content-between align-items-center gap-y-2">
+				<div class="font-semibold" data-field-name="asset-name">{{ position.assetName }}</div>
+				{% if current ?? false %}
+					<span class="badge badge-secondary badge-md rounded-md">Showing</span>
+				{% endif %}
+			</div>
+			<div class="d-flex justify-content-between align-items-center gap-y-2">
+				<div data-field-name="value">{{ position.value|format_currency('GBP') }}</div>
+				<div data-field-name="shares">{{ position.shares|number_format(0, '.', ',') }} shares</div>
+			</div>
+		</div>
+	</article>
+{% if link ?? false %}</a>{% endif %}

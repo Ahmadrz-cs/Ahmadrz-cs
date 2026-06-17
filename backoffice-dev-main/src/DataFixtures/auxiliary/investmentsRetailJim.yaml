@@ -1,0 +1,57 @@
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseInvestment.yaml
+
+App\Entity\Investment:
+    investment{jim_nixis1} (extends investment_base):
+        user: "@userjim"
+        offering: "@offeringnixis"
+        orgPricePerShare: "@offeringnixis->pricePerShare"
+        share_amount: 1250
+        type: "normal"
+    investment{jim_nixis2} (extends investment_base):
+        user: "@userjim"
+        offering: "@offeringnixis"
+        orgPricePerShare: "@offeringnixis->pricePerShare"
+        share_amount: 3750
+        type: "prefunding"
+    investment{jim_royalglade1} (extends investment_base):
+        user: "@userjim"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 781
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{jim_royalglade2} (extends investment_base):
+        user: "@userjim"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 388
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{jim_royalglade3} (extends investment_base):
+        user: "@userjim"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 622
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+
+App\Entity\InvestmentStatus:
+    investmentstatusjim_{nixis1, nixis2, royalglade1, royalglade2, royalglade3} (extends investmentstatus_base):
+
+App\Entity\InvestmentDocuments:
+    idoc_jim_nixis{1..2}:
+        investment: "@investmentjim_nixis<current()>"
+        document: "@sharecert_jim_nixis<current()>"
+    idoc_jim_royalglade{1..3}:
+        investment: "@investmentjim_royalglade<current()>"
+        document: "@sharecert_jim_royalglade<current()>"
+
+App\Entity\Document:
+    sharecert_jim_nixis{1..2} (extends doc_certificate):
+    sharecert_jim_royalglade{1..3} (extends doc_certificate):
+
+
+App\Entity\InvestmentAddFields:
+    investmentaddfields{jim_nixis1} (extends prefundingId_base):
+    investmentaddfields{jim_nixis2} (extends sharesToKeep_base):
+        fieldValue: 1250

@@ -1,0 +1,8 @@
+# Any external integrations related entities, e.g.
+# Mangopay
+# Malchimp/Mandrill
+# Contego
+# Salesforce
+include:
+    - auxiliary/bankAccounts.yaml
+    - auxiliary/reports.yaml

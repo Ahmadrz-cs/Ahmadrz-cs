@@ -1,0 +1,25 @@
+{% extends 'admin/pages/products/editor/_editor.html.twig' %}
+
+{% block editor_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "about",
+        "sectionTitle": "About Asset",
+        "sectionStyle": "pb-3",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form, {attr: {class: "d-flex flex-column gap-3"}}) }}
+        <div class="row ">
+            <div class="col-12">{{ form_row(form.name) }}</div>
+            <div class="col-sm-6">{{ form_row(form.companyNumber) }}</div>
+            <div class="col-sm-6">{{ form_row(form.assetType) }}</div>
+            <div class="col-12">{{ form_row(form.briefDescription) }}</div>
+        </div>
+        {{ include('admin/pages/products/editor/_editor_form_actions.html.twig', {
+            routeParams: {id: asset.id}
+        }) }}
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock editor_content %}

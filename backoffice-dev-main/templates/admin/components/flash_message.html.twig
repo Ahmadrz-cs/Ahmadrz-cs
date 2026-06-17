@@ -1,0 +1,17 @@
+{% if app.session.flashBag.keys is not empty %}
+	<div class="{{ containerClass|default('container-xxl') }} d-flex flex-column gap-3 pt-4">
+		{% for label, messages in app.flashes %}
+			{% for message in messages %}
+
+                {% embed 'admin/components/_alert.html.twig' with {
+                    role:'alert',
+                    variant: label,
+                    showType: true,
+                } %}
+                    {% block message %}{{ message }}{% endblock message %}
+                {% endembed %}
+
+			{% endfor %}
+		{% endfor %}
+	</div>
+{% endif %}

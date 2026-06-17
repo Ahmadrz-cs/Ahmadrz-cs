@@ -1,0 +1,16 @@
+App\Entity\Question:
+    question_base (template):
+        questionType: <(App\Entity\Enum\QuestionType::Appropriateness)>
+        section: <(App\Entity\Enum\QuestionArea::ContractualNature)>
+        content: "<sentence()>"
+        active: true
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+        createdBy: "@userA1"
+
+App\Entity\QuestionChoice:
+    question_choice_base (template):
+        content: "<sentence()>"
+        active: true
+        correct: false
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+        createdBy: "@userA1"

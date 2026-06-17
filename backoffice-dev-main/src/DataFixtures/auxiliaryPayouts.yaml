@@ -1,0 +1,11 @@
+# Payouts include
+# - Dividend payment
+# - Profit share
+
+include:
+    - auxiliary/payoutsBen.yaml
+    - auxiliary/payoutsHolly.yaml
+    - auxiliary/payoutsFreya.yaml
+    - auxiliary/payoutsJim.yaml
+    - auxiliary/payoutsLorna.yaml
+    - auxiliary/dividends.yaml

@@ -1,0 +1,95 @@
+include:
+    - ../templates/baseUsers.yaml
+
+App\Entity\User:
+    user{ob1} (extends user_male):
+        username: "yalta_1signupd@test.yielderverse.co.uk"
+        firstname: "Tom"
+        lastname: "Yalta"
+        ob_step: 1
+    user{ob2} (extends user_male):
+        username: "yorran_2sverified@test.yielderverse.co.uk"
+        firstname: "Yorran"
+        lastname: "Davies"
+        ob_step: 2
+    user{ob3} (extends user_female):
+        username: "henley_3declaredqs@test.yielderverse.co.uk"
+        firstname: "Jane"
+        lastname: "Henley"
+        ob_step: 3
+    user{ob3b} (extends user_male):
+        username: "bryson_3declaredqf@test.yielderverse.co.uk"
+        firstname: "Ilyin"
+        lastname: "Bryson"
+        ob_step: 3
+    user{ob4} (extends user_female):
+        username: "patton_4user@test.yielderverse.co.uk"
+        firstname: "Harriet"
+        lastname: "Patton"
+        ob_step: 4
+    user{ob4b} (extends user_male):
+        username: "sonnet_4busi@test.yielderverse.co.uk"
+        firstname: "Sierra"
+        lastname: "Sonnet"
+        ob_step: 4
+        managedBy: "@userlorna"
+        kycProfile: null
+    user{kycamber, kycgreen} (extends user_random):
+        ob_step: 4
+        contego_score: "@contegoscore<current()>"
+        kycProfile: null
+    user{kycred} (extends user_random):
+        ob_step: 5
+        contego_score: "@contegoscore<current()>"
+
+App\Entity\Investor:
+    userinvestor{ob1, ob2} (extends investors_base):
+        cxbRestrictedUser: null
+        cxbSophisticatedInvestor: null
+        cxbWorthInvestor: null
+        corporateInvestor: null
+    userinvestor{ob3, ob3b, ob4, ob4b, kycamber, kycgreen, kycred} (extends investors_base):
+
+App\Entity\Status:
+    userstatus{ob1} (extends userstatus_base):
+        isEmailNotVerifed: true
+        isEmailValidated: false
+        isRegCompleted: false
+        isApproved: false
+        emailValidatedOn: null
+        regCompletedOn: null
+        approvedOn: null
+        lifecycleStatus: "email_not_verified"
+    userstatus{ob2, ob3, ob3b, ob4, ob4b} (extends userstatus_base):
+        isRegCompleted: false
+        isApproved: false
+        regCompletedOn: null
+        approvedOn: null
+        lifecycleStatus: "email_verified"
+    userstatus{kycamber, kycgreen, kycred} (extends userstatus_base):
+        isRegCompleted: false
+        isApproved: false
+        lifecycleStatus: "email_verified"
+
+App\Entity\UserSecurity:
+    usersecurity{ob1, ob2, ob3, ob3b, ob4, ob4b, kycamber, kycgreen, kycred} (extends usersecurity_base):
+
+App\Entity\ContegoScore:
+    contegoscore{kycgreen} (extends contegoscore_base):
+    contegoscore{kycamber} (extends contegoscore_base):
+        rag: "AMBER"
+    contegoscore{kycred} (extends contegoscore_base):
+        rag: "RED"
+
+App\Entity\ContegoLog:
+    contegolog{kycgreen} (extends contegolog_base):
+    contegolog{kycamber} (extends contegolog_base):
+        rag: "AMBER"
+        kyc_score: 125
+    contegolog{kycred} (extends contegolog_base):
+        rag: "RED"
+        kyc_score: 320
+
+App\Entity\UserStatusLog:
+    userstatuslog_active_{ob2, ob3, ob3b, ob4, ob4b, kycamber, kycgreen, kycred} (extends userstatuslog_active):
+        occuredAt: "@userstatus<current()>->emailValidatedOn"

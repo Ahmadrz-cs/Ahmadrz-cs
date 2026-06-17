@@ -1,0 +1,33 @@
+include:
+  # Use one of either compose.frankenphp.yaml or compose.php_fpm_nginx.yaml
+  - compose.frankenphp.yaml
+  # - compose.php_fpm_nginx.yaml
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Update 'VARIANT' to pick a version of PHP version: 8, 8.1, 8.0, 7, 7.4
+        # Append -bullseye or -buster to pin to an OS version.
+        # Use -bullseye variants on local arm64/Apple Silicon.
+        # Ubuntu 20.X - 21.X is based on Debian bullseye
+        # bookworm == Debian 12
+        # trixie == Debian 13
+        VARIANT: "${PHP_VERSION:-8}-trixie"
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+    networks:
+      - yielderverse-back_net-common
+      # Need to be able to setup test database
+      - yielderverse-back_net-database
+    volumes:
+      - ..:/workspace:cached
+      - ./php/conf.d/development.ini:/usr/local/etc/php/conf.d/development.ini
+
+networks:
+  yielderverse-back_net-common:
+    external: true
+  yielderverse-back_net-database:
+    external: true

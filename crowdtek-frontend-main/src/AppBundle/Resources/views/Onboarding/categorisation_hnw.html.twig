@@ -1,0 +1,69 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% extends '@AppBundle/onboarding-base-bs4.html.twig' %}
+
+
+{% block body %}
+    <section class="row">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/bs4_flash.html.twig' %}
+            <div style="padding:10px 0; border-bottom:solid thin #333; text-transform:uppercase">
+                <div class="font-medium">SELF ASSESSMENT</div>
+            </div>
+            <div class="row mt-4 ">
+                <div class="offset-md-2 col-md-8">
+                    <h3>Investor Type Confirmation</h3>
+                    <h5>
+                        <u>High Net Worth Investor</u>
+                    </h5>
+                    <div class="border rounded p-3 mb-3 mt-2 text-left">
+                        <p>You must confirm that you qualify as a high-net-worth investor on the basis that A <span class="font-medium">or</span> B apply to you. If not, you must choose a different investor type.</p>
+                        <p>In the last financial year did you have:</p>
+                        <ul>
+                            <li>
+                                <p>
+                                    (A) an annual <b>income of £100,000 or more?</b> Income does NOT include any one off pension withdrawals.
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    (B) <b>net assets of £250,000 or more?</b> Net assets do NOT include: your home (primary residence), your pension (or any pension withdrawals) or any rights under qualifying contracts of insurance.
+                                </p>
+                            </li>
+                        </ul>
+                        <p>Please confirm that either A<span class="font-medium"> or </span>B apply to you by answering the following:</p>
+                        {{ form_start(form) }}
+                            {{ form_row(form.hnwType) }}
+                            {{ form_row(form.amount) }}
+                            <div class="d-flex py-2" style="gap: 0.5rem;">
+                                {# <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Update Later</a> #}
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('OB_categorisation') }} role="button">Choose a Different Type</a>
+                                <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Confirm Investor Type</button>
+                            </div>  
+                            {{ form_rest(form) }}
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

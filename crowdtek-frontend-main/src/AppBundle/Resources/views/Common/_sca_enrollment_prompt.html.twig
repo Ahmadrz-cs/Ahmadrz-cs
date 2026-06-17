@@ -1,0 +1,15 @@
+<div class="col-lg-12 mb-3">
+    <div class="card p-3 border rounded text-center" id="sca-enrollment-prompt">
+        <div><span class="badge badge-warning ml-1 ml-lg-0 mb-1">Pending Action</span></div>
+        <h4 class="mb-2">Setup Strong Customer Authentication (SCA)</h4>
+        {% if not truncated|default(false) %}
+            <p>Strong customer authentication (SCA) is part of the revised EU Payment Services Directive (<a target="_blank" href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex%3A32015L2366">PSD2</a>) affecting our wallet provider <a target="_blank" href="https://mangopay.com/">Mangopay</a> who are a regulated electronic money institution (EMI). </p>
+            <p>It aims to better protect your wallet funds and payment activity by requiring multi-factor authentication (MFA) with our wallet provider when moving funds out of your wallet.</p>
+        {% endif %}
+        <p>To {{ restrictedAction|default("start investing")}} you will need to setup Strong Customer Authentication (SCA) for your wallet.</p>
+        {# <p>Read more about this in <a target="_blank" href="https://help.yielders.co.uk/en">our help centre</a>.</p> #}
+        <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+            <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('sca_enrollment') }} role="button">Start SCA Setup</a>
+        </div>
+    </div>
+</div>

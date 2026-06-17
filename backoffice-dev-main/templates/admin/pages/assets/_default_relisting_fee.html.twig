@@ -1,0 +1,26 @@
+{% if object.fees is empty %}
+
+{{ include('admin/components/_alert.html.twig', {
+    variant: "info",
+    message: "No custom fee bands created, using default fee bands",
+}) }}
+
+{% endif %}
+
+{% if object.fees is empty %}
+    {% set fees = constant('App\\Entity\\Asset::DEFAULT_RELISTING_FEES') %}
+{% else %}
+    {% set fees = object.feesAsKv %}
+{% endif %}  
+
+{{ include('admin/components/_kv_table.html.twig', {
+    tableId: "fee-bands",
+    headers: {
+        k: "Fee band start (£)",
+        v: "Fee band cap (£)",
+    },
+    keyDefaultStyle: "tw-font-mono",
+    valueDefaultStyle: "tw-font-mono",
+    keyColumnWidth: 50,
+    kv: fees
+}) }}

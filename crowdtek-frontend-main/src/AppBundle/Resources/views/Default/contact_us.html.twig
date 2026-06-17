@@ -1,0 +1,92 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Contact us{% endblock %}
+
+{% block body %}
+
+    <main role="main">
+        <!-- hero banner -->
+        <div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
+            <div class="hero-banner properties-inner banner-medium bg-fixed bg-overlay">
+                <div class="container pt-6 pt-md-8 position-relative layer-z-1">
+
+                    <!-- breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <h3 class="sr-only">Breadcrumb</h3>
+                        <ol class="breadcrumb text-sm bg-transparent px-0">
+                            <li class="breadcrumb-item"><a href="/">Home</a></li>
+                            <li class="breadcrumb-item"><a href="#">Contact Us</a></li>
+                        </ol>
+                    </nav>
+
+                    <div class="hero-banner-content pr-2 py-1 text-center">
+                        <div class="row">
+                            <div class="col-lg-9 mx-auto">
+                                <h2 class="h1 hero-banner-hd text-light mb-3">
+                                    Contact Us
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="container my-2 my-md-4">
+                <div class="row text-center my-2 my-md-4">
+                    <div class="col-md-6" id="phone-number">
+                        <div class="bg-white border rounded p-3 mb-2">
+                            <h3 class="mb-2">Voicemail</h3>
+                            <p>Leave us a voicemail</p> 
+                            <p>
+                                <a class="btn btn-secondary rounded-pill px-1 px-sm-2 shadow-sm" href="tel:+442072054650">+44 207 205 4650</a>
+                            </p>                          
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="email">
+                        <div class="bg-white border rounded p-3 mb-2">
+                            <h3 class="mb-2" >Email</h3>
+                            <p>Send an email to</p> 
+                            <p>
+                                <a class="btn btn-secondary rounded-pill px-1 px-sm-2 shadow-sm" href="mailto:team@yielders.co.uk" >team@yielders.co.uk</a>
+                            </p>
+                        </div>
+                    </div>
+                    {# <div class="col-md-12 col-lg-4" id="chat-box">
+                        <div class="bg-white border rounded p-3 mb-2">
+                            <h3 class="mb-2" >Chat</h3>
+                            <p> Ask questions on Intercom</p> 
+                            <p>
+                                <a id="start_live_chat" class="btn btn-secondary rounded-pill px-1 px-sm-2 shadow-sm intercom-launcher intercom-rkaeus e2ujk8f0">Chat with us now</a>
+                            </p>
+                        </div>
+                    </div> #}
+                </div> 
+                <div class="row">
+                    <div class="col-12 text-center mb-2">
+                        <h3>Registered Office</h3>
+                        {# <p class="lead">L39, 1 Canada Square,<br> Canary Wharf, <br> London E14 5AB</p> #}
+                        <p class="lead">82 High Street,<br> Warrington, <br> WA3 3DA</p>
+                    </div>
+                    {# <div class="col-12">
+                        <div class="mapouter">
+                            <div class="gmap_canvas">
+                                <iframe width="100%" height="400" id="gmap_canvas" src="https://maps.google.com/maps?q=One%20Canada%20Square%20Canary%20Wharf&t=&z=13&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+                            </div>
+                        </div>
+                    </div> #}
+                </div>           
+            </div>
+        </div>
+    </main>
+
+    {# {{ include('@AppBundle/Common/social-feed-links.html.twig') }} #}
+
+{% endblock %}
+
+{% block pagejs %}
+	
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"></script>
+
+{% endblock %}

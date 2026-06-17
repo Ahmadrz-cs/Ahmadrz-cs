@@ -1,0 +1,27 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set areaHeading = 'Assets' %}
+{% set mainHeading = 'Asset Wallets' %}
+
+{% block page_content %}
+    {{ include('admin/pages/assets/_list_w_filters.html.twig', {
+        options: {
+            showPresets: true,
+            showFilters: true,
+            viewRoute: "admin_asset_edit",
+            actions: [
+                {
+                    "text": "Manage",
+                    "route": "admin_asset_wallets_manage",
+                    "params": {},
+                    "objectParam": "asset",
+                    "style": "btn-outline-primary text-nowrap",
+                },
+            ],
+            showFields: [
+                'wallets',
+            ],
+        },
+        
+    }) }}
+{% endblock page_content %}

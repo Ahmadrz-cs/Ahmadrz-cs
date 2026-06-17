@@ -1,0 +1,479 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_asset_dashboard' %}
+{% set backToRouteParams = {id: paymentOrder.asset.id} %}
+{% set areaHeading = 'Monthend - ' ~ paymentOrder.paymentType %}
+{% set mainHeading = paymentOrder.asset.name %}
+
+{% set sharesInCirculation = currentShareholders|reduce((carry, v) => carry + v.shares) %}
+{% set sharesSettled = monthendTrades|reduce((carry, v) => carry + v.numberOfShares) %}
+
+{% set initialShares = prefunderSellOrders|reduce((carry, v) => carry + v.numberOfShares) %}
+{% set repaidShares = repaymentSummary|reduce((carry, v) => carry + v.repaidShares) %}
+{% set remainingShares = initialShares - repaidShares %}
+
+{% set paymentsCompletedList = paymentOrder.payments|filter(p => p.status == constant('App\\Entity\\PaymentRequest::STATE_PAID')) %}
+{% set originalTotal = paymentOrder.payments|reduce((carry, v) => carry + v.amount) %}
+{% set completedTotal = paymentsCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+{% set originalTotalShares = paymentOrder.payments|reduce((carry, v) => carry + v.shareholding)|default(0) %}
+{% set completedTotalShares = paymentsCompletedList|reduce((carry, v) => carry + v.shareholding)|default(0) %}
+{% set remainingTotalShares = originalTotalShares - completedTotalShares %}
+
+
+{% set percentAlreadyPaid = 100 * (initialShares - remainingShares) / initialShares|default(1) %}
+{% set percentLeftToPay = 100 * remainingTotalShares / initialShares|default(1) %}
+{% set percentRemaining = 100 - (percentLeftToPay + percentAlreadyPaid) %}
+
+{% block page_content %}
+
+    {{ include('admin/pages/monthend/order_actions.html.twig', {
+        order: paymentOrder,
+        originalTotal: originalTotal
+    }) }}
+
+    {% if paymentOrder.debitWallet == 'distribution' %}
+        {{ include('admin/pages/monthend/_wallet_balance_warning.html.twig', {
+            walletName: 'distribution',
+            helpText: 'Ensure settled funds in the settlement wallet have been transferred to the distribution wallet.',
+            linkActions: [
+                {
+                    "text": "Transfer Repayment Funds",
+                    "route": "admin_monthend_repayment_transfer_create",
+                    "params": {"id": paymentOrder.asset.id},
+                    "style": "btn-outline-primary",
+                }
+            ]
+        }) }}
+    {% else %}
+        {{ include('admin/pages/monthend/_wallet_balance_warning.html.twig', {
+            walletName: paymentOrder.debitWallet|default('main')
+        }) }}
+    {% endif %}
+
+    {{ include('admin/components/monthend/_empty_payment_warning.html.twig') }}
+    
+    <div class="row g-3">
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-payment",
+                "sectionTitle": "About Payment Order",
+                "linkActions": [
+                    {
+                        "text": "Edit Order",
+                        "route": "admin_payment_order_date",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_repayment_manage',
+                        },
+                        "style": "btn-outline-secondary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                    {
+                        "text": "Edit Description",
+                        "route": "admin_payment_order_description",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_repayment_manage',
+                        },
+                        "style": "btn-outline-secondary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Order Id',
+                        value: paymentOrder.id,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Scheduled Monthend',
+                        value: paymentOrder.scheduledFor|date('Y-m-d'),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Covering Period Between',
+                        value: paymentOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                            ~ ' - ' 
+                            ~ paymentOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                        className: 'col-12',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Paying from Wallet',
+                        value: paymentOrder.debitWallet|default('main')|capitalize 
+                            ~ ' (' 
+                            ~ (paymentOrder.debitWallet == 'distribution' ? paymentOrder.asset.distributionWalletId : paymentOrder.asset.mainWalletId)
+                            ~ ')',
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Description',
+                        value: paymentOrder.description|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-asset",
+                "sectionTitle": "About Asset",
+                "linkActions": [
+                    {
+                        "text": "View Asset Product",
+                        "route": "admin_product_dashboard",
+                        "params": {id: paymentOrder.asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                    {
+                        "text": "View Wallet Balances",
+                        "route": "admin_asset_wallets_manage",
+                        "params": {asset: paymentOrder.asset.id},
+                        "style": "btn-outline-dark",
+
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'SPV Company Number',
+                        value: paymentOrder.asset.companyNumber,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Valuation',
+                        value: '£' ~ paymentOrder.asset.fundingGoal|number_format(2, '.', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Share Price',
+                        value: '£' ~ paymentOrder.asset.pricePerShare|number_format(2, '.', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shares Issued',
+                        value: paymentOrder.asset.amountOfShares|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Prefunders',
+                        value: repaymentSummary|length,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Active Shares in Circulation',
+                        value: sharesInCirculation|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "payment-guidelines",
+                "sectionTitle": "Payment Guidelines",
+                "linkActions": [
+                    {
+                        "text": "View Buy Back Order",
+                        "route": "admin_trade_order_view",
+                        "params": {id: paymentOrder.tradeOrder ? paymentOrder.tradeOrder.id : '1'},
+                        "style": "btn-outline-dark",
+                        "newTab": true,
+                        "render": paymentOrder.tradeOrder is not null
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <details class="bg-light rounded-2 p-3">
+                    <summary class="fw-bold">How many shares need to be repaid?</summary>
+                    
+                    <p class="mt-3">There are 2 methods used to calculate shares to repay. In the majority of cases, they will match.</p>
+                    <ul class="mb-0">
+                        <li> "Surplus Shares Sold" - Represents the total number of shares oversold. Equivalent to <code>"Shares in circulation" - "Shares issued"</code></li>
+                        <li>"Shares Recently Settled" - Represents the total number of shares across all settled invstments from the previous calendar month</li>
+                    </ul>
+                </details>                         
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Surplus Shares Sold',
+                        value: (sharesInCirculation - paymentOrder.asset.amountOfShares)|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shares Recently Settled',
+                        value: sharesSettled|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Prefunders Being Paid',
+                        value: paymentOrder.payments|length ~ '/' ~ repaymentSummary|length,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shares in Current Order Paid',
+                        value: completedTotalShares ~ '/' ~ originalTotalShares,
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                <section class="d-flex flex-column gap-3" id="repayment-progress">
+                    <h4 class="fw-bold fs-5 mb-0">Asset Repayment Progress</h4>
+                    {{ include('admin/components/_progress_bar.html.twig', {
+                        progressBars: [
+                            {
+                                color: "text-bg-success",
+                                label: "percentage-already-paid",
+                                value: percentAlreadyPaid,
+                            },
+                            {
+                                label: "percentage-left-in-order",
+                                value: percentLeftToPay,
+                            },
+                            {
+                                color: "text-bg-warning",
+                                label: "percentage-still-to-repay",
+                                value: percentRemaining,
+                            },
+                        ]
+                    }) }}
+                    {{ include('admin/components/_graph_legend.html.twig', {
+                        layoutClass: "tw-grid tw-gap-y-2 tw-gap-x-24 sm:tw-grid-cols-2 sm:tw-gap-y-4",
+                        graphLegend: [
+                            {
+                                color: "text-dark",
+                                label: "Original Shares to Repay",
+                                value: initialShares|number_format(0, '', ','),
+                            },
+                            {
+                                color: "text-success",
+                                label: "Shares Already Repaid",
+                                value: (initialShares - remainingShares)|number_format(0, '', ','),
+                            },
+                            {
+                                color: "text-primary",
+                                label: "Shares Remaining in Current Order",
+                                value: remainingTotalShares|number_format(0, '', ','),
+                            },
+                            {
+                                color: "text-warning",
+                                label: "Shares Still to Repay",
+                                value: (remainingShares - remainingTotalShares)|number_format(0, '', ','),
+                            },
+                        ]
+                    }) }}
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "order-status",
+                "sectionTitle": "Order Status",
+                "linkActions": []
+            } %}
+                {% block customLinkActions %}
+                    {{ include('admin/pages/payment_order/_status_transitions.html.twig', {
+                        additionalParams: { redirectRoute: 'admin_monthend_repayment_manage' }
+                    }) }}
+                {% endblock customLinkActions %}
+
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: paymentOrder.status|capitalize|replace({'_':'-'}),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Approved By',
+                        value: paymentOrder.approvedBy|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                    {{ include('admin/components/blame-timestamp.html.twig', {
+                        object: paymentOrder,
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "payments",
+                "sectionTitle": "Payments",
+                "linkActions": [
+                    {
+                        "text": "Add Payment",
+                        "route": "admin_payment_order_add_payment",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_repayment_manage',
+                        },
+                        "style": "btn-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": paymentOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Generate Payments",
+                        "route": "admin_monthend_repayment_generate",
+                        "params": {id: paymentOrder.id},
+                        "style": "btn-outline-primary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": paymentOrder.status == 'draft' and paymentOrder.asset is not null,
+                    },
+                    {
+                        "text": "Clear All Payments",
+                        "route": "admin_payment_order_clear_payments",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_repayment_manage'
+                        },
+                        "style": "btn-outline-danger",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": paymentOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Export Payments List",
+                        "route": "admin_payment_order_payments_export",
+                        "params": {id: paymentOrder.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Wallet Balance (£)',
+                        value: walletBalance|number_format(2, '.', ',')
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Payments Completed',
+                        value: paymentsCompletedList|length
+                            ~ '/' ~ paymentOrder.payments|length
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Paid (£)',
+                        value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+                    }) }}
+                    {% set lastTransfer = paymentsCompletedList|sort((a, b) => a.updatedAt <=>
+                    b.updatedAt)|last %}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Most Recently Completed',
+                        value: lastTransfer is empty ? "-" : lastTransfer.updatedAt|date('Y-m-d H:i:s (P)'),
+                    }) }}
+                </div>
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "'Shares Still to Repay' will update when a repayment has been paid out.",
+                }) }}
+                <div class="table-responsive">
+                    <table class="table table-striped datatable" id="payments-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Payee</th>
+                                <th>Payee Wallet</th>
+                                <th class="text-end">Amount(£)</th>
+                                <th class="text-end">Proportion (%)</th>
+                                <th class="text-end">Initial Shares to Repay</th>
+                                <th>Sell Order</th>
+                                <th class="text-end">Initial Shares in Sell Order</th>
+                                <th class="text-end">Shares Still to Repay</th>
+                                <th class="text-end">Shares in Current Repayment</th>
+                                <th>Updated</th>
+                                <th>Status</th>
+                                <th>Transaction Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paymentRequest in paymentOrder.payments|default([]) %}
+                            {% set payeeRepaymentSummary = repaymentSummary[paymentRequest.payee.id] ?? null %}
+                            <tr data-object-id="{{ paymentRequest.id }}">
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% if is_granted('ROLE_OPERATIONS') and paymentOrder.status == 'draft' %}
+                                            <a class="btn btn-outline-primary text-nowrap"
+                                                href="{{ path('admin_payment_request_edit', {
+                                                    id: paymentRequest.id,
+                                                    redirectRoute: 'admin_monthend_repayment_manage',
+                                                }) }}">Edit</a>
+                                            <a class="btn btn-outline-danger text-nowrap mt-1 mt-xl-0"
+                                                href="{{ path('admin_payment_request_delete', {
+                                                    id: paymentRequest.id,
+                                                    redirectRoute: 'admin_monthend_repayment_manage'
+                                                }) }}"
+                                                onclick="return confirm('Are you sure? This cannot be undone')">Delete</a>
+                                        {% elseif is_granted('ROLE_FINANCIAL_OPS')
+                                            and workflow_can(paymentRequest, constant('App\\Entity\\PaymentRequest::TRANSITION_PAY'))
+                                            and workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN'))
+                                        %}
+                                            <a class="btn btn-outline-primary text-nowrap"
+                                                href="{{ path('admin_payment_request_pay', {
+                                                    id: paymentRequest.id,
+                                                    redirectRoute: 'admin_monthend_repayment_manage',
+                                                }) }}">Pay Single</a>
+                                        {% endif %}
+
+                                        {% if paymentRequest.payout is not null %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "View Payout",
+                                                    "route": 'admin_payout_edit',
+                                                    "params": {id: paymentRequest.payout.id},
+                                                    "style": "btn-outline-dark text-nowrap",
+                                                    "newTab": true,
+                                                },
+                                            }) }}
+                                        {% endif %}
+                                        {% if paymentRequest.shareTrade is not null %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "View Share Trade",
+                                                    "route": 'admin_share_trade_view',
+                                                    "params": {id: paymentRequest.shareTrade.id},
+                                                    "style": "btn-outline-dark text-nowrap",
+                                                    "newTab": true,
+                                                },
+                                            }) }}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td data-field="payee">
+                                    <a href="{{ path('admin_user_edit', { id: paymentRequest.payee.id }) }}">#{{ paymentRequest.payee.id
+                                        }} // {{ paymentRequest.payee.username }}</a>
+                                </td>
+                                <td class="tw-text-sm tw-font-mono" data-field="payeeWallet">{{ paymentRequest.payee.mangoPayWalletId }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="amount">{{ paymentRequest.amount|number_format(2, '.', ',') }}</td>
+                                <td class="text-end tw-tabular-nums">{{ (paymentRequest.amount * 100 / max(originalTotal, 0.01))|number_format(3, '.', ',') }}</td>
+                                <td class="text-end tw-tabular-nums"  data-field="intial-to-repay">{{ payeeRepaymentSummary ? payeeRepaymentSummary.initialShares : 'N/A' }}</td>
+                                <td class="tw-tabular-nums"  data-field="sellOrderId">{% if paymentRequest.tradeOrder is not null %}
+                                    <a href="{{ path('admin_trade_order_view', { id: paymentRequest.tradeOrder.id }) }}">{{ paymentRequest.tradeOrder.id }}</a>
+                                {% endif %}</td>
+                                <td class="text-end tw-tabular-nums"  data-field="intial-in-order">{% if paymentRequest.tradeOrder is not null %}{{ paymentRequest.tradeOrder.numberOfShares }}{% endif %}</td>
+                                <td class="text-end tw-tabular-nums" data-field="still-to-repay">{{ payeeRepaymentSummary ?(payeeRepaymentSummary.initialShares - payeeRepaymentSummary.repaidShares)|number_format(0, '', ',') : 'N/A' }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="current-repayment">{{ paymentRequest.shareholding|number_format(0, '', ',') }}</td>
+                                <td>{{ paymentRequest.updatedAt|date('Y-m-d H:i:s') }}</td>
+                                <td>{{ paymentRequest.status|capitalize }}{% if paymentRequest.statusInfo %} ({{ paymentRequest.statusInfo }}){% endif %}</td>
+                                <td class="tw-text-sm tw-font-mono">{{ paymentRequest.payout.transactionId|default('N/A') }}</td>
+                                
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock page_content %}

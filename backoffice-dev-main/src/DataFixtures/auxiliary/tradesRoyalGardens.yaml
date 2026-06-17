@@ -1,0 +1,67 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_royalway_ben_1: 755
+    shares_royalway_holly_1: 566
+    shares_royalway_anne_1: 1015
+
+App\Entity\TradeOrder:
+    buy_order_royalway_{ben_1} (extends trade_order_invest):
+        asset: "@assetroyalway"
+        user: "@userben"
+        numberOfShares: 7312
+        pricePerShare: "@assetroyalway->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -6 months', 'last thursday of -6 months')>"
+        createdBy: "$user"
+    buy_order_royalway_{holly_1} (extends trade_order_invest):
+        asset: "@assetroyalway"
+        user: "@userholly"
+        numberOfShares: 2971
+        pricePerShare: "@assetroyalway->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -6 months', 'last saturday of -6 months')>"
+        createdBy: "$user"
+    buy_order_royalway_{anne_1} (extends trade_order_invest):
+        asset: "@assetroyalway"
+        user: "@useranne"
+        numberOfShares: 1028
+        pricePerShare: "@assetroyalway->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -3 months', 'last saturday of -3 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_royalway_{ben_1, holly_1, anne_1}:
+        tradeOrder: "@buy_order_royalway_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_royalway_<current()>->createdAt"
+    buy_order_status_completed_royalway_{ben_1, holly_1, anne_1}:
+        tradeOrder: "@buy_order_royalway_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_royalway_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_royalway_{ben_1, holly_1, anne_1}:
+        buyOrder: "@buy_order_royalway_<current()>"
+        sellOrder: "@sell_order_initial_royalway"
+        numberOfShares: "@buy_order_royalway_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_royalway_<current()>->pricePerShare"
+        createdAt: "@buy_order_royalway_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_royalway_{ben_1, holly_1, anne_1}:
+        shareTrade: "@share_trade_royalway_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_royalway_<current()>->createdAt"
+    trade_status_settled_royalway_{ben_1, holly_1}:
+        shareTrade: "@share_trade_royalway_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -5 months 16:13:45'))>"
+    trade_status_settled_royalway_{anne_1}:
+        shareTrade: "@share_trade_royalway_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -2 months 12:55:54'))>"

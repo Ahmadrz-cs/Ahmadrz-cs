@@ -1,0 +1,58 @@
+{% extends 'admin/layouts/income_transfer_builder.html.twig' %}
+
+{% set originalTotal = transferOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+{% set expensesTotal = groupedTransfers.expenses|reduce((carry, v) => carry + v.amount) %}
+{% set taxTotal = groupedTransfers.tax|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "treasury",
+        "sectionTitle": "Treasury",
+        "linkActions": [
+            {
+                "text": "Continue to Next Section",
+                "route": "admin_monthend_income_transfer_builder_distribution",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+            },
+            {
+                "text": "Finish and Review",
+                "route": "admin_monthend_income_transfer_manage",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The treasury wallet is for allocatings funds to be held in reserve. This is primarily for covering unexpected large expenses like repairs that monthly rental income is unable to cover in one go. These funds can be released back to shareholders via the distribution wallet if they are not unused.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Deposit Wallet Id',
+                value: walletIds.deposit|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Treasury Wallet Id',
+                value: walletIds.treasury|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Expenses and Taxes',
+                value: '£' ~ (expensesTotal + taxTotal)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Net Income',
+                value: '£' ~ (transferOrder.targetTotal|default(0) - expensesTotal - taxTotal)|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/pages/monthend/income_transfers/builder/_section_table.html.twig', {
+            section: "treasury",
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

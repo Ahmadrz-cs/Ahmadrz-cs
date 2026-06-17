@@ -1,0 +1,153 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Overview' %}
+
+{% set userRole = "Customer" %}
+{% for role in user.roles %}
+
+    {% if role == 'ROLE_ANALYST' %}
+        {% set userRole = role|split('_')[1]|capitalize %}
+    {% elseif role == 'ROLE_OPERATIONS' %}
+        {% set userRole = "Operations" %}
+    {% elseif role == 'ROLE_FINANCIAL_OPS' %}
+        {% set userRole = "Financial Ops" %}
+    {% elseif role == 'ROLE_TECH_OPS' %}
+        {% set userRole = "Tech Ops" %}
+    {% elseif role == 'ROLE_SUPER_ADMIN' %}
+        {% set userRole = "Super Admin" %}
+    {% elseif role == 'ROLE_SUPER_ADMIN' %}
+        {% set userRole = "Super Admin" %}
+    {% endif %}
+
+{% endfor %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "account-information",
+        "sectionTitle": "Account Information",
+        "linkActions": [
+            {
+                "text": "Edit User",
+                "route": "admin_user_edit",
+                "params": {"id": user.id},
+                "style": "btn-outline-primary",
+            },
+            {
+                "text": "Edit User Role",
+                "route": "admin_user_role_edit",
+                "params": {user: user.id},
+                "style": "btn-outline-secondary",
+                "render": is_granted('CAN_EDIT_PERMISSION', app.user)
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "account-info-list",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "First Name": user.firstname|default("N/A"),
+                "Middle Names": user.middlename|default("N/A"),
+                "Additional Names":  user.additionalName|default("N/A"),
+                "Last Name": user.lastname|default("N/A"),
+                "Gender": user.gender|default("N/A"),
+                "Birth Date": user.birthDate ? user.birthDate|date('Y-m-d') : 'N/A',
+                "User Role": userRole,
+                "User Type": user.isVIP ? "VIP" : "Standard",
+                "Account Status": user.currentStatus.value|capitalize,
+                "Join Date": user.createdAt|date('Y-m-d H:i:s'),
+                "Last Login": user.lastLogin ? user.lastLogin|date('Y-m-d H:i:s') : 'N/A',
+                "Nationality": user.nationality ? user.nationality|country_name : 'N/A',
+                "Main Address": user.getMainAddress.formatWithLinebreak|default('-'),
+            }
+        }) }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "account-info-list",
+            valueDefaultStyle: "tw-font-mono",
+            title: "Contact Information",
+            kv: {
+                "Contact Email": user.email|default("N/A"),
+                "Mobile Number":  user.mobile|default("N/A"),
+                "Phone Number 1": user.phone1|default("N/A"),
+                "Phone Number 2":  user.phone2|default("N/A"),
+            }
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "wallet-information",
+        "sectionTitle": "Mangopay Wallet Information",
+        "linkActions": [
+            {
+                "text": "Create Wallet",
+                "route": "admin_user_wallets_create_all",
+                "params": {id: user.id},
+                "style": "btn-outline-dark",
+                "render": user.mangoPayUserId is not empty and user.mangoPayWalletId is empty and mangopayUser.UserStatus|default('N/A') == 'ACTIVE'
+            },
+            {
+                "text": "View Wallet Transactions",
+                "route": "admin_wallet_transactions",
+                "params": {walletId: user.mangoPayWalletId},
+                "style": "btn-outline-secondary",
+                "newTab": true,
+                "render": user.mangoPayWalletId is not empty
+            },
+            {
+                "text": "Manage Mangopay SCA",
+                "route": "admin_user_dashboard_manage_sca",
+                "params": {id: user.id},
+                "style": "btn-outline-dark",
+                "render": user.mangoPayUserId is not empty 
+                    and user.mangoPayWalletId is not empty 
+                    and mangopayUser.UserStatus|default('N/A') == 'ACTIVE',
+                "roleRequired": "ROLE_ADMIN",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {% if user.mangoPayUserId is not empty and user.mangoPayWalletId is empty and mangopayUser.UserStatus|default('N/A') != 'ACTIVE' %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                title: "Wallet Creation Restrictions",
+                message: "Wallets can only be created if their Mangopay status is 'ACTIVE'. Note that if the Mangopay status is 'PENDING_USER_ACTION' then SCA enrollment is required and a wallet cannot be created until that has been completed.",
+            }) }}
+        {% endif %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "wallet-info-list",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Mangopay User Status": mangopayUser.UserStatus|default('N/A'),
+                "Mangopay SCA Status": user.scaStatus.value|capitalize,
+                "Last SCA Enrollment Attempt": user.scaEnrolledAt ? user.scaEnrolledAt|date() : 'N/A',
+                "Mangopay User Id": user.mangoPayUserId|default('N/A'),
+                "Mangopay Wallet Id": user.mangoPayWalletId|default('N/A'),
+            }
+        }) }}
+        <details class="bg-light rounded-2 p-3">
+            <summary class="fw-bold">Full Mangopay User Profile</summary>
+            <pre class="mb-0"><code>{{ mangopayUser|json_encode(constant('JSON_PRETTY_PRINT')) }}</code></pre>
+        </details>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-overview",
+        "sectionTitle": "KYC Overview",
+        "linkActions": [
+            {
+                "text": "Review Mangopay and Contego KYC",
+                "route": "admin_user_dashboard_kyc",
+                "params": {"id": user.id},
+                "style": "btn-outline-primary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/kyc/_kyc_profile.html.twig') }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

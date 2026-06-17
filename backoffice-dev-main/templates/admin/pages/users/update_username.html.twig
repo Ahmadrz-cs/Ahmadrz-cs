@@ -1,0 +1,52 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_user_account_closure_overview' %}
+{% set backToRouteParams = {id: user.id} %}
+{% set areaHeading = 'Account Closure' %}
+{% set mainHeading = 'Data Cleanup - Custom Username' %}
+{% set baseTemplate = 'cms' %}
+
+{# Configure page blocks #}
+{% block objectMeta %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'erase-original-username',
+        "sectionTitle": 'User #' ~ user.id|default(),
+    } %}
+        {% block sectionContent %}
+
+        {{ include('admin/components/_alert.html.twig', {
+			variant: "info",
+			message: "If you want to use the auto-generated username, please use the standard account closure cleanup tool.",
+		}) }}
+
+		<div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Username',
+                value: user.username,
+                className: 'col-12'
+            }) }}
+        </div>
+
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}
+
+{% block formContents %}
+    <section class="row">
+        <div class="col-12">{{ form_row(form.username) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary text-nowrap" id="submit" type="submit">Update Username</button>
+    {{ include('admin/components/button_link.html.twig', {
+        linkProps: {
+            "text": "Discard Changes",
+            "route": "admin_user_account_closure_overview",
+            "params": {id: user.id},
+            "style": "btn-outline-secondary text-nowrap",
+        },
+    }) }}
+{% endblock %}

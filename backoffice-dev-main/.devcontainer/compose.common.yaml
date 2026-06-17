@@ -1,0 +1,68 @@
+services:
+  db:
+    image: mariadb:${MARIADB_VERSION:-latest}
+    # restart: unless-stopped
+    restart: on-failure
+    # This service is port forwarded by default for easy out-of-the-box access
+    # But port forwarding is NOT actually required unless you want access from the host machine via 127.0.0.1:3306
+    # E.g. you want to use Prisma studio or MySQL workbench instead of the Adminer container service
+    # Edit or comment out this port forwarding config if it is conflicting with your host machine's 3306 port
+    ports:
+      - "3306:3306"
+    networks:
+      - net-database
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      # FYI, the passwords are the users (root or ydev)
+      # Encoded with ICAO phonetic alphabet and then alphabet position, e.g. T is the 20th letter
+      # They're intended to represent a memorable but non-trivial password
+      # To generally discourage using guessable passwords even in development
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:-RomeoOscar1520}
+      MYSQL_DATABASE: ${DATABASE_NAME:-crowddb}
+      MYSQL_USER: ${DATABASE_USER:-ydev}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:-YankeeDelta522}
+      MARIADB_AUTO_UPGRADE: 1
+  mailer:
+    image: sj26/mailcatcher:${MAILCATCHER_VERSION:-latest}
+    restart: unless-stopped
+    # SMTP via port 1025 not accessed from your host machine, only within Docker networks
+    # Your host machine does require access to HTTP server to view emails in a browser via 127.0.0.1:1080
+    ports:
+      # - "1025:1025"
+      - "1080:1080"
+    networks:
+      - net-common
+  valkey:
+    image: valkey/valkey:${VALKEY_VERSION:-latest}
+    restart: unless-stopped
+    volumes:
+      - valkey-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - net-common
+  traefik-proxy:
+    # https://docs.docker.com/guides/traefik/#using-traefik-in-development
+    image: traefik:${TRAEFIK_VERSION:-latest}
+    command:
+      # Enable logging at debug level
+      - "--log.level=DEBUG" 
+      # Traefik will not expose containers by default, must explicitly enable per container
+      - "--providers.docker.exposedbydefault=false" 
+      - "--providers.docker=true"
+      - "--entryPoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - net-common
+
+networks:
+  net-database:
+  net-common:
+
+volumes:
+  mariadb-data:
+  valkey-data:

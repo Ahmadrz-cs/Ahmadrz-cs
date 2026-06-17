@@ -1,0 +1,26 @@
+{% extends 'admin/pages/holdings/sharetrades.html.twig' %}
+
+{% block table %}
+<table class="table table-striped datatable" id="sharetradedlist">
+    <thead>
+        <tr>
+            <th>Asset</th>
+            <th>Seller (username)</th>
+            <th>Shares Traded</th>
+            <th>Trade Count</th>
+            <th>Last Settled</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in sharetrades %}
+        <tr>
+            <td><a href="{{ path('admin_asset_edit', { id: entry.assetId }) }}">{{ entry.asset }}</a></td>
+            <td><a href="{{ path('admin_user_edit', { id: entry.sellerId }) }}">{{ entry.seller }}</a></td>
+            <td>{{ entry.numberOfShares }}</td>
+            <td><a href="{{ path('admin_holding_trades', { 'assetId': entry.assetId, 'sellerId': entry.sellerId, }) }}">{{ entry.tradeCount }}</a></td>
+            <td>{{ entry.lastSettled }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}

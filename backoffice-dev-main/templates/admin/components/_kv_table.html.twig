@@ -1,0 +1,45 @@
+{# keyColumnWidth is a percentage. The value column will use the remainder of the space 100% - keyColumnWidth #}
+{% set keyColumnWidth = keyColumnWidth|default(34)|abs %}
+
+<div class="table-responsive">
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    <table class="table mb-0 {{ tableStyle|default() }}" {% if tableId|default() %}id="{{ tableId }}"{% endif %}>
+        <colgroup>
+            <col span="1" style="width: {{ keyColumnWidth }}%;">
+            <col span="1" style="width: {{ 100 - keyColumnWidth }}%;">
+        </colgroup>
+        {% if headers|default() %}
+        <thead>
+            <tr>
+                <th>{{ headers.k|default() }}</th>
+                <th>{{ headers.v|default() }}</th>
+            </tr>
+        </thead>
+        {% endif %}
+        <tbody>
+            {% for k, v in kv %}
+                <tr class="tw-text-sm">
+                    <td class="{{ keyDefaultStyle|default() }}">{{ k|striptags('<span>,<b>')|nl2br|raw }}</td>
+                    <td class="{{ valueDefaultStyle|default() }}" data-field-name={{ k|lower|replace({' ': '-'}) }}>
+                        {% if v is iterable %}
+                            {# You cannot combine indicator with JSON objects #}
+                            {% if v.indicator is defined and v.value is defined %}
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: v.indicator,
+                                    value: v.value
+                                }) }}
+                            {% elseif v.format is defined and v.value is defined and v.format == 'json' %}
+                                <pre>{{ v.value|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                            {% else %}
+                                {# fallback behaviour, no special processing of the value beyond json encoding #}
+                                {{ v|json_encode }}
+                            {% endif %}
+                        {% else %}
+                            {{ v|striptags('<span>,<b>')|nl2br|raw }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

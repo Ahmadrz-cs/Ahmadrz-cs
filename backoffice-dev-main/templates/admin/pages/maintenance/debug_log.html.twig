@@ -1,0 +1,38 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Plaform Configuration' %}
+{% set mainHeading = 'Debug Log Tool' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "debug-log-tester",
+        "sectionTitle": "Debug Log Tester",
+        "linkActions": [
+            {
+                "text": "Refresh Message Counts",
+                "route": app.request.attributes.get('_route'),
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Async Transport Message Count',
+                    value: messageCount|default('N/A'),
+                }) }}
+            </div>
+            {{ form_start(form) }}
+                {{ form_row(form.message) }}
+                {{ form_row(form.submit, { attr: {class: "btn btn-primary"}}) }}
+            {{ form_rest(form) }}
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

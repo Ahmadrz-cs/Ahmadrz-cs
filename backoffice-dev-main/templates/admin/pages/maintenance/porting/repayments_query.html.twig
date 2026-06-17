@@ -1,0 +1,109 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_trade_system_porting_index' %}
+{% set areaHeading = 'Trade System Porting Tools' %}
+{% set mainHeading = 'Port Repayments' %}
+{% set maturityLabel = 'alpha' %}
+
+{# {% form_theme form with ['bootstrap_5_layout.html.twig'] only %} #}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "repayments-analysis",
+        "sectionTitle": "Repayments Analysis",
+    } %}
+        {% block sectionContent %}
+        {# {{ include('admin/pages/maintenance/porting/_compare_Repayments_list.html.twig', {
+            Repayments: Repayments
+        }) }} #}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "Repayment Generations",
+        } %}
+            {% block message %}
+                <p>For simplicity, all generations will be ported based on the investment as a single repayment.</p>
+                <ul>
+                    <li>Generation 1 assets are those repaid before payment orders existed.</li>
+                    <li>Generation 1.5 are hybrids where assets were partially repaid with payment orders.</li>
+                    <li>Generation 2 assets are those repaid with payment orders.</li>
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+
+        <table class="table table-bordered table-striped-columns" id="repayment-summary">
+            <thead>
+                <tr>
+                    <th colspan="1" class="text-center">Common</th>
+                    <th colspan="8" title="asset-info" class="text-center">Asset Info</th>
+                    <th colspan="5" title="payout-info" class="text-center">Prefunding Investments Info</th>
+                    <th colspan="4" title="order-info" class="text-center">Repayment Order Info</th>
+                </tr>
+                <tr>
+                    <th>Action</th>
+
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>SPV</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Issued</th>
+                    <th class="text-end">Circulating</th>
+                    <th class="text-end">Excess</th>
+                    <th>Status</th>
+
+                    <th>Last Prefunded</th>
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Prefunded</th>
+                    <th class="text-end">Native Field</th>
+                    <th class="text-end">Additional Field</th>
+                    
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Shares (Gen 2)</th>
+                    <th class="text-end">Difference (Gen 1)</th>
+                
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in repaymentsMade %}
+                <tr>
+                    <td>
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Check",
+                            "route": "admin_trade_system_port_repayments_asset",
+                            "params": {id: item.assetid},
+                            "style": "btn-outline-primary text-nowrap",
+                        },
+                    }) }}
+                    </td>
+
+                    <td><a href="{{ path('admin_product_shareholders', { id: item.assetid }) }}">#{{ item.assetid }}</a></td>
+                    <td>{{ item.assetName }}</td>
+                    <td>{{ item.assetSpv }}</td>
+                    <td class="tw-font-mono text-end">{{ item.assetSharePrice|string|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ item.assetShareQuantity|number_format }}</td>
+                    <td class="tw-font-mono text-end">{% if item.assetid in tradeHoldings|keys %}
+                    {{ tradeHoldings[item.assetid].shares|number_format }}{% else %}Investments not ported yet{% endif %}</td>
+                    <td class="tw-font-mono text-end">{% if item.assetid in tradeHoldings|keys %}{{ (tradeHoldings[item.assetid].shares - item.assetShareQuantity)|number_format }}{% else %}Investments not ported yet{% endif %}</td>
+                    <td>{{ item.assetStatus }}</td>
+                    
+                    <td class="tw-font-mono">{{ item.lastPrefunded ? item.lastPrefunded|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                    <td class="tw-font-mono text-end">{{ item.count|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.prefunded|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.sharesNative|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.sharesAdditionalField|number_format }}</td>
+
+                    <td class="tw-font-mono text-end">{{ item.orderCount|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.orderValue|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ item.orderShares|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.sharesNative + item.sharesAdditionalField - item.orderShares)|number_format }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

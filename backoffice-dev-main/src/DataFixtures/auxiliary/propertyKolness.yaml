@@ -1,0 +1,75 @@
+# This is Kolness By the Moors
+# Unique trait - Commercial retail asset, 2 year term
+# Notes - commercial, featured
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{kolness} (extends asset_base):
+        name: Kolness by the Moor - Okehampton
+        alternateName: Kolness by the Moor Guesthouse
+        briefDescription: Traditional feel guesthouse for travellers visiting the Dartmoor national park
+        pricePerShare: 1.54
+        amountOfShares: 150000
+        companyNumber: SPVAF00007
+        assetType: "Commercial"
+        investmentTerm: 24
+        netProjectedYield: '0.0658'
+        netProjectedIncome: '15200'
+        minimumInvestment: '40'
+        createdAt: "<dateTimeBetween('-9 months', '-8 months')>"
+        termStart: "@self->createdAt"
+        featured: 1
+
+App\Entity\AssetAddress:
+    assetaddress{kolness} (extends assetaddress_base):
+        address1: Kolness Guesthouse
+        address2: 8 Shiverton Road
+        city: Okehampton
+        postCode: EX20 8JR
+        longitude: -3.998528
+        latitude: 50.736806
+
+App\Entity\AssetMember:
+    assetmember{kolness} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{kolness_aoa, kolness_im}:
+        asset: "@assetkolness"
+        document: "@doc<current()>"
+    assetdoc{kolness_logo}:
+        asset: "@assetkolness"
+        document: "@doc<current()>"
+    assetdoc{kolness_calc}:
+        asset: "@assetkolness"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{kolness} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 6.58
+        grossProjectReturn: 13.54
+        isFeatured: true
+
+App\Entity\OfferingDocuments:
+    offeringdoc{kolness_calc}:
+        offering: "@offeringkolness"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{kolness_aoa} (extends doc_aoa):
+    doc{kolness_im} (extends doc_im):
+    doc{kolness_logo} (extends doc_logo):
+        description: "Large countryhouse converted to BnB"
+        filename: "lodgingsstock.png"
+    doc{kolness_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{kolness} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

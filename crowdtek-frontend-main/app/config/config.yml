@@ -1,0 +1,62 @@
+imports:
+    - { resource: security.yml }
+    - { resource: services.yml }
+    - { resource: ../../version.yml }
+    - { resource: onboarding.yml }
+
+framework:
+    #esi: ~
+    #translator:      { fallbacks: ["%locale%"] }
+    secret: '%env(APP_SECRET)%'
+    router:
+        resource: "%kernel.project_dir%/app/config/routing.yml"
+        strict_requirements: ~
+    form: ~
+    csrf_protection: ~
+    validation: { enable_annotations: true }
+    # templating:
+    #     engines: ['twig']
+        #assets_version: SomeVersionScheme
+    default_locale: "%locale%"
+    trusted_proxies: "%env(TRUSTED_PROXIES)%"
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-port']
+    session:
+        # handler_id set to null will use default session handler from php.ini
+        handler_id: "%session.handler_id%"
+        cookie_lifetime: 43200 # session cookies lasts for max 12 hrs - allows refresh token to work
+        storage_factory_id: session.storage.factory.native
+    fragments: ~
+    http_method_override: true
+    assets: ~
+    cache:
+        default_redis_provider: "%env(VALKEY_DSN)%"
+        pools:
+            default.app.cache:
+                adapter: cache.adapter.redis
+                default_lifetime: 3600 # 1 hour
+
+
+# Twig Configuration
+twig:
+    debug: "%kernel.debug%"
+    strict_variables: "%kernel.debug%"
+    globals:
+        version: "%app.version%"
+        intercom_app_id: "%env(INTERCOM_APP_ID)%"
+        google_maps_api_key: "%env(GOOGLE_MAPS_API_KEY)%"
+    paths:
+        'src/AppBundle/Resources/views': 'AppBundle'
+
+gregwar_captcha: ~
+
+monolog:
+    channels: ['crowdtek']
+    handlers:
+        crowdtek:
+            # type: stream
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/crowdtek.log"
+            level: "%env(LOG_LEVEL_APP)%"
+            channels: ["crowdtek"]
+            formatter: crowdtek_log_formatter # See services.yml

@@ -1,0 +1,97 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Investments' %}
+{% set mainHeading = 'Investments List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('CAN_CREATE_INVESTMENT', app.user) %}
+<a href="{{ path('admin_investment_add') }}" class="btn btn-success">Add Investment (off-market)</a>
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_investment_index', { type: ['prefunding'] }) }}" class="btn btn-light">Any Prefunding</a>
+<a href="{{ path('admin_investment_index', { corporateInvestor: 1 }) }}" class="btn btn-light">Any by Corporate</a>
+<a href="{{ path('admin_investment_index', { lifecycleStatus: ['approved'] }) }}" class="btn btn-light">Approved Pending Settlement</a>
+<a href="{{ path('admin_investment_index', { lifecycleStatus: ['settled'] }) }}" class="btn btn-light">Settled</a>
+<a href="{{ path('admin_investment_index', { lifecycleStatus: ['settled'], hasDocuments: 0 }) }}" class="btn btn-light">Settled pending share certificate</a>
+<a href="{{ path('admin_investment_index', { compare: true }) }}"
+    class="btn btn-light">Comparison Mode</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.username) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetName) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.offeringId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userIsVIP) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.corporateInvestor) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasDocuments) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.tradeOrder) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.shareTrade) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.type} only %}
+</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.lifecycleStatus} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+
+{% if app.request.query.all.compare ?? false %}
+    {{ include('admin/pages/maintenance/porting/_compare_investments_list.html.twig', {
+        investments: objects
+    }) }}
+{% else %}
+
+<table class="table table-striped" id="investmentlist">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Date (d/m/Y)</th>
+            <th>Type</th>
+            <th>Investor</th>
+            <th>Amount Invested (£)</th>
+            <th>Original Number of Shares</th>
+            <th>Shares Divested</th>
+            <th>Offering ID</th>
+            <th>Asset Name</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for investment in objects %}
+        <tr>
+            <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">{{ investment.id }}</a></td>
+            <td>{{ investment.createdAt|date("d/m/Y", false) }}</td>
+            <td>{{ investment.type|capitalize }}</td>
+            <td><a href="{{ path('admin_user_edit', { id: investment.user.id }) }}">{{ investment.user }}</a></td>
+            <td>{{ investment.investmentValue }}</td>
+            <td>{{ investment.shareamount }}</td>
+            <td>{{ investment.divestedshares|default(0) }}</td>
+            <td><a href="{{ path('admin_offering_edit', { id: investment.offering.id }) }}">{{ investment.offering.id
+                    }}</a></td>
+            <td><a href="{{ path('admin_asset_edit', { id: investment.offering.asset.id }) }}">{{
+                    investment.offering.asset.name }}</a></td>
+
+
+            <td>{% include 'admin/pages/investments/_status.html.twig' %}</td>
+            <td>{% include 'admin/pages/investments/_actions.html.twig' %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+
+{% endblock %}

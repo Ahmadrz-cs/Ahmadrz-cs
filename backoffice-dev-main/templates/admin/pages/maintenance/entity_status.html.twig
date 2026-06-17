@@ -1,0 +1,47 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = exitRoute %}
+{% set backToRouteParams = {id: object.id} %}
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Status Editor' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "admin-modification-warning",
+        "sectionTitle": "Admin Modification Warning!",
+        "sectionStyle": "border rounded-3 p-4 border-warning",
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_alert.html.twig', {
+				variant: "warning",
+				message: "This is an admin only action. You should only use this tool if there are no alternative options. E.g. You want to do a state transition that is typically not allowed, like withdrawing settled investments or reactivating cancelled or closed assets/offerings.",
+			}) }}
+		{% endblock %}
+	{% endembed %}
+
+	{{ include('admin/components/status_record_table.html.twig', {
+        places: statusPlaces
+    }) }}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "status-edit",
+        "sectionTitle": "Status Edit",
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<section class="row">
+				<div class="col-12">{{ form_row(form.lifecycleStatus) }}</div>
+				<div class="col-12">{{ form_row(form.confirmation) }}</div>
+				<div class="col-12">
+					{{ form_widget(form.submit, { 'attr': {'class': 'btn-primary mt-1'}}) }}
+				</div>
+			</section>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

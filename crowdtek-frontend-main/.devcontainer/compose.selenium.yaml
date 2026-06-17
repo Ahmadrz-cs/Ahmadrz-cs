@@ -1,0 +1,25 @@
+services:
+  selenium-grid:
+    image: selenium/standalone-${SELENIUM_BROWSER:-chrome}:${SELENIUM_CHROME_VERSION:-latest}
+    # Shared memory size is set to 2GB as recommended by Selenium
+    # https://github.com/SeleniumHQ/docker-selenium#--shm-size2g
+    # This is to avoid chrome just crashing/failing for no apparent reason
+    # If you have resource limitations on your host machine, reduce this to 1gb or 512mb
+    shm_size: 2gb
+    ports:
+      - 4444:4444 # optional, allows your host machine to use this selenium instance
+      - 7900:7900 # so you can peek into the container at http://localhost:7900/
+    networks:
+      - yielderverse-back_net-common # Needed to access the backoffice nginx to login!
+    environment:
+      # The defaults provided as from the official selenium docs
+      # https://github.com/SeleniumHQ/docker-selenium#setting-screen-resolution
+      SCREEN_WIDTH: ${SELENIUM_SCREEN_WIDTH:-1360}
+      SCREEN_HEIGHT: ${SELENIUM_SCREEN_HEIGHT:-1020}
+      SCREEN_DPI: ${SELENIUM_SCREEN_DPI:-96}
+      VNC_NO_PASSWORD: 1 # default password is "secret" without quotes, disable it for convenience in dev
+      SE_NODE_MAX_SESSIONS: 2 # Need up to two sessions for secondary market tests (be careful of memory usage!)
+    
+networks:
+  yielderverse-back_net-common:
+    external: true

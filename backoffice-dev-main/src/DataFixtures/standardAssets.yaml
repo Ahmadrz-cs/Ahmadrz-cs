@@ -1,0 +1,64 @@
+include:
+    - templates/baseAsset.yaml
+    - templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{1} (extends asset_base):
+        companyNumber: SPVTMultiState
+    asset{2} (extends asset_base):
+    asset{100..101} (extends asset_base):
+        assetType: "Commercial"
+    asset{draft, submitted, approved, restricted, archived, cancelled, rejected} (extends asset_base):
+        lifecyclestatus: "<current()>" 
+    asset{3..4} (extends asset_base):
+        name: "Cambridge - draft <numberBetween(1, 2)>"
+        lifecyclestatus: "draft" 
+    asset{blocked} (extends asset_base):
+        sellRestricted: true
+    asset{missingWallets} (extends asset_base):
+        holdWalletId: null
+        settlementWalletId: null
+        depositWalletId: null
+        expensesWalletId: null
+        taxWalletId: null
+        distributionWalletId: null
+        treasuryWalletId: null
+
+App\Entity\AssetAddress:
+    assetaddress{1..4} (extends assetaddress_base):
+    assetaddress{100..101} (extends assetaddress_base):
+    assetaddress{draft, submitted, approved, restricted, archived, cancelled, rejected} (extends assetaddress_base):
+
+App\Entity\AssetMember:
+    assetmember{1..4} (extends assetmember_base):
+    assetmember{100..101} (extends assetmember_base):
+    assetmember{draft, submitted, approved, restricted, archived, cancelled, rejected} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{1..4}:
+        asset: "@asset<current()>"
+        document: "@adoc<current()>"
+    assetdoc{noTag, weirdTag}:
+        asset: "@asset1"
+        document: "@adoc<current()>"
+
+App\Entity\Document:
+    adoc{1..4} (extends doc_property_photo):
+        description: "Example property document"
+    adoc{noTag} (extends doc_jpeg):
+        description: "UntaggedAssetDoc"
+        tag: ""
+    adoc{weirdTag} (extends doc_jpeg):
+        description: "WeirdTaggedAssetDoc"
+        tag: "biscuit"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{draft} (extends assetstatuslog_base):
+        asset: "@asset<current()>"
+        status: <(App\Entity\Enum\AssetStatus::Draft)>
+    assetstatuslog_retail_{cancelled} (extends assetstatuslog_base):
+        asset: "@asset<current()>"
+        status: <(App\Entity\Enum\AssetStatus::Cancelled)>
+    assetstatuslog_retail_{archived} (extends assetstatuslog_base):
+        asset: "@asset<current()>"
+        status: <(App\Entity\Enum\AssetStatus::Archived)>

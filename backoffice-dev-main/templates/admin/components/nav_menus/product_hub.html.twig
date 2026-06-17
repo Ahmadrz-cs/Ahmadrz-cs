@@ -1,0 +1,20 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: 'admin_products_index',
+                text: 'Dashboard',
+            },
+            {
+                route: 'admin_products_review_listings',
+                text: 'Review Listings',
+            },
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_horizontal_nav') ~'.html.twig', {
+    navId: 'productHubNav',
+    toggleText: 'Products',
+    links: menuLinks,
+}) }}

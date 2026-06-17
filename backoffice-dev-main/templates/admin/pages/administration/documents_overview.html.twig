@@ -1,0 +1,39 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Document Sync' %}
+{% set maturityLabel = 'legacy' %}
+
+{% block page_content %}
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>Document Sync Status</h2>
+            <p><b>Docs synced: {{ total_count_with_url }} / {{ total_count }}</b></p>
+            {% set total_sync = total_count_with_url * 100 / total_count %}
+            <div class="progress mb-3">
+                <div class="progress-bar {% if total_sync >= 100 %}progress-bar-success{% endif %}" role="progressbar" aria-valuenow="{{ total_sync }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ total_sync }}%;">
+                    <span class="sr-only">{{ total_sync }}% Complete</span>
+                </div>
+            </div>
+            <p><b>Please be aware that ALL the check and sync actions are resource intensive tasks. Do NOT trivially click them!</b></p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        {% for name, counts in doc_counts %}
+        <div class="col-md-3">
+            <h4 class="text-capitalize">{{ name }}</h4>
+            <p>Docs synced: {{ counts.hasurl }} / {{ counts.all }}</p>
+            {% set sync_state = counts.hasurl * 100 / counts.all %}
+            <div class="progress mb-3">
+                <div class="progress-bar {% if sync_state >= 100 %}progress-bar-success{% endif %}" role="progressbar" aria-valuenow="{{ sync_state }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ sync_state }}%;">
+                    <span class="sr-only">{{ sync_state }}% Complete</span>
+                </div>
+            </div>
+            <a href="{{ path('admin_document_manage', { type: name} ) }}" class="btn btn-success" id="sync-{{ name }}-docs">Check {{ name }} docs status</a>
+        </div>
+        {% endfor %}
+    </div>
+
+{% endblock page_content %}

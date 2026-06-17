@@ -1,0 +1,135 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{# {% set backToRoute = 'admin_kyc_report_index' %} #}
+{% set areaHeading = 'KYC' %}
+{% set mainHeading = 'KYC Reports' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_SUPER_ADMIN', app.user) %}
+{{ include('admin/components/button_link.html.twig', {
+	linkProps: {
+		"text": "Create New KYC Report",
+		"route": "admin_kyc_report_create",
+		"params": {},
+		"style": "btn-success",
+	},
+}) }}
+{% endif %}
+{{ include('admin/components/button_link.html.twig', {
+	linkProps: {
+		"text": "Go to KYC Hub",
+		"route": "admin_kyc_index",
+		"params": {},
+		"style": "btn-outline-dark",
+	},
+}) }}
+	{% if is_granted('ROLE_TECH_OPS', app.user) %}
+		{{ include('admin/components/button_link.html.twig', {
+			linkProps: {
+				"text": "Review Required Checker",
+				"route": "admin_kyc_report_review_check_mangopay",
+				"params": {},
+				"style": "btn-outline-dark",
+			},
+		}) }}
+	{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+{{ include('admin/components/button_link.html.twig', {
+	linkProps: {
+		"text": "Verified Only",
+		"route": app.request.attributes.get('_route'),
+		"params": { verified: [1]},
+		"style": "btn-light",
+	},
+}) }}
+{{ include('admin/components/button_link.html.twig', {
+	linkProps: {
+		"text": "Failed Only",
+		"route": app.request.attributes.get('_route'),
+		"params": { verified: [0]},
+		"style": "btn-light",
+	},
+}) }}
+{{ include('admin/components/button_link.html.twig', {
+	linkProps: {
+		"text": "Mangopay Only",
+		"route": app.request.attributes.get('_route'),
+		"params": { providerName: 'mangopay'},
+		"style": "btn-light",
+	},
+}) }}
+{{ include('admin/components/button_link.html.twig', {
+	linkProps: {
+		"text": "Contego Only",
+		"route": app.request.attributes.get('_route'),
+		"params": { providerName: 'contego'},
+		"style": "btn-light",
+	},
+}) }}
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.subjectId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.subjectUsername) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.providerName) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.providerReferenceId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.checkType) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.result) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.score) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.verified} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.checkedAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.checkedAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+<div class="table-responsive">
+	<table class="table" id="kyc-reports-list">
+		<thead>
+			<tr>
+				<th>Actions</th>
+				<th>Id</th>
+				<th>Subject</th>
+				<th>Outcome</th>
+				<th>KYC Provider</th>
+				<th>Reference Id</th>
+				<th>Check Type</th>
+				<th>Result</th>
+				<th>Score</th>
+				<th>Checked At</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for report in objects %}
+				<tr data-object-id="{{ report.id }}">
+					<td>
+						<a class="btn btn-outline-primary mt-1" href="{{ path('admin_kyc_report_view', { id: report.id }) }}">View</a>
+					</td>
+					<td>{{ report.id }}</td>
+					<td>
+						<a class="ms-2" href="{{ path('admin_user_edit', { id: report.subject.id }) }}">{{ report.subject.username }}</a>
+					</td>
+					<td>{{ report.verified ? 'Verified' : 'Failed' }}</td>
+					<td>{{ report.providerName }}</td>
+					<td>{{ report.providerReferenceId }}</td>
+					<td>{{ report.checkType }}</td>
+					<td>{{ report.result }}</td>
+					<td>{{ report.score }}</td>
+					<td>{{ report.checkedAt|date("Y-m-d H:i:s") }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

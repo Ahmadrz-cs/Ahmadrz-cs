@@ -1,0 +1,48 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% set unsettledTotal = unsettledInvestments|default([])|reduce((carry, i) => carry + i.tradeValue, 0) %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main role="main">
+        {% include '@AppBundle/Common/portfoliobanner.html.twig' %}
+
+        <section class="my-4">
+            {% include '@AppBundle/Common/portfolionav.html.twig' %}
+            <div class="container">
+                <h3 class="mb-2">Trade History Export</h3>
+                <p>You can export up to 12 months worth of trades at a time (defaults to last 12 months). Includes both buys (investments) and sells (either through the secondary market, the prefunding process, or assets reaching maturity).</p>
+                {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-6">{{ form_row(form.createdAt_gte) }}</div>
+                        <div class="col-md-6">{{ form_row(form.createdAt_lt) }}</div>
+                    </div>
+                    <div class="d-flex justify-content-start" style="gap: 0.5rem;">
+                        <a class="btn btn-light rounded-pill px-2" href={{ path('portfolio_trade_history') }} role="button">Cancel</a>
+                        <button type="submit" id="submit" class="btn btn-primary rounded-pill px-2">Export CSV</button>
+                    </div>  
+                    {{ form_rest(form) }}
+                {{ form_end(form) }}
+            </div>
+        </section>
+    </main>
+
+{% endblock %}

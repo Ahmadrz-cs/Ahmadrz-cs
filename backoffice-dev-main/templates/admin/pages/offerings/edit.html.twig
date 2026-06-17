@@ -1,0 +1,221 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% if is_granted('CAN_UPDATE_OFFERING', app.user) %}
+	{% if offering.id %}
+		{% set titleText = 'Edit Offering' %}
+	{% else %}
+		{% set titleText = 'Add Offering' %}
+	{% endif %}
+{% else %}
+	{% set titleText = 'View Offering' %}
+{% endif %}
+
+{% set backToRoute = 'admin_offering_index' %}
+{% set areaHeading = 'Offerings' %}
+{% set mainHeading = titleText %}
+{% set htmlTitle = titleText %}
+
+{% block page_content %}
+
+	<div class="d-flex flex-wrap gap-2">
+		<a href="{{ path('admin_offering_index') }}" class="btn btn-secondary">Cancel</a>
+		{% if offering.id %}
+			<a href="{{ path('admin_product_dashboard', { id: offering.asset.id }) }}" class="btn btn-dark">Go to Product Dashboard</a>
+			<a href="/admin/offeringdocument/add?offering={{ offering.id }}" class="btn btn-success">Add Document</a>
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "Trade System Porting Tool",
+					"route": "admin_trade_system_port_offering_single",
+					"params": {id: offering.id},
+					"style": "btn-outline-secondary text-nowrap",
+					"newTab": true,
+				},
+			}) }}
+		{% endif %}
+		{% if offering.transactionId is not empty %}
+			{{ include('admin/components/button_link.html.twig', {
+				linkProps: {
+					"text": "View Transaction",
+					"route": "admin_transactions_mangopay_transfer",
+					"params": {transferId: offering.transactionId},
+					"style": "btn-outline-dark text-nowrap",
+					"newTab": true,
+				},
+			}) }}
+		{% endif %}
+	</div>
+
+	{% if offering.id %}
+		<section class="border rounded-2 p-4" id="status-manage">
+			<div class="row g-3">
+				{{ include('admin/components/stat.html.twig', {
+					className: 'col-sm-4 col-md-3 col-xl-2',
+					key: 'Current Status',
+					value: offering.lifecycleStatus|capitalize|replace({'_':' '})
+				}) }}
+				{% if is_granted('ROLE_OPERATIONS') %}
+					{{ include('admin/components/status_actions.html.twig', {
+						className: 'col-sm-8 col-md-9 col-xl-10 status-actions',
+						objectType: 'offering',
+						object: offering,
+						primaryActions: ['submit', 'approve', 'publish', 'unrestrict'],
+						dangerActions: ['close', 'reject', 'cancel']
+					}) }}
+				{% endif %}
+			</div>
+		</section>
+	{% endif %}
+
+	{{ form_start (form, {attr:{'ng-non-bindable': 'ng-non-bindable'}}) }}
+	<div class="nav-tabs-custom">
+		<ul class="nav nav-tabs">
+			<li class="nav-item">
+				<a class="nav-link active" href="#main" data-bs-toggle="tab">Basic Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#offering_details" data-bs-toggle="tab">Offering Details</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#investment_rules" data-bs-toggle="tab">Trading Rules</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#custom-fields" data-bs-toggle="tab">Additional Fields</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#documents" data-bs-toggle="tab">Documents</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#status-record" data-bs-toggle="tab">Status Record</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="main">
+				{{ form_row( form.offeringType ) }}
+				{{ form_row( form.asset ) }}
+				{{ form_row( form.name ) }}
+
+				{{ form_row( form.category) }}
+				{{ form_row( form.fundingGoal) }}
+				{{ form_row( form.externalCommitments) }}
+				{{ form_row( form.visibility ) }}
+				{{ form_row( form.createdById ) }}
+				{{ form_row( form.isFeatured) }}
+				{{ form_row( form.isSecondaryMrkt ) }}
+				{{ form_row( form.additionalType ) }}
+				{{ form_row( form.comments ) }}
+				{{ form_row( form.sell_investment ) }}
+				{{ form_row( form.transactionId ) }}
+				{{ form_row( form.tradeOrder ) }}
+
+				{% embed 'admin/components/_alert.html.twig' with {
+					variant: "info",
+				} %}
+					{% block message %}
+					<div class="d-flex flex-column gap-2">
+						<div>Denote the investment being liquidated if applicable. Note this field is <span class="fw-bold">not editable after creation.</span></div>
+						{% if offering.sellinvestment is not null %}
+							<div>
+								<a class="btn-dark btn" href="{{ path('admin_investment_edit', {id: offering.sellinvestment.id}) }}">View Investment
+									{{offering.sellinvestment.id}}</a>
+							</div>
+						{% endif %}
+					</div>
+					{% endblock message %}
+				{% endembed %}
+				
+			</div>
+
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="offering_details">
+				{{ form_row( form.valuation ) }}
+				<br>
+				{{ form_row( form.equityOffered ) }}
+				{{ form_row( form.noOfShares ) }}
+				{{ form_row( form.pricePerShare ) }}
+				<br>
+				{{ form_row( form.grossProjectReturn ) }}
+				{{ form_row( form.grossRentProjected ) }}
+				{{ form_row( form.netRentProjected ) }}
+			</div>
+
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="investment_rules">
+				{{ form_row( form.offeringTerm ) }}
+				{{ form_row( form.openDate ) }}
+				{{ form_row( form.closeDate ) }}
+
+				{% embed 'admin/components/_alert.html.twig' with {
+					variant: "info",
+				} %}
+					{% block message %}
+					<div>On submit, <span class="fw-bold">minimum commit</span> will be automatically rounded-2 <span class="fw-bold">UP</span> to an amount divisible by the share price</div>
+					{% endblock message %}
+				{% endembed %}
+
+				{{ form_row( form.minCommitUser ) }}
+				{{ form_row( form.maxCommitUser ) }}
+				{{ form_row( form.maxOverFunding ) }}
+			</div>
+
+			<div class="tab-pane" id="custom-fields">
+				{% if is_granted('CAN_UPDATE_OFFERING', app.user) %}
+					<button type="button" class="btn btn-success" id="add-custom-field">Add New Field</button>
+				{% endif %}
+				<br/>
+				<div class="row" id="custom-fields-list" data-field-count={{ form.addFields | length }} data-prototype="{{ form_widget(form.addFields.vars.prototype)|e }}">
+					{% for field in form.addFields %}
+						<div id="custom-field-{{ loop.index0 }}" class="custom-field-container">
+							<div>
+								<i class="fa fa-times remove-custom-field pull-right "></i>
+							</div>
+							{{ form_widget( field ) }}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			<div class="tab-pane" id="documents">
+				{% include 'admin/components/document-list.html.twig' with
+            {'documents':offering.documents,'permision':'CAN_UPDATE_OFFERING','add':'admin_offeringdocument_add','edit':'admin_offeringdocument_edit','actions':'offering_document'}
+            only %}
+			</div>
+			<div class="tab-pane" id="status-record">
+				{{ include('admin/components/status_record_table.html.twig', {
+                    object: offering,
+                    places: [
+                    'draft',
+                    'submitted',
+                    'approved',
+                    'published',
+                    'archived',
+                    'cancelled',
+                    'rejected',
+                    'closed',
+                    'restricted'
+                    ]})
+                }}
+			</div>
+			{% include 'admin/components/blame-timestamp.html.twig' with {'object': offering} only %}
+
+			{# Don't render any multifields that are empty #}
+			{% set multifields = [form.addFields] %}
+			{% for item in multifields %}
+				{% if item is empty %}
+					{% do item.setRendered %}
+				{% endif %}
+			{% endfor %}
+
+			{% if is_granted('CAN_UPDATE_OFFERING', app.user) %}
+				{{ form_widget(form.submit) }}
+			{% endif %}
+		</div>
+		<!-- /.tab-content -->
+	</div>
+	{{ form_end( form ) }}
+
+{% endblock page_content %}
+
+{% block javascripts %}
+	{{ parent() }}
+	{{ encore_entry_script_tags('field_custom') }}
+	{{ encore_entry_script_tags('form_required') }}
+{% endblock javascripts %}

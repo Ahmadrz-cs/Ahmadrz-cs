@@ -1,0 +1,4 @@
+Reference, Date, Type, Asset Name, Asset Code, Status, Amount (£)
+{% for row in transactions %}
+{{ row.Id }}, {{ row.CreationDate|date('d/m/Y') }}, {% if row.Tag.Type is defined %}{{ row.Tag.Type }}{% else %}{{ row.Type | capitalize }}{% endif %}, {% if row.Tag.AstName is defined %}{{ row.Tag.AstName |replace({',': '-', "'": ''}) }}{% else %}-{% endif %}, {% if row.Tag.AstCode is defined %}{{ row.Tag.AstCode }}{% else %}-{% endif %}, {{ row.Status | capitalize }}, {% if (row.CreditedFunds.Amount > 0 and wallet.id == row.DebitedWalletId) %}-{% endif %}{{ (row.CreditedFunds.Amount/100)|number_format(2, '.', '') }}
+{% endfor %}

@@ -1,0 +1,57 @@
+include:
+    - ../templates/basePayout.yaml
+
+# For some reason, cannot use $shareholding in the payoutAmount identity/function
+App\Entity\Payout:
+    # Leamington Spa
+    payout_demo3_spa{24} (extends payout_base):
+        asset: "@assetspa"
+        creditedUser: "@userdemo3"
+        shareholding: 8701
+        payoutAmount: "<(round((8701 / @assetspa->getAmountOfShares()) * (@assetspa->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_demo3_spa{6..23} (extends payout_base):
+        asset: "@assetspa"
+        creditedUser: "@userdemo3"
+        shareholding: 15614
+        payoutAmount: "<(round((15614 / @assetspa->getAmountOfShares()) * (@assetspa->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_demo4_spa{6..18} (extends payout_base):
+        asset: "@assetspa"
+        creditedUser: "@userdemo4"
+        shareholding: 84386
+        payoutAmount: "<(round((84386 / @assetspa->getAmountOfShares()) * (@assetspa->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    # Nottingham
+    payout_demo3_notts{0..16} (extends payout_base):
+        asset: "@assetnotts"
+        creditedUser: "@userdemo3"
+        shareholding: 6250
+        payoutAmount: "<(round((6250 / @assetnotts->getAmountOfShares()) * (@assetnotts->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_demo4_notts{11..16} (extends payout_base):
+        asset: "@assetnotts"
+        creditedUser: "@userdemo4"
+        shareholding: 74218
+        payoutAmount: "<(round((74218 / @assetnotts->getAmountOfShares()) * (@assetnotts->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_demo4_notts{0..10} (extends payout_base):
+        asset: "@assetnotts"
+        creditedUser: "@userdemo4"
+        shareholding: 93750
+        payoutAmount: "<(round((93750 / @assetnotts->getAmountOfShares()) * (@assetnotts->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    # Freight Building
+    payout_demo3_freight{0..17} (extends payout_base):
+        asset: "@assetfreight"
+        creditedUser: "@userdemo3"
+        shareholding: 3619
+        payoutAmount: "<(round((3619 / @assetfreight->getAmountOfShares()) * (@assetfreight->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_demo4_freight{0..17} (extends payout_base):
+        asset: "@assetfreight"
+        creditedUser: "@userdemo4"
+        shareholding: 37580
+        payoutAmount: "<(round((37580 / @assetfreight->getAmountOfShares()) * (@assetfreight->getNetProjectedIncome() / 12), 2))>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    

@@ -1,0 +1,56 @@
+{% set messageStyles = {
+    'debug': {
+        'bsClass': 'light',
+        'icon': 'circle-info'
+    },
+    'info': {
+        'bsClass': 'light',
+        'icon': 'circle-info'
+    },
+    'secondary': {
+        'bsClass': 'secondary',
+        'icon': 'circle-info'
+    },
+    'notice': {
+        'bsClass': 'info',
+        'icon': 'circle-info'
+    },
+    'primary': {
+        'bsClass': 'primary',
+        'icon': 'circle-info'
+    },
+    'success': {
+        'bsClass': 'success',
+        'icon': 'circle-check'
+    },
+    'warning': {
+        'bsClass': 'warning',
+        'icon': 'triangle-exclamation'
+    },
+    'error': {
+        'bsClass': 'danger',
+        'icon': 'circle-xmark'
+    },
+    'danger': {
+        'bsClass': 'danger',
+        'icon': 'triangle-exclamation'
+    },
+} %}
+
+{% if variant ?? 'Use default' not in messageStyles|keys %}
+    {# Info is the default styling #}
+    {% set variant = 'info' %}
+{% endif %}
+
+{% set commonClasses = "d-flex rounded-3 p-3" ~ (size|default("small") == "small" ? " tw-text-sm" : "") %}
+
+{# Can either provide the message as a variable or override as a block #}
+<div {% if role|default('info') == 'alert' %} class="{{ commonClasses }} mb-0 alert alert-{{ messageStyles[variant]['bsClass'] }}" role="alert" {% else %} class="{{ commonClasses }} bg-{{ messageStyles[variant]['bsClass'] }}{% if messageStyles[variant]['bsClass'] != 'light' %}-subtle{% endif %} text-{{ messageStyles[variant]['bsClass'] }}-emphasis"{% endif %} {% if elementId is defined %}id="{{ elementId }}"{% endif %}>
+    {% if showIcon ?? true %}
+	    <i class="fa-solid fa-fw fa-{{ messageStyles[variant]['icon'] }} mt-1 flex-shrink-0"></i>
+    {% endif %}
+	<div class="{% if showIcon ?? true %}ms-3 {% endif %}flex-grow-1">
+        {% if showType ?? false or title is defined %}<h5 class="fw-bold fs-6">{{ title ?? variant|capitalize }}</h5>{% endif %}
+        {% block message %}{{ message|nl2br }}{% endblock message %}
+    </div>
+</div>

@@ -1,0 +1,14 @@
+{% extends 'admin/pages/payment_request/new.html.twig' %}
+
+{% set paymentOrder = paymentRequest.paymentOrder %}
+
+{% set mainHeading = 'Edit Payment in Order #' ~ paymentOrder.id %}
+{% set htmlTitle = 'Edit Payment' %}
+
+{% block formSubmit %}
+<button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+<a class="btn btn-outline-secondary"
+    href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_payment_order_manage', {
+        id: paymentRequest.paymentOrder.id
+    }) }}">Discard Changes</a>
+{% endblock %}

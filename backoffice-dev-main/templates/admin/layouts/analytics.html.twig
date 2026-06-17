@@ -1,0 +1,36 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_analytics_dashboard' %}
+{% set areaHeading = 'Analytics' %}
+{% set mainHeading = mainHeading|default('Analytics') %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+    {% if form is defined %}
+        <section class="border rounded-2 p-4 my-3">
+            <h3 class="fw-bold mb-3">Query parameters</h3>
+            {% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+            {{ form_start(form, {'attr': {'class': 'row'}}) }}
+            {% block filters %}{% endblock %}
+            {{ form_rest(form) }}
+            <div class="col-12">
+                <button type="submit" id="submit" class="btn-primary btn">Update Chart</button>
+            </div>
+            {{ form_end(form) }}
+        </section>
+    {% endif %}
+
+    <section class="border rounded-2 p-4 my-3">
+        <h3 class="fw-bold mb-3">Graph</h3>
+        {% block graph %}{% endblock %}
+    </section>
+
+    <section class="border rounded-2 p-4 my-3">
+        <h3 class="fw-bold mb-3">Table Data</h3>
+        {% block table %}{% endblock %}
+    </section>
+
+{% endblock page_content %}

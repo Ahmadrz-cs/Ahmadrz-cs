@@ -1,0 +1,86 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Mangopay SCA' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mangopay-sca",
+        "sectionTitle": "Mangopay SCA",
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_kv_table.html.twig', {
+                tableId: "yielders-sca-records",
+                title: "Yielders Records",
+                valueDefaultStyle: "tw-font-mono",
+                kv: {
+                    "Mangopay SCA Yielders Status": user.scaStatus.value|capitalize,
+                    "Last SCA Enrollment Yielders Attempt": user.scaEnrolledAt ? user.scaEnrolledAt|date('Y-m-d H:i:s') : 'N/A',
+                    "Mangopay User Id": user.mangoPayUserId|default('N/A'),
+                    "Mangopay Wallet Id": user.mangoPayWalletId|default('N/A'),
+                }
+            }) }}
+            {% if scaStatus ?? null is not null %}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    tableId: "mangopay-sca-records",
+                    title: "Mangopay Records",
+                    valueDefaultStyle: "tw-font-mono",
+                    kv: {
+                        "Mangopay User Status": scaStatus.UserStatus|default('N/A'),
+                        "Mangopay is SCA Enrolled": scaStatus.IsEnrolled ? 'Yes' : 'No',
+                        "Mangopay Last SCA Enrollment Date": scaStatus.LastEnrollmentDate ? user.scaEnrolledAt|date('Y-m-d H:i:s') : 'N/A',
+                    }
+                }) }}
+            {% else %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "Unable to retrieve SCA status info from Mangopay.",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mangopay-proxy-consent",
+        "sectionTitle": "Mangopay Proxy Consent",
+        "linkActions": [
+            {
+                "text": "Start Mangopay Proxy Consent Session",
+                "route": "admin_user_dashboard_manage_sca",
+                "params": {id: user.id, startSession: true},
+                "style": "btn-warning",
+                "roleRequired": "ROLE_ADMIN",
+                "render": scaStatus?.IsEnrolled or user.scaStatus.value == enum('App\\Entity\\Enum\\ScaStatus').Active,
+            },
+        ],
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_mangopay_proxy_info.html.twig') }}
+
+            {% if scaStatus ?? null is not null %}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    tableId: "proxy-consent-status",
+                    valueDefaultStyle: "tw-font-mono",
+                    kv: {
+                        "Last Consent Collection Date": scaStatus.LastConsentCollectionDate ? scaStatus.LastConsentCollectionDate|date('Y-m-d H:i:s') : 'N/A',
+                        "Contact Information Update":  scaStatus.ConsentScope.ContactInformationUpdate|default('N/A'),
+                        "Recipient Registration": scaStatus.ConsentScope.RecipientRegistration|default('N/A'),
+                        "Transfer": scaStatus.ConsentScope.Transfer|default('N/A'),
+                        "View Account Information": scaStatus.ConsentScope.ViewAccountInformation|default('N/A'),
+                    }
+                }) }}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Consent actions that are enabled on the platform will show as either 'ACTIVE' or 'INACTIVE'. Actions not enabled will show as 'N/A'.",
+                }) }}
+            {% else %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "Unable to retrieve SCA proxy consent status info from Mangopay.",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+
+{% endblock page_content %}

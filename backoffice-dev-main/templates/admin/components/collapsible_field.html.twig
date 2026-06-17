@@ -1,0 +1,16 @@
+{% set fieldIdentifier = formField.vars.label|default(formField.vars.id) %}
+{% set identifer = fieldIdentifier|lower|replace({' ': '-'}) %}
+
+<div class="form-group">
+    <label for="{{ formField.vars.name }}">{{ formField.vars.label }}</label>
+    <button class="btn btn-outline-dark fw-bold d-block" type="button" data-bs-toggle="collapse" data-bs-target="#filter-{{ identifer }}" aria-expanded="false" aria-controls="filter-{{ identifer }}">
+        Show/Hide
+        {{ fieldIdentifier|humanize }}
+        Filters
+    </button>
+    {{ form_errors(formField) }}
+    <div class="collapse" id="filter-{{ identifer }}" style="transition: none;">
+        {{ form_widget(formField, { attr: { class: "mt-2" } }) }}
+    </div>
+    {{ form_help(formField) }}
+</div>

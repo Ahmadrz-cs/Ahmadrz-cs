@@ -1,0 +1,73 @@
+# This is Lodge de Lac
+# Notes - featured, fully prefunded
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{lodge} (extends asset_base):
+        name: Lodge de Lac - Cumbria
+        alternateName: Lakeside Lodge - Cumbria
+        briefDescription: Scenic lodge by the lake surrounded by woodland in the Lake District.
+        pricePerShare: 1.16
+        amountOfShares: 100000
+        companyNumber: SPVAF00003
+        netProjectedYield: '0.0602'
+        netProjectedIncome: '6983'
+        minimumInvestment: '80'
+        createdAt: "<dateTimeBetween('-5 months', '-4 months')>"
+        termStart: "@self->createdAt"
+        featured: 1
+
+App\Entity\AssetAddress:
+    assetaddress{lodge} (extends assetaddress_base):
+        address1: Lodge de Lac
+        address2: 4 Verton Close
+        address3: Derwentwater
+        city: Keswick
+        postCode: CA12 6HJ
+        longitude: -3.161549
+        latitude: 54.583075
+
+App\Entity\AssetMember:
+    assetmember{lodge} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{lodge_aoa, lodge_im}:
+        asset: "@assetlodge"
+        document: "@doc<current()>"
+    assetdoc{lodge_logo}:
+        asset: "@assetlodge"
+        document: "@doc<current()>"
+    assetdoc{lodge_calc}:
+        asset: "@assetlodge"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{lodge} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 6.02
+        grossProjectReturn: 32.44
+        isFeatured: true
+
+App\Entity\OfferingDocuments:
+    offeringdoc{lodge_calc}:
+        offering: "@offeringlodge"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{lodge_aoa} (extends doc_aoa):
+    doc{lodge_im} (extends doc_im):
+    doc{lodge_logo} (extends doc_logo):
+        description: "Cosy woodland lodge"
+        filename: "woodlandlodgestock.jpg"
+    doc{lodge_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{lodge} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>

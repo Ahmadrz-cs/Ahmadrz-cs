@@ -1,0 +1,75 @@
+<table class="table table-bordered table-striped-columns" id="investment-comparison-list">
+    <thead>
+        <tr>
+            <th colspan="2" class="text-center">Common</th>
+            <th colspan="8" title="investments" class="text-center">Investment</th>
+            <th colspan="8" title="trade-order" class="text-center">Trade Order</th>
+            <th colspan="8" title="share-trade" class="text-center">Share Trade</th>
+        </tr>
+        <tr>
+            <th>Asset Id</th>
+            <th>Asset Name</th>
+
+            <th>Id</th>
+            <th>Type</th>
+            <th>Price (org)</th>
+            <th>Shares</th>
+            <th>Value</th>
+            <th>Buyer</th>
+            <th>Status</th>
+            <th>Created</th>
+
+            <th>Id</th>
+            <th>Direction</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Shares</th>
+            <th>Buyer</th>
+            <th>Status</th>
+            <th>Created</th>
+
+            <th>Id</th>
+            <th>Price</th>
+            <th>Shares</th>
+            <th>Value</th>
+            <th>Seller</th>
+            <th>Status</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for investment in investments %}
+        <tr>
+            
+            <td><a href="{{ path('admin_product_shareholders', { id: investment.offering.asset.id }) }}">#{{ investment.offering.asset.id }}</a></td>
+            <td>{{ investment.offering.asset.name }}</td>
+
+            <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">#{{ investment.id }}</a></td>
+            <td>{{ investment.type }}</td>
+            <td class="tw-font-mono text-end">{{ investment.orgPricePerShare }}</td>
+            <td class="tw-font-mono text-end">{{ investment.shareAmount }}</td>
+            <td class="tw-font-mono text-end">{{ investment.investmentValue }}</td>
+            <td><a href="{{ path('admin_user_dashboard_portfolio', { id: investment.user.id }) }}">#{{ investment.user.id }}</a></td>
+            <td>{{ investment.lifecycleStatus }}</td>
+            <td>{{ investment.createdAt|date('Y-m-d H:i:s') }}</td>
+            
+            <td>{% if investment.tradeOrder %}<a href="{{ path('admin_trade_order_view', { id: investment.tradeOrder.id }) }}">#{{ investment.tradeOrder.id }}</a>{% endif %}</td>
+            <td>{{ investment.tradeOrder?.direction?.name }}</td>
+            <td>{{ investment.tradeOrder?.type?.value }}</td>
+            <td class="tw-font-mono text-end">{{ investment.tradeOrder? investment.tradeOrder.pricePerShare|string|format_currency('GBP') : '' }}</td>
+            <td class="tw-font-mono text-end">{{ investment.tradeOrder?.numberOfShares }}</td>
+            <td>{% if investment.tradeOrder %}<a href="{{ path('admin_user_dashboard_portfolio', { id: investment.tradeOrder.user.id }) }}">#{{ investment.tradeOrder.user.id }}</a>{% endif %}</td>
+            <td>{{ investment.tradeOrder?.status?.value }}</td>
+            <td>{{ investment.tradeOrder ? investment.tradeOrder?.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+
+            <td>{% if investment.shareTrade %}<a href="{{ path('admin_share_trade_view', { id: investment.shareTrade.id }) }}">#{{ investment.shareTrade.id }}</a>{% endif %}</td>
+            <td class="tw-font-mono text-end">{{ investment.shareTrade? investment.shareTrade.pricePerShare|string|format_currency('GBP') : '' }}</td>
+            <td class="tw-font-mono text-end">{{ investment.shareTrade?.numberOfShares }}</td>
+            <td class="tw-font-mono text-end">{{ investment.shareTrade? investment.shareTrade.tradeValue|string|format_currency('GBP') : '' }}</td>
+            <td>{% if investment.shareTrade %}<a href="{{ path('admin_user_dashboard_portfolio', { id: investment.shareTrade.sellOrder.user.id }) }}">#{{ investment.shareTrade.sellOrder.user.id }}</a>{% endif %}</td>
+            <td>{{ investment.shareTrade?.status?.value }}</td>
+            <td>{{ investment.shareTrade ? investment.shareTrade?.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

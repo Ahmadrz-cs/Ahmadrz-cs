@@ -1,0 +1,10 @@
+parameters:
+    level: 0
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - tests/_data
+        - tests/_output
+        - tests/Functional
+        - tests/Support

@@ -1,0 +1,207 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% if app.request.query.get('setup') %}
+    {% set additionalParams = {'setup': 1} %}
+{% else %}
+    {% set additionalParams = {} %}
+{% endif %}
+
+{% set backToRoute = 'admin_product_dashboard' %}
+{% set backToRouteParams = {'id': asset.id} %}
+{% set areaHeading = 'Asset Products Editor' %}
+{% set mainHeading = asset.name %}
+
+{% block page_content %}
+
+	{{ include('admin/components/nav_menus/product_editor.html.twig') }}
+	<div class="row g-3">
+        <div class="col-12">
+            <h3 class="fw-bold fs-4">Documents</h3>
+        </div>
+        {# <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "guidelines",
+                "sectionTitle": "Guidelines",
+                "sectionStyle": "border rounded-3 p-4 border-info",
+            } %}
+                {% block sectionContent %}
+                <h5 class="fw-bold">Add documents when one already exists:</h5>
+                <p class="h6 ">The following does <b>NOT</b> apply to property photos</p>
+                 <ul class="mb-0">
+                    <li>Other documents of the same type will <b>NOT</b> be deleted</li>
+                    <li>Other documents with have their tags modified with a suffix: <code>_old</code></li>
+                    <li>This is intended to avoid multiple variants of the same document type</li>
+                    <li>Old documents can be restored by changing the tag back, but this can result in multiple varaints for documents expecting exactly 1 variant</li>
+                    <li>Old unwanted documents can still be manually deleted</li>
+                </ul>
+                {% endblock %}
+            {% endembed %}
+        </div> #}
+        <div class="col-md-6 col-lg-4">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "logo",
+                "sectionTitle": "Main Photo/Logo",
+                "linkActions": [
+                    {
+                        "text": "Add Logo",
+                        "route": "admin_product_edit_documents_create",
+                        "params": { 
+                            id: asset.id,
+                            type: constant('App\\Entity\\Enum\\ProductDocumentType::Logo').value,
+                         }|merge(additionalParams),
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Matching Docs Found',
+                    value: sortedDocs.logo|length ~ ' of 1',
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this doc:</h5>
+                    <ul class="mb-0">
+                        <li>Exactly 1 required</li>
+                        <li>Used as the main photo of the product when viewed on the customer website</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-md-6 col-lg-4">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "articles-of-association",
+                "sectionTitle": "Articles of Association",
+                "linkActions": [
+                    {
+                        "text": "Add Articles",
+                        "route": "admin_product_edit_documents_create",
+                        "params": { 
+                            id: asset.id,
+                            type: constant('App\\Entity\\Enum\\ProductDocumentType::ArticlesOfAssociation').value,
+                         }|merge(additionalParams),
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Matching Docs Found',
+                    value: sortedDocs.articlesOfAssociation|length ~ ' of 1',
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this doc:</h5>
+                    <ul class="mb-0">
+                        <li>Exactly 1 required</li>
+                        <li>One of 2 required docs to read and accept when investing</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-md-6 col-lg-4">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "information-memorandum",
+                "sectionTitle": "Information Memo",
+                "linkActions": [
+                    {
+                        "text": "Add Memo",
+                        "route": "admin_product_edit_documents_create",
+                        "params": { 
+                            id: asset.id,
+                            type: constant('App\\Entity\\Enum\\ProductDocumentType::InformationMemorandum').value,
+                         }|merge(additionalParams),
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Matching Docs Found',
+                    value: sortedDocs.informationMemorandum|length ~ ' of 1',
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this doc:</h5>
+                    <ul class="mb-0">
+                        <li>Exactly 1 required</li>
+                        <li>One of 2 required docs to read and accept when investing</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-md-6 col-lg-4">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "financial-summary",
+                "sectionTitle": "Financial Summary",
+                "linkActions": [
+                    {
+                        "text": "Add Financial Summary",
+                        "route": "admin_product_edit_documents_create",
+                        "params": { 
+                            id: asset.id,
+                            type: constant('App\\Entity\\Enum\\ProductDocumentType::FinancialSummary').value,
+                         }|merge(additionalParams),
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Matching Docs Found',
+                    value: sortedDocs.financialSummary|length ~ ' of 1',
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this doc:</h5>
+                    <ul class="mb-0">
+                        <li>Exactly 1 required</li>
+                        <li>Detailed breakdown of the asset's valuation and returns over the investment term</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-md-6 col-lg-4">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "property-photos",
+                "sectionTitle": "Property Photos",
+                "linkActions": [
+                    {
+                        "text": "Add Property Photo",
+                        "route": "admin_product_edit_documents_create",
+                        "params": { 
+                            id: asset.id,
+                            type: constant('App\\Entity\\Enum\\ProductDocumentType::PropertyPhotos').value,
+                         }|merge(additionalParams),
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Matching Docs Found',
+                    value: sortedDocs.propertyPhotos|length,
+                    className: 'col-12',
+                }) }}
+                <section>
+                    <h5 class="fw-bold">About this doc:</h5>
+                    <ul class="mb-0">
+                        <li>At least 1 required</li>
+                        <li>For prospective investors to browse on the asset overview page of the customer website</li>
+                    </ul>
+                </section>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        {% if app.request.query.get('setup') %}
+        <div class="col-12 my-3">
+            <a class="btn btn-primary" 
+                href="{{ path('admin_product_dashboard', {'id': asset.id}) }}">Finish Setup</a>
+        </div>
+        {% endif %}
+    </div>
+{% endblock page_content %}

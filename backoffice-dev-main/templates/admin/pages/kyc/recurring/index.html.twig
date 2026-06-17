@@ -1,0 +1,102 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{# {% set backToRoute = 'admin_monthend_assets' %} #}
+{% set mainHeading = 'Recurring' %}
+{% set maturityLabel = 'alpha' %}
+
+{% set statusToColor = statusToColor|default({
+    (constant('\\App\\Entity\\Enum\\KycReviewStatus::PendingSubjectAction').value): 'yellow',
+    (constant('\\App\\Entity\\Enum\\KycReviewStatus::Ready').value): 'blue',
+    (constant('\\App\\Entity\\Enum\\KycReviewStatus::Completed').value): 'green',
+}) %}
+
+{% block dashboard_content %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "notice",
+        showType: true,
+        message: "This feature is in development. Speak to the tech team about what you'd like to see here.",
+    }) }}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'pending-reviews',
+        "sectionTitle": 'Pending Reviews',
+        "linkActions": [
+            {
+                "text": "Create KYC Review with Preset",
+                "route": "admin_kyc_recurring_quick_create",
+                "params": {},
+                "style": "btn-success",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: "Incomplete Reviews",
+                value: pendingReviews|length,
+                className: "col-sm-6",
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped" id="pending-reviews-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Review Id</th>
+                        <th>User Id</th>
+                        <th>Subject Name</th>
+                        <th>Subject Contact Email</th>
+                        <th>Created At</th>
+                        <th>Last Login</th>
+                        <th>User Type</th>
+                        <th>User KYC Status</th>
+                        <th>Review Opened At</th>
+                        <th>Review Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in pendingReviews %}
+                    <tr data-object-id="{{ review.id }}">
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Review",
+                                        "route": "admin_kyc_recurring_review",
+                                        "params": {id: review.id},
+                                        "style": "btn-outline-primary text-nowrap",
+                                    },
+                                }) }}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_kyc_review_view', { id: review.id }) }}">{{ review.id }}</a>
+                        </td>
+                        <td>{{ review.subject.id }}</td>
+                        <td>
+                            <a href="{{ path('admin_user_dashboard_overview', { id: review.subject.id }) }}">{{ review.subject.fullname }}</a>
+                        </td>
+                        <td title="Username: {{ review.subject.username }}">{{ review.subject.email }}</td>
+                        <td>{{ review.subject.createdAt ? review.subject.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ review.subject.lastLogin ? review.subject.lastLogin|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ review.subject.investor.corporateInvestor ? 'Organisation' : 'Individual' }}</td>
+                        <td>{{ review.subject.kycProfile.lastReviewedAt is empty
+                                ? 'Unknown'
+                                : review.subject.kycProfile.verified ? 'Verified' : 'Failed' }}</td>
+                        <td>{{ review.createdAt ? review.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>
+                            {{ include('admin/components/_indicator_with_text.html.twig', {
+                                color: statusToColor[review.status.value]|default('gray'),
+                                value: review.status.value|replace({'_': ' '})|capitalize
+                            }) }}
+                        </td>                               
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock dashboard_content %}

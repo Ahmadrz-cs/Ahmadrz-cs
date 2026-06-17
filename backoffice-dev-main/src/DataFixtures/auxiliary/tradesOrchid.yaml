@@ -1,0 +1,68 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+App\Entity\TradeOrder:
+    # Orchid House
+    buy_order_orchid_{ben_1} (extends trade_order_invest):
+        asset: "@assetorchid"
+        user: "@userben"
+        numberOfShares: 8701
+        pricePerShare: "@assetorchid->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -26 months', 'last thursday of -26 months')>"
+        createdBy: "$user"
+    buy_order_orchid_{ben_2} (extends trade_order_invest):
+        asset: "@assetorchid"
+        user: "@userben"
+        numberOfShares: 6913
+        pricePerShare: "@assetorchid->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -25 months', 'last thursday of -25 months')>"
+        createdBy: "$user"
+    buy_order_orchid_{freya_1} (extends trade_order_invest):
+        asset: "@assetorchid"
+        user: "@userfreya"
+        numberOfShares: 84386
+        pricePerShare: "@assetorchid->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -20 months', 'last thursday of -20 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    # Orchid House
+    buy_order_status_active_orchid_{ben_1, ben_2, freya_1}:
+        tradeOrder: "@buy_order_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_orchid_<current()>->createdAt"
+    buy_order_status_completed_orchid_{ben_1, ben_2, freya_1}:
+        tradeOrder: "@buy_order_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_orchid_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    # Orchid House
+    share_trade_orchid_{ben_1, ben_2, freya_1}:
+        buyOrder: "@buy_order_orchid_<current()>"
+        sellOrder: "@sell_order_initial_orchid"
+        numberOfShares: "@buy_order_orchid_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_orchid_<current()>->pricePerShare"
+        createdAt: "@buy_order_orchid_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    # Orchid House
+    trade_status_unsettled_orchid_{ben_1, ben_2, freya_1}:
+        shareTrade: "@share_trade_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_orchid_<current()>->createdAt"
+    trade_status_settled_orchid_{ben_1}:
+        shareTrade: "@share_trade_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -25 months 14:24:15'))>"
+    trade_status_settled_orchid_{ben_2}:
+        shareTrade: "@share_trade_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first thursday of -24 months 10:11:19'))>"
+    trade_status_settled_orchid_{freya_1}:
+        shareTrade: "@share_trade_orchid_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first thursday of -19 months 14:14:24'))>"

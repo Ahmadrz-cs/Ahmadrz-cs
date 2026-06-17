@@ -1,0 +1,13 @@
+{% if mostRecentProofOfAddress.created_at is defined and mostRecentProofOfAddress.created_at is not empty %}
+    {% set timeSinceLast = 'now'|date('U') - mostRecentProofOfAddress.created_at|date('U') %}
+    {% set mostRecentDate = mostRecentProofOfAddress.created_at %}
+{% else %}
+    {% set timeSinceLast = 'now'|date('U') %}
+{% endif %}
+<div class="card p-2 mb-2 border rounded text-center" id="recent-poa-indicator">
+    {% if timeSinceLast < 2592000 and mostRecentDate is defined %}
+        <p class="mb-0">A proof of address was recently uploaded on {{ mostRecentDate|date('l j M Y H:i:s') }}</p>
+    {% else %}
+        <p class="mb-0">No proof of address uploaded in the last 30 days</p>
+    {% endif %}
+</div>

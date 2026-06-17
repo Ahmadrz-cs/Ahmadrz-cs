@@ -1,0 +1,43 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Users' %}
+{% set mainHeading = 'Users List' %}
+{% set baseTemplate = baseTemplate|default('cms') %}
+
+{% block page_content %}
+    {{ include('admin/pages/users/_list_w_filters.html.twig', {
+        options: {
+            showLinks: true,
+            showPresets: true,
+            showFilters: true,
+            links: [
+                {
+                    "text": "Go to KYC Hub",
+                    "route": "admin_kyc_index",
+                    "params": {},
+                    "style": "btn-dark",
+                },
+                {
+                    "text": "Review MangoPay User Upgrade Status",
+                    "route": "admin_upgrade_mangopay_user_category",
+                    "params": {},
+                    "style": "btn-warning",
+                    "roleRequired": "ROLE_TECH_OPS",
+                },
+            ],
+            showFields: [
+                'name',
+                'username',
+                'contactEmail',
+                'createdAt',
+                'lastLogin',
+                'userType',
+                'status',
+                'kycStatus',
+                'legacyStatus',
+                'legacyActions',
+            ],
+        },
+        
+    }) }}
+{% endblock page_content %}

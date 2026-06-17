@@ -1,0 +1,212 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% set unsettledTotal = unsettledInvestments|default([])|reduce((carry, i) => carry + i.tradeValue, 0) %}
+{% set assetActive = asset.status in [
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring'),
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Active'),
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Closing')
+] %}
+{% if not assetActive %}
+    {% set showFields = [
+        "Net Projected Yield",
+        "Target End Date",
+        "Price",
+        "Type",
+    ] %}
+{% else %}
+    {% set showFields = [
+        "Net Projected Yield",
+        "Target End Date",
+        "Price",
+        "Shares Available",
+        "Type",
+        "Value",
+        "Trading Status",
+    ] %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main role="main">
+        {% include '@AppBundle/Common/portfoliobanner.html.twig' %}
+
+        <section class="mt-4">
+            {% include '@AppBundle/Common/portfolionav.html.twig' %}
+            <div class="container">
+                <div class="row mb-4 mb-sm-4 gap-y-5 justify-content-center">
+                    <nav class="col-12 col-lg-4" id="property-nav">
+                        <h4 class="mb-2">Your Properties</h4>
+                        <div class="d-flex flex-column gap-y-3">
+                            {{ include('@AppBundle/Portfolio/_position_card.html.twig', {
+                                position: position,
+                                current: true,
+                                link: false,
+                            }) }}
+                            {% if portfolioSummary.positions|filter(p => p.assetId != asset.id)|length > 0 %}
+                                <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#more-properties" aria-expanded="false" aria-controls="more-orders">
+                                    Show Other Properties
+                                </button>
+                                <div class="collapse" id="more-properties"> 
+                                    <section class="d-flex flex-column gap-y-3 overflow-y-auto" style="max-height: 400px;">
+                                        {% for position in portfolioSummary.positions|filter(p => p.assetId != asset.id) %}
+                                            {{ include('@AppBundle/Portfolio/_position_card.html.twig', {
+                                                position: position,
+                                                link: true,
+                                            }) }}
+                                        {% endfor %}
+                                    </section>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </nav>
+
+                    <article class="col-12 col-md-6 col-lg-4" id="asset-info">
+                        {{ include('@AppBundle/Product/_asset_card.html.twig', {
+                            asset: asset,
+                            showLink: false,
+                            showFields: showFields,
+                        }) }}
+                    </article>
+
+                    <section class="col-12 col-md-6 col-lg-4" id="portfolio-info">
+                        <h4 class="mb-2">Your Investment</h4>
+                        <div class="d-flex flex-column gap-y-3">
+                            {% if assetActive %}
+                                <div class="d-flex mb-1 gap-2">
+                                    {% if not asset.buyRestricted and asset.sharesAvailable > 0 %}
+                                        <a href="{{ path('product_properties_detail', {'id': asset.id}) }}"
+                                            class="btn btn-primary rounded-pill px-2">Buy</a>
+                                    {% endif %}
+                                    {% if not asset.sellRestricted and position.sharesAvailable > 0 %}
+                                        <a href="{{ path('product_properties_sell', {'id': asset.id}) }}"
+                                            class="btn btn-primary rounded-pill px-2">Sell</a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            {{ include('@AppBundle/Common/_kv_table.html.twig', {
+                                title: "Position",
+                                tableId: "current-position",
+                                tableStyle: "table-sm table-borderless text-md",
+                                keyColumnWidth: 50,
+                                keyDefaultStyle: "font-light px-0",
+                                valueDefaultStyle: "text-right font-semibold px-0",
+                                kv: {
+                                    "Value": position.value|format_currency('GBP'),
+                                    "Current Shares": position.shares|number_format(0, '.', ','),
+                                    "Average Price": position.averagePrice|format_currency('GBP'),
+                                }
+                            }) }}
+                            {{ include('@AppBundle/Common/_kv_table.html.twig', {
+                                title: "Returns",
+                                tableId: "returns-info",
+                                tableStyle: "table-sm table-borderless text-md",
+                                keyColumnWidth: 50,
+                                keyDefaultStyle: "font-light px-0",
+                                valueDefaultStyle: "text-right font-semibold px-0",
+                                kv: {
+                                    "Total Return": (position.capitalGains + position.dividends)|format_currency('GBP'),
+                                    "Dividends": position.dividends|format_currency('GBP'),
+                                    "Capital Gains": position.capitalGains|format_currency('GBP'),
+                                }
+                            }) }}
+                            {{ include('@AppBundle/Common/_kv_table.html.twig', {
+                                title: "Trading",
+                                tableId: "trading-info",
+                                tableStyle: "table-sm table-borderless text-md",
+                                keyColumnWidth: 50,
+                                keyDefaultStyle: "font-light px-0",
+                                valueDefaultStyle: "text-right font-semibold px-0",
+                                kv: {
+                                    "Value being Sold": sellOrders|reduce((carry, v) => carry + (v.sharesAvailable * v.pricePerShare), 0)|format_currency('GBP'),
+                                    "Shares being Sold": sellOrders|reduce((carry, v) => carry + v.sharesAvailable, 0)|number_format(0, '.', ','),
+                                    "Shares Available to Sell": position.sharesAvailable|number_format(0, '.', ','),
+                                }
+                            }) }}
+                        </div>
+                    </section>
+                </div>
+
+                <div class="row mb-4 mb-sm-4 gap-y-5">
+                    <section class="col-12 col-md-6 col-lg-4 d-flex flex-column gap-y-3" id="pending-investments">
+                        <h4>Pending Investments</h4>
+                        <details class="tw-p-4 text-md">
+                            <summary>What are pending investments?</summary>
+                            <div class="d-flex flex-column gap-y-3 mt-1">
+                                <div>These investments are awaiting settlement during the next monthend settlement cycle.</div>
+                                <div>Investments made during a given month are usually settled during the first week of the following calendar month, e.g. investments in March will usually be settled in the first week of April.</div>
+                                <div>Pending investments do not contribute towards your "current shares" above and their shares are not eligible for dividends until they are settled.</div>
+                            </div>
+                        </details>
+                        <div class="d-flex flex-column gap-y-3 card-list overflow-y-auto" style="max-height: 560px;">
+                            {% for trade in unsettledInvestments %}
+                                {{ include('@AppBundle/Portfolio/_trade_card.html.twig', {
+                                    trade: trade,
+                                    showAsset: false,
+                                    showId: false,
+                                    dateformat: 'Y-m-d H:i:s',
+                                }) }}
+                            {% else %}
+                                <div class="border rounded-lg tw-p-4 text-md">No pending investments</div>
+                            {% endfor %}
+                        <div>
+                    </section>
+
+                    <section class="col-12 col-md-6 col-lg-4 d-flex flex-column gap-y-3" id="open-sell-orders">
+                        <h4>Secondary Market Listings</h4>
+                        <details class="tw-p-4 text-md">
+                            <summary>About secondary market listings</summary>
+                            <div class="d-flex flex-column gap-y-3 mt-1">
+                                <div>Includes any open or incomplete sells orders. Proceeds from sales will accessible from your wallet after the next monthend settlement cycle.</div>
+                                <div>Submitted sell orders may need approval from the Yielders team before they become "active" and available to other investors.</div>
+                            </div>
+                        </details>
+                        <div class="d-flex flex-column gap-y-3 card-list overflow-y-auto" style="max-height: 560px;">
+                            {% for sellOrder in sellOrders %}
+                                {{ include('@AppBundle/Portfolio/_order_card.html.twig', {
+                                    order: sellOrder,
+                                    showAsset: false,
+                                }) }}
+                            {% else %}
+                                <div class="border rounded-lg tw-p-4 text-md">No open secondary market listings</div>
+                            {% endfor %}
+                        <div>
+                    </section>
+
+                    <section class="col-12 col-md-6 col-lg-4 d-flex flex-column gap-y-3" id="recent-dividends">
+                        <h4>Recent Dividends</h4>
+                        <div class="tw-p-4 text-md">Up to 10 shown.</div>
+                        <div class="d-flex flex-column gap-y-3 card-list overflow-y-auto" style="max-height: 560px;">
+                            {% for payout in dividends %}
+                                {{ include('@AppBundle/Portfolio/_payout_card.html.twig', {
+                                    payout: payout,
+                                    showAsset: false,
+                                }) }}
+                            {% else %}
+                                <div class="border rounded-lg tw-p-4 text-md">No recent dividends</div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+{% endblock %}

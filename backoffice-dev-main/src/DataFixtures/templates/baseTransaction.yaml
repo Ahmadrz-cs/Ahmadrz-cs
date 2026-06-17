@@ -1,0 +1,15 @@
+App\Entity\Transaction:
+    transaction_base (template):
+        type: "TRANSFER"
+        paymentStatus: "SUCCEEDED"
+        referenceId: "<numerify('TRNSCF########')>"
+        # debitUserId:
+        # creditUserId:
+        debitResourceId: "wlt_m_01HW3DETE9YHAGN7GEGAH1PF65"
+        creditResourceId: "wlt_m_01HW3DD8S6MFPYGVC0FPBHXAF2"
+        amount: "<numerify('##')>" # This is in pence!
+        fee: 0
+        currency: "GBP"
+        comments: "Transaction Fixture"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+        createdBy: "@userA1"

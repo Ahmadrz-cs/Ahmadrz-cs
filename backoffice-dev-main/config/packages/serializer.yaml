@@ -1,0 +1,16 @@
+# See list of serializer services available:
+# php bin/console debug:container --tag serializer
+
+# See configuration reference for serializer:
+# php bin/console config:dump-reference framework serializer
+
+framework:
+    serializer:
+        # name_converter: "serializer.name_converter.camel_case_to_snake_case"
+        named_serializers:
+            vanilla: # all the default configuration in case we ever customise the default serializer config
+                name_converter: ~
+            api_snake_case:
+                name_converter: "serializer.name_converter.camel_case_to_snake_case"
+            snake_to_camel:
+                name_converter: "serializer.name_converter.snake_case_to_camel_case"                

@@ -1,0 +1,35 @@
+{# 
+    Required variables:
+        - taskName = one of tasks names from MonthEndService->createMonthendChecklist()
+
+    Expected inherited variables (must be provided if not in parent template)
+        - asset = an asset object
+        - checklist = array with structure as seen in MonthEndService->createMonthendChecklist()
+#}
+
+{% set statuses = {
+    (constant('App\\Entity\\Enum\\TaskStatus::Pending').value): 'btn-warning',
+    (constant('App\\Entity\\Enum\\TaskStatus::Started').value): 'btn-primary',
+    (constant('App\\Entity\\Enum\\TaskStatus::Completed').value): 'btn-success',
+    (constant('App\\Entity\\Enum\\TaskStatus::Skipped').value): 'btn-light',
+} %}
+
+<div class="dropdown">
+    <button class="btn {{ statuses[taskTracker.tasks[taskName].value] }} dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">{{ taskTracker.tasks[taskName].value|capitalize }}
+    </button>
+    <ul class="dropdown-menu">
+        {% for item in statuses|keys %}
+            <li>
+                <a class="dropdown-item py-2 tw-text-sm"
+                    href="{{ path('admin_monthend_update_asset_checklist', {
+                        id: asset.id,
+                        task: taskName,
+                        status: item
+                    }) }}">Mark as {{ item|capitalize }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

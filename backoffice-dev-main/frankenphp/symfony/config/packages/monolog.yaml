@@ -1,0 +1,20 @@
+monolog:
+  channels:
+    - crowdtek
+    - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+  handlers:
+    main:
+      type: fingers_crossed
+      action_level: debug
+      handler: nested
+      # excluded_http_codes: [404, 405]
+      buffer_size: 50 # How many messages should be saved? Prevent memory leaks
+      channels: ["!deprecation"]
+    nested:
+      type: stream
+      path: php://stderr
+      level: debug
+    console:
+      type: console
+      process_psr_3_messages: false
+      channels: ["!event", "!doctrine"]

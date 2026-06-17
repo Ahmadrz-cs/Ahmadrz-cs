@@ -1,0 +1,60 @@
+{% extends 'admin/layouts/income_transfer_builder.html.twig' %}
+
+{% set originalTotal = transferOrder.transfers|reduce((carry, v) => carry + v.amount) %}
+{% set distributionTotal = groupedTransfers.distribution|reduce((carry, v) => carry + v.amount) %}
+{% set monthlyDividend = (transferOrder.asset.fundingGoal / 1200) * offering.netRentProjected %}
+
+{% block page_content %}
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "distribution",
+        "sectionTitle": "Distribution",
+        "linkActions": [
+            {
+                "text": "Finish and Review",
+                "route": "admin_monthend_income_transfer_manage",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The distribution wallet is for allocating funds that are intended to pay shareholders. This can be for dividends, prefunder repayments, or divestments. Payment orders are only able to pay out of this wallet.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Deposit Wallet Id',
+                value: walletIds.deposit|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Distribution Wallet Id',
+                value: walletIds.distribution|default('N/A'),
+                className: "col-12",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Balance Remaining',
+                value: '£' ~ (transferOrder.targetTotal|default(0) - originalTotal)|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Advertised Yield',
+                value: offering.netRentProjected|number_format(2, '.', ',') ~ '%',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expected Dividend',
+                value: '£' ~ monthlyDividend|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total for Distribution',
+                value: '£' ~ distributionTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/pages/monthend/income_transfers/builder/_section_table.html.twig', {
+            section: "distribution",
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

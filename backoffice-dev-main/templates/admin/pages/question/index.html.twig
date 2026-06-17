@@ -1,0 +1,21 @@
+{% extends 'admin/layouts/list.html.twig' %}
+
+{% set areaHeading = 'CMS' %}
+{% set mainHeading = 'Questions' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'cms' %}
+
+{% set form = null %}
+
+{% block createActions %}
+    {% if is_granted('ROLE_OPERATIONS') %}
+    <a class="btn btn-success" href="{{ path('admin_question_new') }}">Create Question</a>
+    {% endif %}
+    <a class="btn btn-outline-dark" href="{{ path('admin_onboarding_assessment_questions') }}">Go to Assessment Builder</a>
+{% endblock %}
+
+{% block filterPresets %}{% endblock %}
+
+{% block table %}
+    {{ include('admin/components/onboarding/_question_list.html.twig') }}
+{% endblock %}

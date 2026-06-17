@@ -1,0 +1,146 @@
+include:
+    - templates/baseQuestion.yaml
+
+App\Entity\Question:
+    question_set3_q1 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::ContractualNature)>
+        content: "With respect to the investment transaction between yourself and Yielders, how best is it described"
+    question_set3_q2 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::FinancialLoss)>
+        content: "With respect to the risk associated with the investment how best would it be described"
+    question_set3_q3 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::IssuerFailureLoss)>
+        content: "In the event that Yielders ceases to operate, what would my options be in relation to my investment"
+    question_set3_q4 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::FscsProtection)>
+        content: "How best is the protection of the Financial Ombudsman Service and the Financial Services Compensation Scheme (FSCS) described with respect to the Yielders investment"
+    question_set3_q5 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::Illiquidity)>
+        content: "Which of the following options best describes the situation if you want to exit the investment before the end of the investment term"
+    question_set3_q6 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::IssuerFailureAdmin)>
+        content: "Should Yielders have to close, which of the following would best describe the effect it would have on my investment"
+    question_set3_q7 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::IssuerRole)>
+        content: "How does Yielders assess and make underlying investments for the Platform"
+    question_set3_q8 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::Diversification)>
+        content: "In order to minimise risk of loss what is the best investment strategy to follow from the list below"
+    question_set3_q9 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::ShareDividend)>
+        content: "What is the risk associated with the payment of dividends from the list below"
+    question_set3_q10 (extends question_base):
+        section: <(App\Entity\Enum\QuestionArea::ShareDilution)>
+        content: "What is the commitment from the investors should the SPV in which I have invested need to raise additional funds"
+
+App\Entity\QuestionChoice:
+    choice1_{set3_q1} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I am investing in a fund which invests in Propertiese"
+    choice2_{set3_q1} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I am acquiring real estate options for a fixed period"
+    choice3_{set3_q1} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I am investing in a Special Purpose Vehicle (SPV) that owns real estate"
+        correct: true
+
+    choice1_{set3_q2} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Even if the property value was written down to zero, I would still be a shareholder in the SPV therefore would still have some small value"
+    choice2_{set3_q2} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "All of the money I have invested could be lost"
+        correct: true
+    choice3_{set3_q2} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "As Yielders is insuring the properties, there is no chance that all the investment could be lost"
+    
+    choice1_{set3_q3} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Any shortfall between the value of my investment and the capital I invested is covered by the buildings insurance in place"
+    choice2_{set3_q3} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "It is highly unlikely that investments in UK Property can lose any amount of money"
+    choice3_{set3_q3} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "As a shareholder in the SPV, I can work with fellow shareholders to try to recover my investment"
+        correct: true
+    
+    choice1_{set3_q4} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Neither the Financial Ombudsman nor the FSCS will protect against poor investment performance"
+        correct: true
+    choice2_{set3_q4} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The investment is always covered by The Financial Ombudsman and the FSCS because the are investments in UK real estate"
+    choice3_{set3_q4} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The investments might be covered by The Financial Ombudsman and the FSCS as Yielders always follow best practice for such investments"
+
+    choice1_{set3_q5} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can offer to trade my shares in my investment for shares in another asset on the platform"
+    choice2_{set3_q5} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can always relist the shares on the platform as the investments are never suspended for relisting"
+    choice3_{set3_q5} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I can relist my shares on the platform but wait for someone to buy them from me"
+        correct: true
+    
+    choice1_{set3_q6} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "As Yielders is directly linked to the SPVs, if Yielders closes, all the SPVs would close at the same time - the assets liquidated to meet the outstanding creditors of Yielders" 
+    choice2_{set3_q6} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "An administrator will oversee a wind-down process which includes an orderly process to manage my investment to closure"
+        correct: true
+    choice3_{set3_q6} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders could immediately sell all the properties in an auction and this would return all of my investment to me"
+    
+    choice1_{set3_q7} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders will only ever put assets on the Platform that have been sourced at below market value"
+    choice2_{set3_q7} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders is a registered estate agency in the Property sector"
+    choice3_{set3_q7} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Yielders creates and manages the SPVs that own the properties and is responsible for ensuring good governance and optimised outcomes"
+        correct: true
+    
+    choice1_{set3_q8} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: " I should invest no more than 10% of my net assets in high risk investments like those offered by Yielders and I should diversify my investment by spreading this over multiple SPVs"
+        correct: true
+    choice2_{set3_q8} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I understand how the UK property market works so I can safely invest more than 10% of my net assets on the Yielders platform"
+    choice3_{set3_q8} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "I will be investing are less than 10% of my net assets so I do not need to think about spreading it across different types of investment"
+    
+    choice1_{set3_q9} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Monthly dividends will always be paid because profitable companies are required by law to pay dividends to their shareholders"
+    choice2_{set3_q9} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "Monthly dividends are dependent upon the ability of the SPV to ensure that it will be profitable at the end of the financial year"
+        correct: true
+    choice3_{set3_q9} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "If dividends are not paid one month (irrespective of the reason) the following month's dividends will always be greater to compensate"
+    
+    choice1_{set3_q10} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The value of my investment may get diluted if I do not participate in the new round of funding to raises money by issuing more shares"
+        correct: true
+    choice2_{set3_q10} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The Shares in the SPV are all non-dilutable and therefore my investment is protected in the event of future share issues by the SPV"
+    choice3_{set3_q10} (extends question_choice_base):
+        question: "@question_<current()>"
+        content: "The value of my shares cannot change irrespective of the number of shares issued"
+        

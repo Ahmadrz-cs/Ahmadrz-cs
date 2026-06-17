@@ -1,0 +1,91 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+
+    <!-- main body -->
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4">
+                            <h4>Linked Bank Account</h4>
+                            <div class="d-flex justify-content-start my-2" style="gap: 0.5rem;">
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_index') }} role="button">Back to all Linked Accounts</a>
+                                {% if linkedAccount.status == constant('AppBundle\\Entity\\Enum\\BankAccountStatus::Approved') %}
+                                <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_activate', { id: linkedAccount.uuid}) }} role="button">Activate</a>
+                                {% endif %}
+                            </div>
+
+                            {% if linkedAccount.status in [constant('AppBundle\\Entity\\Enum\\BankAccountStatus::Pending'), constant('AppBundle\\Entity\\Enum\\BankAccountStatus::Validated')]
+                                and linkedAccount.metadata.actionRequests is defined
+                                and 'proof_of_address' in linkedAccount.metadata.actionRequests 
+                            %}
+                                {{ include('@AppBundle/Common/_prompt_poa_bank_account.html.twig') }}
+                            {% endif %}
+
+                            {{ include('@AppBundle/Common/_kv_table.html.twig', {
+                                tableId: "bank-account-info",
+                                tableStyle: "mt-3",
+                                valueDefaultStyle: "text-monospace",
+                                kv: {
+                                    "Submitted": linkedAccount.createdAt|date('d/m/Y'),
+                                    "Type": linkedAccount.accountHolderType.value|capitalize,
+                                    "Status": linkedAccount.status.value|capitalize,
+                                    "Display Name": linkedAccount.displayName|default("N/A")|replace({'_': '••••'}),
+                                    "Account Number": linkedAccount.accountNumber|default("N/A"),
+                                    "Sort-code/BIC": linkedAccount.bic|default("N/A"),
+                                    "Country": linkedAccount.country|default("N/A"),
+                                    "Currency": linkedAccount.currency|default("N/A"),
+                                }
+                            }) }}
+                            <div class="border rounded p-3 mb-3 mt-2 text-left" id="account-unlinking">
+                                <h6>Unlink Bank Account</h6>
+                                <p>If you unlink this bank account, you can re-add it back later through the standard linking process.</p>
+                                {{ form_start(form) }}
+                                {{ form_row(form.confirm) }}
+                                <div class="d-flex justify-content-start" style="gap: 0.5rem;">
+                                    <button type="submit" id="submit" class="btn btn-danger rounded-pill px-1 px-sm-2">Unlink Bank Account</button>
+                                </div> 
+                                {{ form_end(form) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+{% endblock %}

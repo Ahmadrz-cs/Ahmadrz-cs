@@ -1,0 +1,84 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_user_dashboard_documents' %}
+{% set backToRouteParams = { id: userDocument.user.id } %}
+{% set areaHeading = 'KYC - Mangopay' %}
+{% set mainHeading = 'Create KYC Document Check' %}
+{% set baseLayout = 'col_1' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-document",
+        "sectionTitle": "Document for Mangopay KYC",
+        "linkActions": [
+            {
+                "text": "Download",
+                "route": 'admin_document_download',
+                "params": {
+                    'id': userDocument.document.id,
+                    'type':'private',
+                },
+                "style": "btn-outline-dark text-nowrap",
+            },
+            {
+                "text": "View",
+                "route": 'admin_document_download',
+                "params": {
+                    'id': userDocument.document.id,
+                    'type':'private',
+                    'preview': 1,
+                },
+                "style": "btn-outline-dark text-nowrap",
+                "newTab": true,
+            }
+        ]
+    } %}
+        {% block sectionContent %}
+            {% if userDocument.document.documentUrl is empty %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    title: "Missing Document URL",
+                    message: "This document is missing the document URL so the file cannot be retrieved. You should delete this document and use another for a Mangopay KYC check.",
+                }) }}
+            {% endif %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "notice",
+                title: "File Size Recommendations",
+                message: "Mangopay have a file size limit of 7MB (around 7000KB to be conservative) and a minimum file size of 32KB. The TechOps team recommend a file size somewhere from 200KB to 5000KB (5MB) to balance quality and size.",
+            }) }}
+
+            {% set fileSizeK = fileSize ? (fileSize / 1024)|number_format(2) ~ " KB" : "N/A" %}
+            {{ include('admin/components/_kv_table.html.twig', {
+                title: "Document Info",
+                tableId: "document-info",
+                valueDefaultStyle: "tw-font-mono",
+                kv: {
+                    "User Doc Id": userDocument.id,
+                    "Internal Doc Id": userDocument.document.id,
+                    "User": "#" ~ userDocument.user.id ~ " // " ~ userDocument.user.userIdentifier,
+                    "Filename": userDocument.document.filename,
+                    "Mime Type": userDocument.document.type,
+                    "Description": userDocument.document.description,
+                    "Tag": userDocument.document.tag,
+                    "Document Url": userDocument.document.documentUrl,
+                    "File Size": fileSizeK,
+                }
+            }) }}
+            {{ form_start(form) }}
+                {{ form_rest(form) }}
+                <section class="d-flex flex-wrap gap-2">
+                    <button type="submit" id="submit" class="btn-primary btn">Submit for KYC Check</button>
+                    <a href="{{ path(backToRoute, backToRouteParams) }}" class="btn-secondary btn">Cancel</a>
+                </section>
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}
+
+
+

@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * Created by PhpStorm.
+ * User: keesh
+ * Date: 24/01/17
+ * Time: 22:05
+ */
+
+namespace App\Form\Type;
+
+use App\Entity\OfferingAddFields;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class OfferingAddFieldType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder->add('fieldKey', TextType::class, [
+            'required' => true,
+        ])->add('fieldValue', TextType::class, [
+            'required' => true,
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => OfferingAddFields::class,
+        ]);
+    }
+}

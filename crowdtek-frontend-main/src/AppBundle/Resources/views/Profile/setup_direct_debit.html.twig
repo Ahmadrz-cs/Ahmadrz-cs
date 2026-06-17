@@ -1,0 +1,463 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig' %}
+{% block title %}My Wallet
+{% endblock %}
+
+{% block body %}
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<!-- profile detail -->
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{% include('@AppBundle/Common/profilenav.html.twig')%}
+					</div>
+					<div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<!-- add new fund -->
+							<div class="tab-pane fade show active">
+								<div class="row mt-3">
+
+									<!-- status -->
+									<div class="col-lg-12">
+										{# <div class="profile-banner portfolio-head wallet-profile">
+
+											<div class="profile-info p-3 border-0 bg-info rounded-0 shadow-sm mb-4">
+												<div class="row">
+													<div class="col-md-6 u-name">
+														<h3>Hi
+															{{ userInfo.given_name }}
+														</h3>
+													</div>
+
+													<div class="col-md-6 p-wal">
+														<ul class="list-inline mb-0">
+															<li>
+																<p class="h3 mb-0">£
+																	<span>{{ app.session.get('balance')|default('0.00')|replace({' ':','}) }}</span>
+																</p>in my wallet
+															</li>
+															{% if wallet.id|default() %}
+																<li class="">
+																	<a class="def-btn" onclick="location.href='/add-funds-new'" ;>Add Funds</a>
+																	<a class="def-btn" data-toggle="modal" data-target="#modalWithdrawFunds">Withdraw Funds</a>
+																</li>
+															{% endif %}
+														</ul>
+													</div>
+												</div>
+
+
+											</div>
+
+										</div> #}
+									</div>
+
+									<!-- Direct debit form -->
+									<div class="col-lg-12">
+										<div class="transaction-history-block t-history">
+											<div class="com-block">
+												<section id="profile">
+													<h4 class="mb-3">Setup a Direct Debit Payment</h4>
+
+                                                    {{ form_start(form)}}
+
+                                                    <hr class="mb-4">
+
+													<div class="row add-funds form-block">
+                                                        <div class="container-fluid">
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                            <h4 class="mb-3">Billing address</h4>
+                                                                <div class="row">
+                                                                <div class="col-md-6 mb-2">
+                                                                    <label for="firstName">First name</label>
+                                                                    {{ form_widget(form.first_name, {'attr': {'class': 'form-control ' }}) }}
+                                                                    <div class="invalid-feedback">
+                                                                    Valid first name is required.
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6 mb-2">
+                                                                    <label for="lastName">Last name</label>
+                                                                     {{ form_widget(form.last_name, {'attr': {'class': 'form-control ' }}) }}
+                                                                    <div class="invalid-feedback">
+                                                                    Valid last name is required.
+                                                                    </div>
+                                                                  {{ form_row(form.last_name) }}
+                                                                </div>
+
+                                                                </div>
+
+                                                                <div class="mb-2">
+                                                                    <label for="address">Address Line 1</label>
+                                                                    {{ form_widget(form.address_1, {'attr': {'class': 'form-control ' }}) }}
+                                                                </div>
+
+                                                                <div class="mb-2">
+                                                                    <label for="address">Address Line 2</label>
+                                                                    {{ form_widget(form.address_2, {'attr': {'class': 'form-control ' }}) }}
+                                                                </div>
+
+                                                                <div class="mb-2">
+                                                                    <label for="address">Address Line 3</label>
+                                                                    {{ form_widget(form.address_3, {'attr': {'class': 'form-control ' }}) }}
+                                                                </div>
+
+																<div class="row">
+
+																<div class="col-md-5 mb-3">
+                                                                    <label for="address2">Town/City</label>
+                                                                    {{ form_widget(form.town_city, {'attr': {'class': 'form-control ' }}) }}
+                                                                </div>
+
+																<div class="col-md-4 mb-3">
+                                                                    <label for="address2">Postal Code </label>
+                                                                    {{ form_widget(form.post_code, {'attr': {'class': 'form-control ' }}) }}
+                                                                </div>
+
+																<div class="col-md-12 mb-3">
+																<div class="custom-control custom-checkbox mb-2">
+                                                                    {{ form_widget(form.addressCheck, {'attr': {'class': 'custom-control-input' }}) }}
+                                                                    <label class="custom-control-label" for="setup_direct_debit_type_addressCheck">I confirm this address is correct</label>
+  																</div>
+																<div>
+																<span style="font-weight:bold;">If this address is not correct, please send an email to: <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a> including details of your new address.</span>
+																</div>
+																</div>
+
+																</div>
+
+                                                                <hr class="mb-4">
+
+                                                                <h4 class="mb-3">Bank Account Details</h4>
+
+{#                                                                <div class="d-block my-3">#}
+
+{#                                                                {% for key, bankType in form.bankAccountType %}#}
+{#                                                                    <div class="custom-control custom-radio">#}
+{#                                                                    {{ form_widget(bankType, {'attr': {'class': 'custom-control-input' }}) }}#}
+{#                                                                    {{ form_label(bankType, label|default(null), { 'label_attr': { 'class': 'custom-control-label' } } ) }}#}
+{#                                                                    </div>#}
+{#                                                                {% endfor %}#}
+
+{#                                                                </div>#}
+
+{#                                                                <div class="row">#}
+{#                                                                    <div class="col-md-6 mb-2">#}
+{#                                                                        <label for="account-iban-number">Account Number</label>#}
+{#                                                                        {{ form_widget(form.accountIban, {'attr': {'class': 'form-control' }}) }}#}
+{#                                                                        <small class="text-muted" id="small-account-helper">8 Digit Acccount Number</small>#}
+{#                                                                        <div class="invalid-feedback">#}
+{#                                                                        Account Number is required#}
+{#                                                                        </div>#}
+{#                                                                    </div>#}
+{#                                                                    <div class="col-md-6 mb-2">#}
+{#                                                                        <label for="sort-bic">Sort Code</label>#}
+{#                                                                        {{ form_widget(form.sortBic, {'attr': {'class': 'form-control' }}) }}#}
+{#                                                                        <small class="text-muted" id="small-sort-helper">6 Digit Sort Code</small>#}
+{#                                                                        <div class="invalid-feedback">#}
+{#                                                                        Sort Code is required#}
+{#                                                                        </div>#}
+{#                                                                    </div>#}
+{#                                                                </div>#}
+
+                                                                <div class="row">
+                                                                    <div class="col-md-6 mb-2">
+                                                                        <label for="bank-account-select">Select a Bank Account</label>
+                                                                        {{ form_widget(form.bankAccountId, {'attr': {'class': 'form-control' }}) }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="color-box break mb-3">
+
+                                                                    <div class="note-box">
+
+                                                                        <p style="color: black !important"><i class="fas fa-info-circle"></i> If you wish to register your bank account, please send your bank statement within the last three months with your address as registered on your profile to
+                                                                            <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a>.
+                                                                            Alternatively, you can call us on
+                                                                            <a href="tel:+44 (0) 207 205 4650">+44 (0) 207 205 4650</a>.
+                                                                        </p>
+                                                                        <p><i class="fas fa-info-circle"></i> Only UK accounts are currently supported. Read more about direct debit <a href="http://help.yielders.co.uk/en/articles/3779186-direct-debit-setup-and-cancellation" target="_blank">in our help centre.</a> </p>
+                                                                    </div>
+
+                                                                </div>
+
+                                                                <hr class="mb-4">
+
+                                                                <h4 class="mb-3">Direct Debit Amount</h4>
+
+                                                                <div class="row">
+                                                                <div class="col-md-12 mb-2">
+                                                                    <label for="Direct Debit Amount">Amount (£)</label>
+                                                                    {{ form_widget(form.amount, {'attr': {'class': 'form-control' }}) }}
+                                                                    <div class="amount-error">
+                                                                        {{ form_errors(form.amount) }}
+                                                                    </div>
+                                                                    <div class="color-box break">
+                                                                        <div class="note-box">
+                                                                            <p><i class="fas fa-info-circle"></i> The minimum Direct Debit amount that can be set is £50 a month.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                </div>
+
+                                                                <hr class="mb-4">
+
+                                                                <h4 class="mb-3">Summary</h4>
+
+                                                                <div class="row">
+                                                                <div class="col-md-12 mb-3">
+                                                                    <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                                                        <span class="text-muted">Your next 3 payments</span>
+                                                                    </h4>
+                                                                    <ul class="list-group mb-3">
+                                                                        <li class="list-group-item list-group-item-primary  d-flex justify-content-between lh-condensed">
+                                                                        <div>
+                                                                            <h6 class="my-0" id="first-payment-date">Payment Date</h6>
+                                                                        </div>
+                                                                        <h6 class="my-0" id="first-payment-date">Amount</h6>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                                                        <div>
+                                                                            <h6 class="my-0" id="first-payment-date">{{ paymentDate }}</h6>
+                                                                        </div>
+                                                                        <span class="text-muted" id="first-payment-amount"></span>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                                                        <div>
+                                                                            <h6 class="my-0" id="second-payment-date">{{ secondPaymentDate }}</h6>
+                                                                        </div>
+                                                                        <span class="text-muted" id="second-payment-amount"></span>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                                                        <div>
+                                                                            <h6 class="my-0" id="third-payment-date">{{ thirdPaymentDate }}</h6>
+                                                                        </div>
+                                                                        <span class="text-muted" id="third-payment-amount"></span>
+                                                                        </li>
+                                                                    </ul>
+
+                                                                    <div class="color-box break">
+                                                                            <div class="note-box">
+                                                                                <p><i class="fas fa-info-circle"></i> A transaction fee of £0.60 will be automatically added on top of each direct debit payment. For more information on our fees <a href="http://help.yielders.co.uk/en/articles/3436312-our-fees" target="_blank">visit our help centre.</a></p>
+                                                                                <p><i class="fas fa-info-circle"></i> Direct Debit payments are processed on the 20th of each month. If you setup your Direct Debit after the 15th of the current month, your first Direct Debit payment will then be taken out on the 20th of the next month.</p>
+                                                                                <p><i class="fas fa-info-circle"></i> Please allow up to 5 working days for a payment to clear.</p>
+                                                                            </div>
+                                                                    </div>
+
+                                                                    </div>
+                                                                    </div>
+
+                                                            {# {{ form_widget(form.submit) }} #}
+
+                                                            <hr class="">
+
+                                                            <div class="color-box break d-none" id="belowMinPrompt">
+                                                                <div class="note-box-warning">
+                                                                    <p><i class="fas fa-info-circle"></i> The minimum Direct Debit amount that can be set is £50 a month.</p>
+                                                                </div>
+                                                            </div>
+
+
+                                                            {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary btn-lg btn-block', 'onclick': 'checkAmountValid()' }}) }}
+
+                                                            {# {{ form_end(form, {'render_rest': false}) }} #}
+
+                                                            {{ form_end(form) }}
+
+                                                            </div>
+                                                        </div>
+
+                                                        </div>
+
+													</div>
+
+												</section>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+        <style>
+            .color-box {
+                margin: 15px 0;
+
+            }
+            .shadow {
+                background: #F7F8F9;
+                padding: 3px;
+                margin: 10px 0;
+            }
+
+            .info-tab {
+                width: 40px;
+                height: 40px;
+                display: inline-block;
+                position: relative;
+                top: 8px;
+            }
+
+            .info-tab {
+                float: left;
+                margin-left: -23px;
+            }
+
+            .note-icon {
+                background: #47ADE0;
+            }
+
+            .note-box {
+                color: rgba(63, 110, 106, 0.9376);
+                background-color: #d6eceb;
+                padding: 8px 8px 3px 14px;
+            }
+
+            .note-box-warning {
+                color: rgba(63, 110, 106, 0.9376);
+                background-color: #d9534f;
+                padding: 8px 8px 3px 14px;
+            }
+
+            .note-box-warning p {
+                color:#fff;
+            }
+
+            .note-box a:hover {
+                background-color: transparent;
+                text-decoration: underline;
+            }
+
+            .amount-error {
+                color: red;
+            }
+
+
+        </style>
+
+	</main>
+{% endblock %}
+
+
+{% block pagejs %}
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"></script>
+
+
+<script type="text/javascript">
+
+        var inp = $("#setup_direct_debit_type_amount")[0];
+
+        inp.addEventListener("input", function () {
+
+            checkAmountValid();
+
+            var value = parseFloat(this.value) + 0.60;
+            console.log(parseFloat(value));
+            if (Number.isNaN(value)) {
+                document.querySelector('#first-payment-amount').innerHTML = ''
+                document.querySelector('#second-payment-amount').innerHTML = ''
+                document.querySelector('#third-payment-amount').innerHTML = ''
+            }
+            else {
+                document.querySelector('#first-payment-amount').innerHTML = '£' + value.toFixed(2);
+                document.querySelector('#second-payment-amount').innerHTML = '£' + value.toFixed(2);
+                document.querySelector('#third-payment-amount').innerHTML = '£' + value.toFixed(2);
+
+            }
+        }, false);
+
+        // Restricts input for the given textbox to the given inputFilter.
+        function setInputFilter(textbox, inputFilter) {
+        ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop"].forEach(function(event) {
+            textbox.addEventListener(event, function() {
+            if (inputFilter(this.value)) {
+                this.oldValue = this.value;
+                this.oldSelectionStart = this.selectionStart;
+                this.oldSelectionEnd = this.selectionEnd;
+            } else if (this.hasOwnProperty("oldValue")) {
+                this.value = this.oldValue;
+                this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+            } else {
+                this.value = "";
+            }
+            });
+        });
+        }
+
+        setInputFilter(document.getElementById("setup_direct_debit_type_amount"), function(value) {
+            return /^-?\d*[.,]?\d{0,2}$/.test(value); });
+
+
+	$(document).ready(function () {
+
+        $('input:radio[name="setup_direct_debit_type[bankAccountType]"]').change(function() {
+        if (this.value == 'eu bank account') {
+            $("label[for=account-iban-number]").html("IBAN");
+            $("label[for=sort-bic]").html("BIC/SWIFT");
+            $('#small-account-helper').html("(IBAN) International Bank Account Number");
+            $('#small-sort-helper').html(" 8 or 11 character BIC/SWIFT code");
+        } else if (this.value == 'uk bank account') {
+            $("label[for=account-iban-number]").html("Account Number");
+            $("label[for=sort-bic]").html("Sort Code");
+            $('#small-account-helper').html("8 Digit Acccount Number");
+            $('#small-sort-helper').html("6 Digit Sort Code");
+            }
+        });
+
+	});
+
+    var form = $("form[name='setup_direct_debit_type']");
+
+        form.addEventListener("submit", checkAmountValid(), false);
+
+        function checkAmountValid() {
+            var amount = parseFloat(document.getElementById("setup_direct_debit_type_amount").value);
+
+            if(amount < 50) {
+                $('button#setup_direct_debit_type_submit').prop('disabled', true);
+                $('#setup_direct_debit_type_amount').addClass('input_error_highlight');
+                $('div#belowMinPrompt').removeClass('d-none');
+                return false;
+            }
+            else {
+                $('button#setup_direct_debit_type_submit').prop('disabled', false);
+                $('#setup_direct_debit_type_amount').removeClass('input_error_highlight');
+                $('div#belowMinPrompt').addClass('d-none');
+                return true;
+            }
+        }
+
+        function check(e){
+            e.preventDefault();
+            if (checkAmountValid()){
+                submit.submit();
+            }
+        }
+
+</script>
+{% endblock %}

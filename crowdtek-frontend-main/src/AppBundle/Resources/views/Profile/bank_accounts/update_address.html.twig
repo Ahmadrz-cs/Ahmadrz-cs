@@ -1,0 +1,104 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+
+    <!-- main body -->
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4">
+                            <h4>Linked Bank Accounts</h4>
+                            {% if hasUserInfo %}
+                                <div class="mt-3" id="current-address">
+                                    <h5>Current Registered Address</h5>
+                                    <p>
+                                        {% if userInfo.address.building %}{{ userInfo.address.building }} </br>{% endif %}
+                                        {% if userInfo.address.street_address %}{{ userInfo.address.street_address }} </br>{% endif %}
+                                        {% if userInfo.address.city %}{{ userInfo.address.city }} </br>{% endif %}
+                                        {% if userInfo.address.country %}{{ userInfo.address.country }} </br>{% endif %}
+                                        {% if userInfo.address.postal_code %}{{ userInfo.address.postal_code }} </br>{% endif %}
+                                    </p>
+                                    <p>If your bank statement has a different address to the one on your profile (shown above), you will need to provide a new proof of address via the form below. Your address will then be updated as part of your bank account linking request. Alternatively, you can contact us at <a href="mailto:team@yielders.co.uk">team@yielders.co.uk</a></p>
+                                </div>
+                                {{ include('@AppBundle/Common/_indicator_poa_recent.html.twig') }}
+                            {% endif %}
+                            <div class="mt-3">
+                                <h5>Upload Proof of Address</h5>
+                                <div class="alert p-2 my-2 border bg-light rounded">
+                                    <p class="h6">Currently Linking a New Bank Account?</p>
+                                    <p>If you are currently linking a new bank account, <span class="font-weight-bold"><u>you cannot use the same bank statement</u></span> for your proof of address.</p>
+                                    <p>We usually recommend one of the following options:</p>
+                                    <ul>
+                                        <li>Utility or council tax bill dated within the last 3 months</li>
+                                        <li>Bank statement <u class="font-weight-bold">from a different bank</u>, dated within the last 3 months</li>
+                                        <li>Tenancy Agreement with a future end date</li>
+                                    </ul>
+                                    <div><a class="font-weight-bold" href="http://help.yielders.co.uk/en/articles/3436549-documents-required" target="_blank" rel="noopener noreferrer">Visit our help centre</a> for more information on document requirements.</div>
+                                </div>
+                                {{ form_start(form) }}
+                                {# <div class="border rounded bg-light p-3 my-3">
+                                    <p class="font-medium">Using a photo from an iPhone?</p>
+                                    <p class="mb-0">Please note the default "High Efficiency" (HEIF) format is <u>not</u> supported. HEIF photos must be converted to JPEG or retaken with the "Most Compatible" (JPEG) option selected in iOS camera format settings.</p>
+                                </div> #}
+                                {{ form_row(form.proofOfAddress) }}
+                                <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                                    <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_index') }} role="button">Cancel</a>
+                                    <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Submit</button>
+                                </div>
+                                {{ form_rest(form) }}
+                                {{ form_end(form) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+{% endblock %}
+
+{% block pagejs %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#user_address_update_proofOfAddress').on('change',function(e){
+                //get the file name
+                let filename = e.target.files[0].name;
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(filename);
+            });
+        });
+    </script>
+{% endblock %}

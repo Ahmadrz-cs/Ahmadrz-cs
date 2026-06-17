@@ -1,0 +1,53 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_reports_mangopay_set_view' %}
+{% set backToRouteParams = {id: reportSet.id} %}
+{% set areaHeading = 'Mangopay Reports' %}
+{% set mainHeading = 'Transaction Report Builder' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'merge-options',
+        "sectionTitle": 'Merge and Processing Options',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            <div>
+                <p>The merge and processing will always do the following:</p>
+                <ul>
+                    <li>Combine the transactions from all Mangopay origin reports in this report-builder-set together into a single report</li>
+                    <li>Sort the transactions into reverse chronoical order (newest first) by <span class="fw-bold font-monospace">ExecutionDate</span></li>
+                    <li>Remove any duplicates based on the by <span class="fw-bold font-monospace">Id</span></li>
+                </ul>
+                <p class="mt-3">There are 2 optional processing actions that are enabled by default:</p>
+                <ul>
+                    <li>Add a new <span class="fw-bold font-monospace">Amount</span> column in £s with a debit indicator (minus sign)</li>
+                    <li>Add a new <span class="fw-bold font-monospace">RunningBalance</span> column that show the NET CHANGE over time across the period covered</li>
+                </ul>
+            </div>
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                title: "Beware of the Running Balance",
+                message: "The running balance is NOT the actual balance at that point in time! The running total is the NET CHANGE in the balance over the course of the time period, using a starting balance of 0.",
+            }) }}
+
+            {{ form_start(form) }}
+                {{ form_row(form.directionalAmount) }}
+                {{ form_row(form.runningBalance) }}
+                {{ form_rest(form) }}
+                <div class="mt-3">
+                    <button class="btn btn-success" id="submit" type="submit">Create Merged Report</button>
+                    <a class="btn btn-outline-secondary" href="{{ path('admin_reports_mangopay_set_view', {
+                        id: reportSet.id
+                    }) }}">Cancel</a>
+                </div>
+			{{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

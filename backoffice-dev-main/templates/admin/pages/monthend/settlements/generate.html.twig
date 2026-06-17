@@ -1,0 +1,172 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_settlement_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Setup Settlement Transfers' %}
+{% set mainHeading = transferOrder.asset.name %}
+{% set htmlTitle = 'Setup Settlement Transfers' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set settlementTotal = tradesToSettle|reduce((carry, v) => carry + v.tradeValue, 0) %}
+{% set settlementShares = tradesToSettle|reduce((carry, v) => carry + v.numberOfShares) %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "share-trade-search",
+        "sectionTitle": "Share Trade Search and Generate Settlement Transfers",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+			variant: "notice",
+			message: "Note that any share trades that already have a transfer in this order will not be included in the search results. If you're unsure why an share trades is still missing, you should clear all transfers and go through the setup again.",
+		}) }}
+
+        {{ form_start(form, {attr: {class: "d-grid sm:tw-grid-cols-2 gap-4"}}) }}
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-1">
+                <h4 class="fw-bold fs-5">Step 1: Search for Share Trades to Settle</h4>
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Default Search Range',
+                    value: transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                        ~ ' - ' 
+                        ~ transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                    className: 'col-12',
+                    valueClassName: 'fw-bold',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Default Search Month',
+                    value: monthendDateRange.start|date('Y-m'),
+                    className: 'd-none',
+                }) }}
+                {{ form_row(form.createdAt_gte) }}
+                {{ form_row(form.createdAt_lt) }}
+                <div class="d-flex flex-wrap gap-2">
+                    {{ form_widget( form.search, { 'attr': {'class': 'btn-primary'}, 'label': 'Search Share Trades' } ) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Cancel",
+                            "route": "admin_monthend_settlement_manage",
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Reset Criteria to Default",
+                            "route": app.request.attributes.get('_route'),
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-2">
+                <h4 class="fw-bold fs-5">Step 2: Generate Settlement Transfers</h4>
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Generated transfers will go from the asset's hold wallet to the asset's settlement/actual wallet.",
+                }) }}
+                <div class="d-flex flex-wrap gap-2 mt-auto">
+                    {{ form_widget( form.generate, { 'attr': {'class': 'btn-success text-nowrap'}, 'label': 'Generate All Settlement Transfers' } ) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Skip to Stamp Duty Setup",
+                            "route": 'admin_monthend_settlement_generate_stamp_duty',
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-dark text-nowrap",
+                        },
+                    }) }}
+                </div>
+            </section>
+
+            {{ form_rest(form) }}
+        {{ form_end(form) }}
+
+        <div class="row g-3">
+            <h4 class="fw-bold fs-5">Matching Share Trades Found</h4>
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Existing Transfers',
+                value: transferOrder.transfers|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Share Trade Count',
+                value: settlementSummary.tradeCount|number_format(0, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Invested',
+                value: '£' ~ settlementSummary.tradeValueTotal|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Shares Invested',
+                value: settlementSummary.tradeSharesTotal|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/components/share_trades/_list_table.html.twig', {
+            showAsset: false,
+            actions: [
+                {
+                    "text": "Generate for Trade",
+                    "route": "admin_monthend_settlement_generate_single",
+                    "params": {transferOrder: transferOrder.id},
+                    "style": "btn-outline-primary text-nowrap",
+                },
+            ],
+            objects: tradesToSettle,
+        }) }}
+        
+        {# <div class="table-responsive">
+            <table class="table" id="investments-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Invested On</th>
+                        <th>Type</th>
+                        <th>Buyer</th>
+                        <th>Seller</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th>Offering</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for shareTrade in tradesToSettle %}
+                    <tr>
+                        <td>
+                            <a class="btn btn-outline-primary"
+                                href="{{ path('admin_monthend_settlement_generate_single', {
+                                    transferOrder: transferOrder.id,
+                                    shareTrade: shareTrade.id
+                                }) }}">Generate for Investment</a>
+                        </td>
+                        <td data-field='investmentId'><a href="{{ path('admin_investment_edit', { id: shareTrade.id }) }}">{{ shareTrade.id }}</a></td>
+                        <td>{{ shareTrade.createdAt|date("Y-m-d") }}</td>
+                        <td>{{ shareTrade.type|capitalize }}</td>
+                        <td><a href="{{ path('admin_user_edit', {
+                                id: shareTrade.buyOrder.user.id
+                            }) }}">{{ shareTrade.buyOrder.user }}</a>
+                        </td>
+                        <td><a href="{{ path('admin_user_edit', {
+                                id: shareTrade.sellOrder.user.id
+                            }) }}">{{ shareTrade.sellOrder.user }}</a>
+                        </td>
+                        <td class="text-end tw-tabular-nums">{{ shareTrade.numberOfShares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ shareTrade.tradeValue|number_format(2, '.', ',') }}</td>
+                        <td><a href="{{ path('admin_offering_edit', { id: shareTrade.offering.id }) }}">{{ shareTrade.offering.id
+                                }}</a></td>
+                        <td>{{ shareTrade.lifecyclestatus|capitalize}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> #}
+
+        {% endblock %}
+    {% endembed %}        
+
+{% endblock page_content %}

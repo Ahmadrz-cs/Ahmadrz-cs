@@ -1,0 +1,83 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = exitRoute ?? 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferRequest.transferOrder.id } %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = 'Edit Transfer in Order #' ~ transferRequest.transferOrder.id %}
+{% set htmlTitle = 'Edit Transfer' %}
+
+{# Configure page blocks #}
+
+{% block objectMeta %}
+
+    {% set asset = transferRequest.asset ?? transferRequest.transferOrder.asset %}
+
+    {% if asset is not null %}
+
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "supporting-info",
+            "sectionTitle": "Supporting Information",
+            "linkActions": []
+        } %}
+            {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Transfer Type',
+                    value: transferRequest.transferOrder.transferType.value|capitalize,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: '#%s // %s (%s)'|format(asset.id, asset.name, asset.companyNumber),
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset Valuation',
+                    value: '£' ~ asset.fundingGoal|number_format(2, '.', ','),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Scheduled Monthend',
+                    value: transferRequest.transferOrder.scheduledFor|date('Y-m'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Covering Period Between',
+                    value: transferRequest.transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                        ~ ' - ' 
+                        ~ transferRequest.transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                    className: 'col-md-6',
+                }) }}
+            </div>
+            {{ include('admin/components/_alert.html.twig', {
+                message: "The asset wallets involved in the transfer should be highlghted below. If not, this transfer should be deleted and a replaced with a new transfer. If issues persist, report the issue to the tech team.",
+            }) }}
+            {{ include('admin/components/products/wallets_table.html.twig', {
+                showWallets: ['hold', 'settlement/actual', 'deposit', 'expenses'],
+                activeWallets: [transferRequest.debitWalletId, transferRequest.creditWalletId]
+            }) }}
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+{% endblock %}
+
+{% block formContents %}
+    {% if not workflow_can(transferRequest.transferOrder, 'approve') %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "Editing is restricted outside draft mode",
+        }) }}
+    {% endif %}
+    <section class="row">
+        <div class="col-sm-6">{{ form_row(form.debitWalletId) }}</div>
+        <div class="col-sm-6">{{ form_row(form.creditWalletId) }}</div>
+        <div class="col-12">{{ form_row(form.description) }}</div>
+        <div class="col-sm-6">{{ form_row(form.amount) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary" href="{{ path(exitRoute ?? 'admin_transfer_order_manage', {
+        id: transferRequest.transferOrder.id
+     }) }}">Cancel</a>
+{% endblock %}

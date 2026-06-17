@@ -1,0 +1,84 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Relistings' %}
+
+{% set visibility_map = {
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_AUTO')): "Auto",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_ADMIN')): "Admin Only",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_VIP')): "VIP",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_NORMAL')): "Normal",
+    (constant('\\App\\Entity\\BaseEntity::VISIBILITY_ALL')): "All",
+} %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "relistings",
+        "sectionTitle": "Relistings",
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Relistings',
+                value: offerings.count|number_format(0, '.', ','),
+            }) }}
+        </div>
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: offerings
+        }) }}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Created</th>
+                        <th>Seller</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Offered (£)</th>
+                        <th class="text-end">Sold (£)</th>
+                        <th>Investment</th>
+                        <th>Visibility</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offering in offerings %}
+                    <tr>
+                        <td>
+                            {{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Edit",
+                                    "route": 'admin_offering_edit',
+                                    "params": {id: offering.id},
+                                    "style": "btn-outline-secondary text-nowrap",
+                                },
+                            }) }}
+                        </td>
+                        <td>{{ offering.id }}</td>
+                        <td><a href="{{ path('admin_product_dashboard', { id: offering.asset.id }) }}">{{ offering.asset.name }}</a></td>
+                        <td>{{ offering.createdAt|date("Y-m-d") }}</td>
+                        <td>
+                            <a href="{{ path('admin_user_edit', { id: offering.sellInvestment.user.id }) }}">{{ offering.sellInvestment.user.username }}</a>
+                        </td>
+                        <td class="text-end tw-tabular-nums" data-field="offered">{{ offering.noOfShares|number_format(0, '.', '') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ offering.fundingGoal|number_format(2, '.', '') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ offering.raisedAmount|number_format(2, '.', '') }} ({{ offering.raisedPercent|number_format(2, '.', '') }}%)</td>
+                        <td>
+                            <a href="{{ path('admin_investment_edit', { id: offering.sellInvestment.id }) }}">
+                                {{ offering.sellInvestment.id }}
+                            </a>
+                            <span class="d-none">{{ offering.sellInvestment.user.username }}</span>
+                        </td>
+                        <td>{{ visibility_map[offering.visibility] }} ({{ offering.visibility }})</td>
+                        <td>{{ offering.lifecycleStatus|capitalize }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

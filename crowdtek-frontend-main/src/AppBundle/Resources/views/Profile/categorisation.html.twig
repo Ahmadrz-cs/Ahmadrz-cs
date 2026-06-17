@@ -1,0 +1,125 @@
+{% if active is not defined %}
+	{% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+	{% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block title %}Investor Categorisation
+{% endblock %}
+
+{% block body %}
+
+	<main role="main">
+		{% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+		<!-- profile detail -->
+		<section>
+			<div class="container my-2 my-md-4">
+				<div class="page-head pb-2 d-flex justify-content-between align-items-center">
+					<h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+						My Profile</h3>
+				</div>
+				<div class="row no-gutters border-top">
+					<div class="col-md-3">
+						{% include('@AppBundle/Common/profilenav.html.twig')%}
+					</div>
+					<div class="col-md-9">
+						<div
+							class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+							<div class="tab-pane fade show active" id="investorCategorisation" role="tabpanel" aria-labelledby="investorCategorisation-tab">
+								<h4>Investor Type</h4>
+
+								{% if currentCategory %}
+									<div class="border rounded p-2 mt-2 text-left text-medium">
+										Your current investor type:
+										<span id="current-category">{{ currentCategory.name|humanize }}</span>
+									</div>
+								{% endif %}
+
+								{{ form_start(form) }}
+								<div class="row mt-2">
+									{% for category in form.category %}
+										<div class="col-4">
+											<label class="d-flex" style="gap: 0.5rem;">
+												{{ form_widget(category) }}
+												{% set label = category.vars.label %}
+												<div class="fw-normal tw-text-sm">{{ label|humanize }}</div>
+											</label>
+										</div>
+									{% endfor %}
+								</div>
+
+								<div class="bg-light rounded p-3 mb-3 mt-2 text-left" id="category-summary">
+									<div class="restricted d-none">
+										{{ include('@AppBundle/Common/categorisation/_restricted.html.twig') }}
+									</div>
+									<div class="sophisticated d-none">
+										{{ include('@AppBundle/Common/categorisation/_sophisticated.html.twig') }}
+									</div>
+									<div class="high-net-worth d-none">
+										{{ include('@AppBundle/Common/categorisation/_hnw.html.twig') }}
+									</div>
+								</div>
+
+								<div class="d-flex justify-content-center" style="gap: 0.5rem;">
+									<button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Continue</button>
+								</div>
+								{{ form_rest(form) }}
+								{{ form_end(form) }}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+{% endblock %}
+
+{% block pagejs %}
+<script>
+    $(document).ready(function () {
+    getChecked($('input[name="user_categorisation[category]"]:checked').attr('id'));
+    $('input[name="user_categorisation[category]"]').click(function () {
+        if ($(this).is(':checked')) {
+            console.log($(this).attr('id'));
+            let selectedblock = $(this).attr('id');
+            getChecked(selectedblock);
+        }
+
+
+    });
+    function getChecked(selectedblock) {
+
+        if (selectedblock == 'user_categorisation_category_0') {
+            $('.restricted').removeClass('d-none');
+            $('.sophisticated').addClass('d-none');
+            $('.high-net-worth').addClass('d-none');
+        }
+        if (selectedblock == 'user_categorisation_category_1') {
+            $('.restricted').addClass('d-none');
+            $('.sophisticated').removeClass('d-none');
+            $('.high-net-worth').addClass('d-none');
+        }
+        if (selectedblock == 'user_categorisation_category_2') {
+            $('.restricted').addClass('d-none');
+            $('.sophisticated').addClass('d-none');
+            $('.high-net-worth').removeClass('d-none');
+        }
+    }
+});
+</script>
+{% endblock %}

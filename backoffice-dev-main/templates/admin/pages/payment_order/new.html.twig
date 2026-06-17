@@ -1,0 +1,44 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = backToRoute|default('admin_payment_order') %}
+{% set areaHeading = 'Payment Orders' %}
+{% set mainHeading = mainHeading|default('New Payment Order') %}
+{% set baseTemplate = 'cms' %}
+
+{% set paymentTypeDescriptions = {
+    (constant('App\\Service\\PaymentService::TYPE_DIVIDEND')): 'Payment to shareholders (no changes to shareholding)',
+    (constant('App\\Service\\PaymentService::TYPE_LIQUIDATION')): 'Generic type for exchanging share for cash (not actively used)',
+    (constant('App\\Service\\PaymentService::TYPE_REPAYMENT')): 'Repay prefunder investments marked for liquidation',
+    (constant('App\\Service\\PaymentService::TYPE_DIVESTMENT')): 'Full or partial (early) liquidation of an asset that has underperformed',
+    (constant('App\\Service\\PaymentService::TYPE_INVESTMENT_EXIT')): 'Full liquidation of an asset at the end of the investment term',
+} %}
+
+{# Configure page blocks #}
+{% block formContents %}
+    <div class="form-group d-flex flex-column gap-3">
+        <div>
+            <label class="d-block" for="{{ form.paymentType.vars.name }}" {% if form.paymentType.vars.required %} required="required" {% endif %}>{{ form.paymentType.vars.label }}</label>
+            {{ form_help(form.paymentType) }}
+        </div>
+        <div class="row g-3">
+            {% for paymentTypeOption in form.paymentType %}
+                <div class="col-sm-6 col-md-4">
+                    <label class="d-flex flex-column gap-2 bg-light rounded-2 border p-3">
+                        {{ form_widget(paymentTypeOption) }}
+                        <div class="fw-normal tw-text-sm">{{ paymentTypeDescriptions[paymentTypeOption.vars.value] }}</div>
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <section class="row">
+        <div class="col-sm-6">{{ form_row(form.asset, {attr: {'class': 'searchable' }}) }}</div>
+        <div class="col-sm-6">{{ form_row(form.scheduledFor) }}</div>
+        <div class="col-sm-6">{{ form_row(form.debitWallet) }}</div>
+        <div class="col-12">{{ form_row(form.description) }}</div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Create Payment Order</button>
+{% endblock %}

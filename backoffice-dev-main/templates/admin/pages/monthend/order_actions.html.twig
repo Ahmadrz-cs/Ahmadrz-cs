@@ -1,0 +1,44 @@
+{% if originalTotal == 0 or order.status == constant('App\\Entity\\AbstractOrder::STATE_COMPLETED') %}
+
+    {% if originalTotal == 0 %}
+        {% if order.payments is defined %}
+            {% set orderType = 'payments' %}
+        {% elseif order.transfers is defined %}
+            {% set orderType = 'transfers' %}
+        {% else %}
+            {% set orderType = 'requests' %}
+        {% endif %}
+
+        {% set variant = 'secondary' %}
+        {% set actionMessage = "No " ~ orderType ~ " are currently being made. Add/generate new " ~ orderType ~" or edit existing " ~ orderType ~ "." %}
+        {% set actionLink = path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) ~ "#" ~ orderType ~"-list" %}
+        {% set actionText = "Configure " ~ orderType|capitalize %}
+
+    {% endif %}
+
+    {% if order.status == constant('App\\Entity\\AbstractOrder::STATE_COMPLETED') %}
+        {% set actionMessage = "This order is complete. Continue with monthend tasks." %}
+        {% set title = "Order Complete" %}
+        {% set variant = 'success' %}
+        {% if order.asset is not null %}
+            {% set actionLink = path('admin_monthend_asset_dashboard', {id: order.asset.id}) %}
+            {% set actionText = "Back to Monthend Checklist" %}
+        {% else %}
+            {% set actionLink = path('admin_monthend_index') %}
+            {% set actionText = "Back to Monthend Hub" %}
+        {% endif %}
+    {% endif %}
+
+    {% embed 'admin/components/_alert.html.twig' with {
+            variant: variant|default('secondary'),
+            title: title|default('Suggested Actions'),
+    } %}
+        {% block message %}
+            <p class="">{{ actionMessage }}</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-dark" href={{ actionLink }}>{{ actionText }}</a>
+            </div>
+        {% endblock message %}
+    {% endembed %}
+
+{% endif %}

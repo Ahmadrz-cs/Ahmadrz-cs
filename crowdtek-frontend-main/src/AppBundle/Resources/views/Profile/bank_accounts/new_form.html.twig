@@ -1,0 +1,79 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+
+    <!-- main body -->
+    <main role="main">
+        {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt="">
+                        My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                        {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4">
+                            <h4>Add New {{ accountType|upper }} Bank Account</h4>
+                            {{ form_start(form) }}
+                            {{ form_row(form.accountHolderType) }}
+                            {{ form_row(form.accountNumber) }}
+                            {{ form_row(form.bic) }}
+                            {# <div class="border rounded bg-light p-3 my-3">
+                                <p class="font-medium">Using a photo from an iPhone?</p>
+                                <p class="mb-0">Please note the default "High Efficiency" (HEIF) format is <u>not</u> supported. HEIF photos must be converted to JPEG or retaken with the "Most Compatible" (JPEG) option selected in iOS camera format settings.</p>
+                            </div> #}
+                            {{ form_row(form.bankStatement) }}
+                            <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('bank_account_registrations_index') }} role="button">Cancel</a>
+                                <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Submit</button>
+                            </div>
+                            {{ form_rest(form) }}
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+{% endblock %}
+
+{% block pagejs %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#bank_account_registration_bankStatement').on('change',function(e){
+                //get the file name
+                let filename = e.target.files[0].name;
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(filename);
+            });
+        });
+    </script>
+{% endblock %}

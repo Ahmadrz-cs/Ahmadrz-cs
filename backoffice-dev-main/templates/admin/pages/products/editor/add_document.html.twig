@@ -1,0 +1,33 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% if app.request.query.get('setup') %}
+    {% set additionalParams = {'setup': 1} %}
+{% endif %}
+
+{% set backToRoute = 'admin_product_edit_documents' %}
+{% set backToRouteParams = {'id': asset.id}|merge(additionalParams|default({})) %}
+{% set areaHeading = 'Asset Products' %}
+{% set mainHeading = 'Asset Product Editor' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "documents-create",
+        "sectionTitle": "Add Document",
+        "sectionStyle": "pb-3",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+        <div class="row ">
+            <div class="col-md-6">{{ form_row(form.type) }}</div>
+            <div class="col-md-6">{{ form_row(form.document.file) }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-success text-nowrap" id="submit" type="submit">Add Document</button>
+            <a class="btn btn-outline-secondary text-nowrap" 
+                href="{{ path('admin_product_edit_documents', {'id': asset.id}) }}">Cancel</a>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

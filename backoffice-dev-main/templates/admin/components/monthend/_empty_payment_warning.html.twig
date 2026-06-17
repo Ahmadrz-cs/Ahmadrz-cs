@@ -1,0 +1,12 @@
+{% set emptyPayments = paymentOrder.payments|filter(p => p.amount == 0)|length %}
+
+{% if emptyPayments > 0 %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "warning",
+        title: "Empty Payments Found",
+        elementId: "empty-payments-warning",
+        message: "Payment order contains empty payments (amount is equal to 0). These payments will ignored when the order is run. Note that this can cause problems for prefunder repayments and divestment payments as shareholdings will also not automatically update.",
+    }) }}
+
+{% endif %}

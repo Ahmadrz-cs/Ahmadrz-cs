@@ -1,0 +1,43 @@
+App\Entity\Document:
+    doc_base (template):
+        filename: "Test_PDF.pdf"
+        description: "50%? <sentence(6, true)>"
+        documentUrl: "<('fixtures/' . $filename)>"
+    doc_jpeg (template, extends doc_base):
+        filename: "livingroomstock.jpg"
+        type: "image/jpeg"
+    doc_pdf (template, extends doc_base):
+        filename: "Test_PDF.pdf"
+        type: "application/pdf"
+    doc_excel (template, extends doc_base):
+        filename: "Test_Excel.xlsx"
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    doc_word (template, extends doc_base):
+        filename: "Test_WordDoc.xlsx"
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    doc_property_photo (template, extends doc_jpeg):
+        filename: "<randomElement(['kitchenstock.jpg', 'livingroomstock.jpg', 'smallbedroomstock.jpg'])>"
+        tag: "property_photos"
+    doc_logo (template, extends doc_jpeg):
+        filename: "<randomElement(['camdenstock.jpg', 'lodgingsstock.png', 'quaysidestock.jpg', 'royalwayproperty.jpg'])>"
+        tag: "logo"
+    doc_poi (template, extends doc_jpeg):
+        filename: "<randomElement(['female-passport.jpg', 'male-passport.jpg'])>"
+        tag: "proof_of_identity"
+    doc_activation (template, extends doc_pdf):
+        filename: "Test_PDF.pdf"
+        description: "Articles of Association"
+        tag: "read_to_activate"
+    doc_aoa (template, extends doc_activation): # Just an alias for the main read_to_activate doc
+    doc_im (template, extends doc_pdf):
+        filename: "Test_PDF.pdf"
+        description: "Information Memorandum"
+        tag: "read_to_activate"
+    doc_calculations (template, extends doc_excel):
+        filename: "Test_Excel.xlsx"
+        description: "Financial Summary"
+        tag: "calculations"
+    doc_certificate (template, extends doc_jpeg):
+        filename: "share_certificate.jpg"
+        tag: "share_certificate"

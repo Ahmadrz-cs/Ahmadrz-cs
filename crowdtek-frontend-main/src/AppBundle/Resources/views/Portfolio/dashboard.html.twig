@@ -1,0 +1,304 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% set unsettledTotal = unsettledInvestments|default([])|reduce((carry, i) => carry + i.tradeValue, 0) %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main role="main">
+        {% include '@AppBundle/Common/portfoliobanner.html.twig' %}
+
+        <section class="mt-4">
+            {% include '@AppBundle/Common/portfolionav.html.twig' %}
+            <div class="container">
+                <div class="row mb-4 mb-sm-4 justify-content-center" id="portfolio-stats-board">
+                    <div class="col-lg-3 col-sm-6 mb-2 mb-lg-0">
+                        <div class="p-2 border rounded h-100 d-flex flex-column text-center justify-content-between">
+                            <p class="text-uppercase font-medium mb-0">Portfolio Value</p>
+                            {% if hasUserInfo and userInfo.mangopay_wallet_id %}
+                                        
+                                {% if hasUserInfo and userInfo.mangopay_wallet_id
+                                    and userInfo.sca_status == "active"
+                                    and scaRequired is not null
+                                    and scaRequired == false
+                                %}
+                                    <p class="h4 my-2" data-field-name="portfolio-value">£{{ (portfolioSummary.value + wallet_balance + unsettledTotal)|number_format(2, '.', ',') }}</p>
+                                    <small>Combination of the total currently invested and your wallet balance</small>
+                                {% else %}
+                                    <p class="h4 my-2" data-field-name="portfolio-value">N/A</p>
+                                    <small>Combination of the total currently invested and your wallet balance (Requires SCA verification to view)</small>
+                                {% endif %}
+                            {% else %}
+                                <p class="h6 my-2">Your wallet has not been setup yet. Please complete onboarding or contact us for assistance.</p>
+                            {% endif %}
+                            
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 mb-2 mb-lg-0">
+                        <div class="p-2 border rounded h-100 d-flex flex-column text-center justify-content-between">
+                            <p class="text-uppercase font-medium mb-0">Total Currently Invested</p>
+                            <p class="h4 my-2" data-field-name="totla-invested">£{{ (portfolioSummary.value + unsettledTotal)|number_format(2, '.', ',') }}</p>
+                            <small>Excludes divested investments and any sold off assets</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-2 col-sm-6 mb-lg-0">
+                        <div class="p-2 border rounded h-100 d-flex flex-column text-center justify-content-between">
+                            <p class="text-uppercase font-medium mb-0">Total Earnings</p>
+                            <p class="h4 my-2" data-field-name="total-return">£{{ (portfolioSummary.capitalGains + portfolioSummary.dividends)|number_format(2, '.', ',') }}</p>
+                            <small>The sum of all your dividends and any capital gains/losses</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-2 col-sm-6 mb-lg-0">
+                        <div class="p-2 border rounded h-100 d-flex flex-column text-center justify-content-between">
+                            <p class="text-uppercase font-medium mb-0">Rental Earnings</p>
+                            <p class="h4 my-2" data-field-name="total-dividends">£{{ portfolioSummary.dividends|number_format(2, '.', ',') }}</p>
+                            <small>Includes dividends paid on your investments</small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12 col-lg-8 mt-1 mt-lg-3">
+                        <div class="d-flex flex-column text-center align-items-center">
+                            <p class="text-uppercase font-medium mb-1">Wallet Balance</p>
+                            {% if hasUserInfo and userInfo.mangopay_wallet_id %}
+                                        
+                                {% if hasUserInfo and userInfo.mangopay_wallet_id
+                                    and userInfo.sca_status == "active"
+                                    and scaRequired is not null
+                                    and scaRequired == false
+                                %}
+                                    <p class="h4 mb-2" data-field-name="wallet-balance" data-value="{{ app.session.get('balance')|default('0.00')|replace({' ': '', ',': ''}) }}">£{{  app.session.get('balance')|default('0.00')|replace({' ': ''})|number_format(2, '.', ',') }}</p>
+                                    <div class="d-flex justify-content-center">
+                                        <a class="btn btn-primary rounded-pill px-2 mr-1" href="{{ path('add_fund_new') }}">Add Funds</a>
+                                        <a class="btn btn-light rounded-pill px-2 mr-1" title="Refresh Balance" href="{{ path(app.request.attributes.get('_route'), {refreshBalance: 1}) }}">Refresh Balance</a>
+                                    </div>
+                                {% else %}
+                                    {% if not canScaEnroll %}
+                                        {{ include('@AppBundle/Common/_sca_wallet_verification_prompt.html.twig') }}
+                                    {% else %}
+                                        {{ include('@AppBundle/Common/_sca_enrollment_prompt.html.twig', {
+                                            restrictedAction: "access your wallet",
+                                            truncated: true,
+                                        }) }}
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <p class="mb-3 text-center">Your wallet has not been setup yet. Please complete onboarding or contact us for assistance.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-banner portfolio-sub banner-medium bg-overlay mb-6">
+                <div class="container py-6 position-relative layer-z-1">
+
+                    <h3 class="text-center text-light mb-3">You currently have ({{ portfolioSummary.positions|filter(v => v.shares > 0)|length }}) active properties in your portfolio</h3>
+                    <div class="table-responsive mb-2">
+                        <h4 class="sr-only">Portfolio Summary</h4>
+                        <div class="d-flex justify-content-center mb-2">
+                            <a class="btn btn-light btn-sm rounded-pill px-2" title="Refresh Portfolio" href="{{ path(app.request.attributes.get('_route'), {refreshPortfolio: 1}) }}">Refresh Portfolio</a>
+                        </div>
+                        <table class="grid-table table table-invert table-borderless table-custom font-medium gfg" id="portfolio-positions">
+                            <thead class="p-3 font-medium">
+                                <th class="table-custom-hd"></th>
+                                <th class="table-custom-hd">Property Name</th>
+                                <th class="table-custom-hd">Average Price</th>
+                                <th class="table-custom-hd">Shares</th>
+                                <th class="table-custom-hd">Value</th>
+                                <th class="table-custom-hd">Total Earnings</th>
+                                <th class="table-custom-hd">Total Dividends</th>
+                            </thead>
+                            <tbody>
+                                {% for position in portfolioSummary.positions|default([])|sort((a, b) => b.value <=> a.value) %}
+                                    {# <tr class="mb-1 grid-table-4" data-divest={{ property.fullyDivested }}> #}
+                                    <tr class="mb-1 grid-table-4 rounded-md" data-asset-id="{{ position.assetId }}">
+                                        <td class="table-custom-data grid-order-2 grid-span-1 pb-1" data-label="">
+                                            <span class="">
+                                                <a href="{{ path('my_portfolio_asset_position', { id: position.assetId}) }}" class="table-custom-value d-flex justify-content-center align-self-center btn btn-dark border btn-sm">View</a>
+                                            </span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-1 grid-text-left grid-span-3" data-label="Property Name">
+                                            <span class="table-custom-value">{{ position.assetName }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-3 grid-text-left show-label mb-1 mb-lg-0" data-label="Average Price">
+                                            <span class="table-custom-value">£{{ position.averagePrice|number_format(2, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-4 grid-text-left show-label mb-1 mb-lg-0" data-label="Shares Owned">
+                                            <span class="table-custom-value">{{ position.shares|number_format(0, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-5 grid-text-left show-label mb-1 mb-lg-0" data-label="Amount Invested">
+                                            <span class="table-custom-value">£{{ position.value|number_format(2, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-6 grid-text-left show-label mb-1 mb-lg-0" data-label="Total Earnings">
+                                            <span class="table-custom-value">£{{ (position.capitalGains + position.dividends)|number_format(2, '.', ',') }}</span>
+                                        </td>
+                                        <td class="table-custom-data grid-order-7 grid-text-left show-label mb-1 mb-lg-0" data-label="Total Dividends">
+                                            <span class="table-custom-value">£{{ position.dividends|number_format(2, '.', ',') }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="row mb-4 mb-sm-4 gap-y-5">
+                    <section class="col-12 col-md-6 col-lg-4 d-flex flex-column gap-y-3" id="pending-investments">
+                        <h4>Pending Investments</h4>
+                        <details class="tw-p-4 text-md">
+                            <summary>What are pending investments?</summary>
+                            <div class="d-flex flex-column gap-y-3 mt-1">
+                                <div>These investments are awaiting settlement during the next monthend settlement cycle.</div>
+                                <div>Investments made during a given month are usually settled during the first week of the following calendar month, e.g. investments in March will usually be settled in the first week of April.</div>
+                                <div>Pending investments do not contribute towards your "active properties" above and their shares are not eligible for dividends until they are settled.</div>
+                            </div>
+                        </details>
+                        <div class="d-flex flex-column gap-y-3 card-list overflow-y-auto" style="max-height: 560px;">
+                            {% for trade in unsettledInvestments %}
+                                {{ include('@AppBundle/Portfolio/_trade_card.html.twig', {
+                                    trade: trade,
+                                    showAsset: true,
+                                    showId: false,
+                                    dateformat: 'Y-m-d H:i:s',
+                                }) }}
+                            {% else %}
+                                <div class="border rounded-lg tw-p-4 text-md">No pending investments</div>
+                            {% endfor %}
+                        <div>
+                    </section>
+
+                    <section class="col-12 col-md-6 col-lg-4 d-flex flex-column gap-y-3" id="open-sell-orders">
+                        <h4>Secondary Market Listings</h4>
+                        <details class="tw-p-4 text-md text-md">
+                            <summary>About secondary market listings</summary>
+                            <div class="d-flex flex-column gap-y-3 mt-1">
+                                <div>Includes any open or incomplete sells orders. Proceeds from sales will accessible from your wallet after the next monthend settlement cycle.</div>
+                                <div>Submitted sell orders may need approval from the Yielders team before they become "active" and available to other investors.</div>
+                            </div>
+                        </details>
+                        <div class="d-flex flex-column gap-y-3 card-list overflow-y-auto" style="max-height: 560px;">
+                            {% for sellOrder in sellOrders %}
+                                {{ include('@AppBundle/Portfolio/_order_card.html.twig', {
+                                    order: sellOrder,
+                                    showAsset: true,
+                                }) }}
+                            {% else %}
+                                <div class="border rounded-lg tw-p-4 text-md">No open secondary market listings</div>
+                            {% endfor %}
+                        <div>
+                    </section>
+
+                    <section class="col-12 col-md-6 col-lg-4 d-flex flex-column gap-y-3" id="recent-dividends">
+                        <h4>Recent Dividends</h4>
+                        <div class="tw-p-4 text-md mb-0">Up to 10 shown.</div>
+                        <div class="d-flex flex-column gap-y-3 card-list overflow-y-auto" style="max-height: 560px;">
+                            {% for payout in dividends %}
+                                {{ include('@AppBundle/Portfolio/_payout_card.html.twig', {
+                                    payout: payout,
+                                    showAsset: true,
+                                }) }}
+                            {% else %}
+                                <div class="border rounded-lg tw-p-4 text-md">No recent dividends</div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                </div>
+
+                {# <h3 class="mb-2">Pending Investments</h3>
+                <p>Investments made during a given month are usually settled during the first week of the following calendar month, e.g. investments in March will usually be settled in the first week of April. </p>
+                <p>Pending investments do not contribute towards your "active properties" above and their shares are not eligible for dividends until they are settled.</p>
+                <div class="table-responsive mb-2 pb-3">
+                    <h4 class="sr-only">Unsettled Investments</h4>
+                    <table class="grid-table table table-borderless table-custom font-medium gfg" id="unsettled-investments">
+                        <thead>
+                            <th class="table-custom-hd">Property Name</th>
+                            <th class="table-custom-hd">Price</th>
+                            <th class="table-custom-hd">Shares</th>
+                            <th class="table-custom-hd">Value</th>
+                            <th class="table-custom-hd">Investment Date</th>
+                            <th class="table-custom-hd">Status</th>
+                        </thead>
+                        <tbody>
+                            {% for unsettledInv in unsettledInvestments|default([])|sort((a, b) => b.createdAt <=> a.createdAt) %}
+                                <tr class="mb-1 grid-table-4 border rounded-md" data-uuid="{{ unsettledInv.uuid }}" data-asset-id="{{ unsettledInv.assetId }}">
+                                    <td class="table-custom-data grid-order-1 grid-text-left grid-span-3" data-label="Property Name">
+                                        <span class="table-custom-value">{{ unsettledInv.assetName }}</span>
+                                    </td>
+                                    <td class="table-custom-data grid-order-2 grid-text-left show-label mb-1 mb-lg-0" data-label="Share Price">
+                                        <span class="table-custom-value">£{{ unsettledInv.pricePerShare|number_format(2, '.', ',') }}</span>
+                                    </td>
+                                    <td class="table-custom-data grid-order-3 grid-text-left show-label mb-1 mb-lg-0" data-label="Shares Bought">
+                                        <span class="table-custom-value">{{ unsettledInv.numberOfShares|number_format(0, '.', ',') }}</span>
+                                    </td>
+                                    <td class="table-custom-data grid-order-3 grid-text-left show-label mb-1 mb-lg-0" data-label="Amount Invested">
+                                        <span class="table-custom-value">£{{ unsettledInv.tradeValue|number_format(2, '.', ',') }}</span>
+                                    </td>
+                                    <td class="table-custom-data grid-order-4 grid-text-left show-label mb-1 mb-lg-0" data-label="Investment Date">
+                                        <span class="table-custom-value">{{ unsettledInv.createdAt ? unsettledInv.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</span>
+                                    </td>
+                                    <td class="table-custom-data grid-order-5 grid-text-left show-label mb-1 mb-lg-0" data-label="Status">
+                                        <span class="table-custom-value">{{ unsettledInv.status.value|capitalize }}</span>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr class="text-center">
+                                    <td colspan="6">No pending investments</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div> #}
+
+            </div>
+        </section>
+    </main>
+
+{% endblock %}
+{% block pagejs %}
+    <script src="{{ asset('bundles/app/js/bootstrapDataTable.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#portfolio-positions").DataTable({
+                paging: true,
+                pageLength: 10,
+                bLengthChange: false,
+                info: false,
+                searching: false,
+                columnDefs: [
+                    {
+                        orderable: false,
+                        targets: 0
+                    },
+                    // { orderable: false, targets: 2 },
+                    // { orderable: false, targets: 3 },
+                    // { orderable: false, targets: 4 },
+                    // { orderable: false, targets: 5 }
+                ],
+                drawCallback: function () {
+                    $('.dataTables_paginate').addClass('d-flex justify-content-end');
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

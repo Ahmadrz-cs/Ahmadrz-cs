@@ -1,0 +1,98 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_review_index' %}
+{% set areaHeading = 'KYC Reviews' %}
+{% set mainHeading = 'View KYC Review' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% set reviewsPerformed = {
+        'identity': kycReview.identityReview,
+        'address': kycReview.addressReview,
+        'country': kycReview.countryReview,
+        'kycProvider': kycReview.kycProviderReview,
+        'dueDiligenceLevel': kycReview.dueDiligenceLevelReview,
+        'kycSurvey': kycReview.kycSurveyReview,
+        'transactions': kycReview.transactionsReview,
+    } %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'kyc-review',
+        "sectionTitle": 'KYC Review',
+        "linkActions": [
+        {
+            "text": "Edit Review",
+            "route": "admin_kyc_review_edit",
+            "params": {"id": kycReview.id},
+            "style": "btn-outline-secondary",
+            "render": is_granted('ROLE_OPERATIONS', app.user),
+        },
+    ]
+    } %}
+        {% block sectionContent %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead></thead>
+                    <tbody>
+                        <tr data-field-name="id">
+                            <td>Review Id</td>
+                            <td>{{ kycReview.id }}</td>
+                        </tr>
+                        <tr data-field-name="subject">
+                            <td>KYC Subject</td>
+                            <td>#{{ kycReview.subject.id }}
+                                //
+                                {{ kycReview.subject.username }}</td>
+                        </tr>
+                        <tr data-field-name="vip">
+                            <td>Is subject currently a VIP?</td>
+                            <td>{{ kycReview.subject.isVip ? 'Yes' : 'No' }}</td>
+                        </tr>
+                        <tr data-field-name="status">
+                            <td>Status</td>
+                            <td>{{ kycReview.status.value|replace({'_': ' '})|capitalize }}</td>
+                        </tr>
+                        <tr data-field-name="review-type">
+                            <td>Review Type</td>
+                            <td>{{ kycReview.reviewType.value|capitalize }}</td>
+                        </tr>
+                        <tr data-field-name="reviewed-by">
+                            <td>Reviewed By</td>
+                            <td>{{ kycReview.decision is null ? 'Pending Review' : kycReview.reviewedBy.userIdentifier|default('System') }}</td>
+                        </tr>
+                        <tr data-field-name="decision">
+                            <td>Decision</td>
+                            <td>{{ kycReview.decision is null ? 'No Decision' : kycReview.decision ? 'Pass' : 'Fail' }}</td>
+                        </tr>
+                        <tr data-field-name="notes">
+                            <td>Notes</td>
+                            <td>{{ kycReview.notes|default('-') }}</td>
+                        </tr>
+                        <tr data-field-name="reviews-performed">
+                            <td>Reviews Performed</td>
+                            <td>{{ reviewsPerformed|filter(v => v == true)|keys|map(v => v|humanize)|join('\n')|nl2br }}</td>
+                        </tr>
+                        <tr data-field-name="reviews-skipped">
+                            <td>Reviews Skipped</td>
+                            <td>{{ reviewsPerformed|filter(v => v == false)|keys|map(v => v|humanize)|join('\n')|nl2br }}</td>
+                        </tr>
+                        <tr>
+                            <td>Completed At</td>
+                            <td>{{ kycReview.completedAt ? kycReview.completedAt|date() : 'Not yet completed' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Created At</td>
+                            <td>{{ kycReview.createdAt|date() }} by {{ kycReview.createdBy|default('N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Updated At</td>
+                            <td>{{ kycReview.updatedAt|date() }} by {{ kycReview.updatedBy|default('N/A') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,89 @@
+monolog:
+    channels:
+        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - crowdtek
+    handlers:
+        crowdtek:
+            # type: stream
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/crowdtek.log"
+            level: "%env(LOG_LEVEL_APP)%"
+            channels: ["crowdtek"]
+            formatter: crowdtek_log_formatter # See services.yml
+        deprecation:
+            type: rotating_file
+            max_files: "%env(LOG_RETENTION_DAYS)%"
+            path: "%kernel.logs_dir%/deprecation.log"
+            level: info
+            channels: [deprecation]
+
+when@dev:
+    monolog:
+        handlers:
+            main:
+                # type: stream
+                type: rotating_file
+                max_files: "%env(LOG_RETENTION_DAYS)%"
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                channels: ["!event", "!deprecation"]
+                formatter: crowdtek_log_formatter
+            # uncomment to get logging in your browser
+            # you may have to allow bigger header sizes in your Web server configuration
+            #firephp:
+            #    type: firephp
+            #    level: info
+            #chromephp:
+            #    type: chromephp
+            #    level: info
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine", "!console"]
+
+when@test:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                channels: ["!event"]
+            nested:
+                # type: stream
+                type: rotating_file
+                max_files: "%env(LOG_RETENTION_DAYS)%"
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                formatter: crowdtek_log_formatter
+
+when@prod:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                # action_level: error
+                action_level: debug
+                handler: nested
+                # excluded_http_codes: [404, 405]
+                buffer_size: 50 # How many messages should be saved? Prevent memory leaks
+                channels: ["!deprecation"]
+            nested:
+                # type: stream
+                type: rotating_file
+                max_files: "%env(LOG_RETENTION_DAYS)%"
+                # path: php://stderr
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                # formatter: monolog.formatter.json
+                formatter: crowdtek_log_formatter
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine"]
+            deprecation:
+                type: stream
+                channels: [deprecation]
+                path: php://stderr

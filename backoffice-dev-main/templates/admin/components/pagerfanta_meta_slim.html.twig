@@ -1,0 +1,8 @@
+{% if list is not null %}<div class="row tw-text-sm g-2  {{ appendStyle|default() }}">
+    <div class="col-sm-6">{{ pagerfanta(list, 'twitter_bootstrap4') }}</div>
+        <section class="col-sm-6 d-flex gap-2 justify-content-sm-end">
+            <span class="border rounded-2 p-2" id="list-meta-results">{{ list.count()|number_format(0, '.', ',') }} Results</span>
+            <span class="border rounded-2 p-2" id="list-meta-page">{{ list.getNbPages()|number_format(0, '.', ',') }} Pages</span>
+        </section> 
+    </div>
+{% endif %}

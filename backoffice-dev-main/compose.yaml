@@ -1,0 +1,102 @@
+name: frankenphp_backoffice
+
+services:
+  frankenphp:
+    # image: ${IMAGES_PREFIX:-}app-php
+    image: 376373716954.dkr.ecr.eu-west-2.amazonaws.com/yielderverse/backoffice-frankenphp:release-candidate
+    restart: unless-stopped
+    env_file:
+      - .env
+      - .env.docker.local
+    environment:
+      # SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
+      SERVER_NAME: ${SERVER_NAME:-http://localhost}, php:80, http://back.dev.local, http://api.dev.local
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      TRUSTED_HOSTS: ^${SERVER_NAME:-example\.com|localhost}|php$$
+      # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
+      # DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-15}&charset=${POSTGRES_CHARSET:-utf8}
+      APP_ENV: prod
+      DATABASE_URL: mysql://ydev:YankeeDelta522@db:3306/crowddb?serverVersion=11.8.3-MariaDB
+      DATABASE_SERVER_VERSION: '11.8.3-MariaDB'
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+      DATABASE_DBNAME: crowddb
+      DATABASE_USER: ydev
+      DATABASE_PASSWORD: YankeeDelta522
+      MAILER_DSN: smtp://mailer:1025
+      # MAILER_DSN: smtp://user:pass@mailer:1025
+      # Run "composer require symfony/mercure-bundle" to install and configure the Mercure integration
+      MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
+      MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
+      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      # The two next lines can be removed after initial installation
+      SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+      STABILITY: ${STABILITY:-stable}
+    networks:
+      - mariadb
+      - mailpit
+    volumes:
+      # - $PWD/frankenphp/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      # HTTP
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+      # HTTPS
+      - target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      # HTTP/3
+      - target: 443
+        published: ${HTTP3_PORT:-443}
+        protocol: udp
+  db:
+    image: mariadb:11.8
+    restart: unless-stopped
+    # This service is port forwarded by default for easy out-of-the-box access
+    # But port forwarding is NOT actually required unless you want access from the host machine via 127.0.0.1:3306
+    # E.g. you want to use Prisma studio or MySQL workbench instead of the Adminer container service
+    # Edit or comment out this port forwarding config if it is conflicting with your host machine's 3306 port
+    ports:
+      - "3306:3306"
+    networks:
+      - mariadb
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      # FYI, the passwords are the users (root or ydev)
+      # Encoded with ICAO phonetic alphabet and then alphabet position, e.g. T is the 20th letter
+      # They're intended to represent a memorable but non-trivial password
+      # To generally discourage using guessable passwords even in development
+      MYSQL_ROOT_PASSWORD: RomeoOscar1520
+      MYSQL_DATABASE: crowddb
+      MYSQL_USER: ydev
+      MYSQL_PASSWORD: YankeeDelta522
+      MARIADB_AUTO_UPGRADE: 1
+  mailer:
+    image: axllent/mailpit:${MAILPIT_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - mailpit
+    ports:
+      - 8025:8025
+      - 1025:1025
+      - 8024:8024
+    environment:
+      # MP_SMTP_AUTH: "user1:utw4EtnwBRj9INqLi4Wsv125"
+      MP_WEBROOT: /mails
+      MP_UI_BIND_ADDR: "0.0.0.0:8024"
+      MP_UI_AUTH: "yielderverse:CIicP9x4kM4WFQ0RW1NogcOo autogentest:UtAp05KY5G78DQHbs3Py"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mariadb-data:
+
+networks:
+  mariadb:
+  mailpit:

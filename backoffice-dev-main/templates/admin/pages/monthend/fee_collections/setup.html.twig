@@ -1,0 +1,110 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_manage' %}
+{% set backToRouteParams = {'id': transferOrder.id} %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Fee Collection Setup' %}
+
+{% block page_content %}
+
+    <div class="d-grid tw-gap-x-4 sm:tw-grid-cols-2 md:tw-grid-cols-3">
+
+
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "option-management-fee",
+            "sectionTitle": "Management Fee",
+            "sectionStyle": "border rounded-3 p-4 h-100 d-flex flex-column",
+            "linkActions": [
+                {
+                    "text": "Setup for Single Wallet",
+                    "route": "admin_monthend_fee_collection_income_deposit_list",
+                    "params": { id: transferOrder.id },
+                    "style": "btn-primary",
+                },
+                {
+                    "text": "Setup for Multi Wallet",
+                    "route": "admin_monthend_fee_collection_generate",
+                    "params": { id: transferOrder.id },
+                    "style": "btn-outline-primary",
+                },
+            ]
+        } %}
+            {% block sectionContent %}
+
+                <p class="mb-0">There are different auto-setup tools based on which wallet system is in use during the monthend.</p>
+
+                {% embed 'admin/components/_alert.html.twig' with {
+                    variant: "info",
+                    title: "Legacy/Single Wallet",
+                } %}
+                    {% block message %}
+                        <p><span class="fw-bold">Requires</span> a completed income disaggregation order in the same monthend period.</p>
+                        <p class="mb-0">Note that, older income disaggregation orders may not be compatible for technical reasons (missing an asset association).</p>
+                    {% endblock message %}
+                {% endembed %}
+
+                {% embed 'admin/components/_alert.html.twig' with {
+                    variant: "info",
+                    title: "Multi Wallet Recommendation",
+                } %}
+                    {% block message %}
+                        <p><span class="fw-bold">Recommend</span> having a completed income transfer order <span class="fw-bold">for each asset</span> with income during the same monthend period.</p>
+                        <p class="mb-0">In these cases, the management fee should already be provisioned to be collected by this tool.</p>
+                    {% endblock message %}
+                {% endembed %}
+
+            {% endblock %}
+        {% endembed %}
+
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "option-relisting-fee",
+            "sectionTitle": "Relisting Fee",
+            "sectionStyle": "border rounded-3 p-4 h-100 d-flex flex-column",
+            "linkActions": [
+                {
+                    "text": "Setup Relisting Fees",
+                    "route": "admin_monthend_fee_collection_generate_relisting",
+                    "params": { id: transferOrder.id },
+                    "style": "btn-primary",
+                    "roleRequired": "ROLE_OPERATIONS",
+                    "render": transferOrder.status == 'draft',
+                },
+            ]
+        } %}
+            {% block sectionContent %}
+            <section>
+                <p>Relisting fees are collected from customers as soon as they submit a relisting. These are typically held in the hold wallet until they are ready to be collected (by this tool!)</p>
+                <p>This tool estimates the relisting fees collected by each asset during monthend period (the time period search range can be changed if necessary). You then have the option to either</p>
+                <ul>
+                    <li><span class="fw-bold">Generate Transfers:</span> The auto-setup will generate the transfers based on the assets and amount estimated for collection.</li>
+                    <li><span class="fw-bold">Configure single transfer: </span> This is the equivalent to manually adding a transfer, except the amount will be prefilled with the estimated relisting fee to collect. This is useful if you want to change the description.</li>
+                </ul>
+            </section>
+            {% endblock %}
+        {% endembed %}
+
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "option-custom",
+            "sectionTitle": "Custom",
+            "sectionStyle": "border rounded-3 p-4 h-100 d-flex flex-column",
+            "linkActions": [
+                {
+                    "text": "Manually Setup Transfers",
+                    "route": "admin_monthend_fee_collection_search",
+                    "params": { id: transferOrder.id },
+                    "style": "btn-primary",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+            ]
+        } %}
+            {% block sectionContent %}
+            <section>
+                <p>Manually configure one or more fee collection transfers.</p>
+                <p>You can also access this tool via the "Add Transfer" link on the order overview/management page.</p>
+            </section>
+            {% endblock %}
+        {% endembed %}
+
+    </div>
+
+{% endblock page_content %}

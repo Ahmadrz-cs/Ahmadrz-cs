@@ -1,0 +1,20 @@
+# https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html
+filebeat.inputs:
+  - type: filestream
+    fields_under_root: true
+    fields:
+      event.dataset: backoffice-dev
+    paths:
+      - /var/log/symfony/dev-*.log
+  # - type: filestream
+  #   fields_under_root: true
+  #   fields:
+  #     event.dataset: backoffice-crowdtek
+  #   paths:
+  #     - /var/log/symfony/crowdtek-*.log
+
+# https://www.elastic.co/guide/en/beats/filebeat/current/elasticsearch-output.html
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: elastic
+  password: ${ELASTIC_PASSWORD}

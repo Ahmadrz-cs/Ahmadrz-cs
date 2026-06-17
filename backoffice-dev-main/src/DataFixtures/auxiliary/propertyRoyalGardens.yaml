@@ -1,0 +1,85 @@
+# This is Royal Way Gardens
+# Unique traits - has property photos
+# Notes - featured
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{royalway} (extends asset_base):
+        name: Royal Way Gardens - Cambridge
+        alternateName: 25 Royal Way - Cambridge
+        briefDescription: Modern energy efficient home. Surrounded by greenspace but within walking distance of amenities.
+        pricePerShare: '2.12'
+        amountOfShares: 100000
+        companyNumber: SPVAF00008
+        netProjectedYield: '0.0587'
+        netProjectedIncome: '12444'
+        minimumInvestment: '40'
+        createdAt: "<dateTimeBetween('-8 months', '-6 months')>"
+        termStart: "@self->createdAt"
+        featured: 20 # Higher priority
+
+App\Entity\AssetAddress:
+    assetaddress{royalway} (extends assetaddress_base):
+        address1: Royal Way Gardens
+        address2: 25 Royal Way
+        city: Cambridge
+        postCode: CB2 4TM
+        longitude: 0.118152
+        latitude: 52.169423
+
+App\Entity\AssetMember:
+    assetmember{royalway} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{royalway_aoa, royalway_im}:
+        asset: "@assetroyalway"
+        document: "@doc<current()>"
+    assetdoc{royalway_logo}:
+        asset: "@assetroyalway"
+        document: "@doc<current()>"
+    assetgalleryroyalway{1..2}:
+        asset: "@assetroyalway"
+        document: "@galleryroyalway<current()>"
+    assetdoc{royalway_calc}:
+        asset: "@assetroyalway"
+        document: "@doc<current()>" 
+
+App\Entity\Offering:
+    offering{royalway} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 5.87
+        grossProjectReturn: 31.22
+        isFeatured: true
+
+App\Entity\OfferingDocuments:
+    offeringdoc{royalway_calc}:
+        offering: "@offeringroyalway"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{royalway_aoa} (extends doc_aoa):
+    doc{royalway_im} (extends doc_im):
+    doc{royalway_logo} (extends doc_logo):
+        description: "Modern eco-homes in terraced arrangement"
+        filename: "royalwayproperty.jpg"
+    doc{royalway_calc} (extends doc_calculations):
+    galleryroyalway{1..2} (extends doc_property_photo):
+        description: "Example property document"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_start_{royalway} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Draft)>
+        occuredAt: "@asset<current()>->createdAt"
+    assetstatuslog_fundraise_{royalway} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Acquiring)>
+        occuredAt: "<dateTimeBetween('-14 days', '-12 days')>"
+    assetstatuslog_retail_{royalway} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>
+        occuredAt: "<dateTimeBetween('-1 week', 'now')>"

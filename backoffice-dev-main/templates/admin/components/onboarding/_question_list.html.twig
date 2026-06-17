@@ -1,0 +1,62 @@
+{% set statusToColor = {
+    'Yes': 'blue',
+    'No': 'gray',
+} %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Actions</th>
+            <th>Id</th>
+            <th>Question Type</th>
+            <th>Section</th>
+            <th>Content</th>
+            <th>Active</th>
+            <th>Locked</th>
+            <th>Choices</th>
+            <th>Response (correct/total)</th>
+            <th>CreatedAt</th>
+            <th>UpdatedAt</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        {% for question in questions %}
+            <tr>
+                <td>
+                    <div class="d-flex flex-wrap gap-1">
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Manage",
+                                "route": 'admin_question_show',
+                                "params": {id: question.id},
+                                "style": "btn-outline-dark text-nowrap",
+                            },
+                        }) }}
+                    </div>
+                </td>
+                {% set isActive = question.active ? 'Yes' : 'No' %}
+                {% set correctChoices = question.choices|filter(c => c.correct)|map(c => c.id) %}
+                {% set correctResponses = question.responses|filter(r => r.choice.id in correctChoices) %}
+                {% set correctnessDivisor = question.responses|length > 0 ? question.responses|length : 1 %}
+                <td>{{ question.id }}</td>
+                <td>{{ question.questionType.value|capitalize }}</td>
+                <td>{{ question.section.name|default('None')|humanize }}</td>
+                <td>{{ question.content }}</td>
+                <td>{{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[isActive],
+                    value: isActive
+                }) }}</td>
+                <td>{{ question.locked ? 'Yes' : 'No' }}</td>
+                <td>{{ question.choices|length }}</td>
+                <td>{{ correctResponses|length }}/{{ question.responses|length }} ({{ (100 * correctResponses|length / correctnessDivisor)|round(2) }}%)</td>
+                <td>{{ question.createdAt ? question.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ question.updatedAt ? question.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="10">no records found</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

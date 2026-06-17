@@ -1,0 +1,162 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Sell Shares{% endblock %}
+
+{% block body %}
+<header class="hero-banner properties-inner banner-medium bg-fixed bg-overlay">
+	<div class="container pt-6 pt-md-8 position-relative layer-z-1">
+		<div class="hero-banner-content pr-2 py-4 text-center">
+			<div class="row">
+				<div class="col-lg-9 mx-auto">
+					<h2 class="h1 hero-banner-hd text-light mb-3">
+						Sell Shares
+					</h2>
+				</div>
+			</div>
+		</div>
+	</div>
+</header>
+
+{# {% set minCommit = selectedOrder.minimumShares|default(0) * selectedOrder.pricePerShare %}
+{% set maxCommit = selectedOrder.maximumShares|default(selectedOrder.sharesAvailable) * selectedOrder.pricePerShare %} #}
+
+{% if isAllowedToInvest|default(false) %}
+	<main class="container my-4" id="sell-investment">
+		<div class="row justify-content-center text-center border-bottom pb-3" id="shareholding-info"
+			data-shareholding="{{ sharesAvailable|default(0) }}"
+			data-share-price="{{ asset.pricePerShare|default(0.00) }}"
+			data-fee-exempt="{{ feeExempt | default (0) }}"
+			data-min-shares="{{ minShares|default(0) }}"
+			{# data-max-commit="{{ maxCommit|default(0.00) }}" #}
+			data-invested-this-month="{{ valueListedThisMonth|default(0) }}">
+			<div class="col-12 col-sm-4">
+				<p class="small text-uppercase font-medium mb-1">Asset Name</p>
+				<p class="h4" id="asset-name">{{ asset.name|default('N/A') }}</p>
+			</div>
+			<div class="col-6 col-sm-4 mt-2 mt-sm-0">
+				<p class="small text-uppercase font-medium mb-1">Shares Available</p>
+				<p class="h4"><span id="shares-available">{{ sharesAvailable|default(0)|number_format(0, '', ',') }}
+						Shares</span></p>
+			</div>
+			<div class="col-6 col-sm-4 mt-2 mt-sm-0">
+				<p class="small text-uppercase font-medium mb-1">Share Price</p>
+				<p class="h4">£<span id="price-per-share">{{ asset.pricePerShare|default(0.00)|number_format(2, '.', ',') }}</span></p>
+			</div>
+		</div>
+
+		{{ form_start(form, {'attr': {'class': 'row my-3', 'onkeydown': "return event.key != 'Enter';"}}) }}
+		{# <div class="col-12 col-lg-10 offset-lg-1 mb-3">
+			<p class="alert alert-primary mt-1">Investors can retain a portion of their original prefunding total as a long
+				term investment.<br><a class="font-medium" target="_blank"
+				href="https://help.yielders.co.uk/en/articles/5210027-prefunding-guide">Read the guide to prefunding</a></p>
+		</div> #}
+		<section class="col-12 col-lg-8 offset-lg-2 text-center" id="total-shares-input">
+			<div class="row">
+				<div class="col-sm-6">
+					<a class="font-medium hover-underline" href="http://help.yielders.co.uk/en/articles/3436312-our-fees"
+						target="_blank">Learn more about relisting charges
+					</a>
+					{% if asset.fees.relisting|length > 0 and asset.fees.relisting|first > 0 and not feeExempt %}
+					<table class="table table-bordered table-sm mt-2">
+						<thead class="small">
+							<tr>
+								<th>Relisted this month (£)</th>
+								<th>Monthly fee limit (£)</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for band, fee in asset.fees.relisting %}
+							<tr class="fee-band-info" data-fee-band={{ fee }}>
+								<td>{{ band }}+</td>
+								<td>{{ fee }}</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% else %}
+						<div class="alert alert-info border text-md mt-1">
+							<p class="mb-0">You are currently exempt from further fees when selling shares in this property this month.</p>
+						</div>
+						
+					{% endif %}
+					<span class="hidden" id="relisting-data" data-fee-bands={{ asset.fees.relisting|json_encode }}
+						data-monthly-relisting={{valueListedThisMonth}}></span>
+				</div>
+				<div class="col-sm-6" id="share_box">
+					<div class="form-group">
+						{{ form_row(form.numberOfShares) }}
+					</div>
+					<div class="form-group">
+						<label for="sale-value">Value of Shares to Sell</label>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text px-2">£</span>
+							</div>
+							<input class="form-control rounded-right" id="sale-value" name="sale-value"
+								data-action="calc" type="number" aria-describedby="helpBlock" value="0.00" step="0.01"
+								required="" data-input-type="monetary">
+						</div>
+					</div>
+				</div>
+			</div>
+			{# <div class="alert alert-info border small">
+				<p class="mb-0">Minimum investment: {{ minCommit|format_currency('GBP') }} ({{ selectedOrder.minimumShares|default(0) }} shares)</p>
+				<p class="mb-0">Maximum investment: {{ maxCommit|format_currency('GBP') }} ({{ selectedOrder.maximumShares|default(selectedOrder.sharesAvailable) }} shares)</p>
+			</div> #}
+			<div class="alert alert-info border text-md">
+				<p class="mb-0">The relisting fee is based on the total listed for sale in this property this month. You have already listed:
+				<span id="already-listed">{{ valueListedThisMonth|format_currency('GBP') }}<span></p>
+			</div>
+		</section>
+
+		<section class="col-12 col-lg-8 offset-lg-2">
+			<table class="table text-left">
+				<tbody>
+					{# <tr class="mt-2">
+						<td class="font-medium text-left">Total to Pay</td>
+						<td class="text-right">£<span id="summary-total">0.00</span></td>
+					</tr> #}
+					<tr class="bg-light font-medium">
+						<td class="font-medium text-left">Charge for relisting</td>
+						<td class="text-right">
+							{% if not feeExempt %}
+                                £<span id="charge_listing">{{ asset.fees.relisting|first }}</span>
+                            {% else %}
+                                £<span id="charge_listing">0.00</span>
+                            {% endif %}
+						</td>
+					</tr>
+					
+				</tbody>
+			</table>
+			
+			<div class="border rounded-lg tw-p-4 my-2 text-md">
+				<p>The sale of your shares is subject to demand from other investors (buyers) on the platform, which is not guaranteed.</p>
+				<p>You will still receive dividends for shares being listed that have not yet been bought and settled. You can view the shareholding that is eligible for dividends from your portfolio.</p>
+				<p class="mb-0">Before proceeding, please ensure you have read and accept the <a class="font-weight-bold hover-underline"
+					href="{{ path('terms_conditions') }}" target="_blank">terms and conditions</a> for selling on the Yielders platform.</p>
+			</div>
+			<div class="d-flex justify-content-end gap-3">
+				{{ form_row(form.acceptTerms) }}
+			</div>
+			{{ form_rest(form) }}
+			<div class="d-flex justify-content-end gap-3">
+				<a href="{{ path('my_portfolio_asset_position', {'id':asset.id}) }}" class="btn btn-light rounded-pill px-1 px-sm-2 mr-2">Cancel</a>
+				<button type="submit" id="submit" class="btn-primary rounded-pill btn px-3">Submit Sell Order</button>
+			</div>
+		</section>
+		{{ form_end(form) }}
+
+	</main>
+	{% else %}
+        {{ include('@AppBundle/Common/_relisting_requirements.html.twig') }}
+    {% endif %}
+{% endblock %}
+
+{% block pagejs %}
+	{% if isAllowedToInvest|default(false) %}
+	<script type="text/javascript" src="{{ asset('bundles/app/js/relisting.js') }}"></script>
+	{% endif %}
+{% endblock %}

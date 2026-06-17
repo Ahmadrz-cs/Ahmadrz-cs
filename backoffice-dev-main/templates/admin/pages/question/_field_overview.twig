@@ -1,0 +1,26 @@
+{{ include('admin/components/stat.html.twig', {
+    key: 'Question Id',
+    value: question.id
+}) }}
+{{ include('admin/components/stat.html.twig', {
+    key: 'Active',
+    value: question.active ? 'Yes' : 'No'
+}) }}
+{{ include('admin/components/stat.html.twig', {
+    key: 'Locked',
+    value: question.locked ? 'Yes' : 'No'
+}) }}
+{{ include('admin/components/stat.html.twig', {
+    key: 'Question Type',
+    value: question.questionType.value|capitalize
+}) }}
+{{ include('admin/components/stat.html.twig', {
+    key: 'Section',
+    value: question.section.name|default('None')|humanize
+}) }}
+{{ include('admin/components/stat.html.twig', {
+    key: 'Question Text',
+    value: question.content|default('-'),
+    className: 'col-12',
+    valueClassName: 'bg-light rounded-2 p-3'
+}) }}

@@ -1,0 +1,44 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.217.1/containers/php-mariadb
+// Update the VARIANT arg in docker-compose.yml to pick a PHP version
+{
+    "name": "Frontend Development",
+    "dockerComposeFile": [
+        // https://code.visualstudio.com/docs/remote/create-dev-container#_extend-your-docker-compose-file-for-development
+        "compose.yaml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "remoteUser": "vscode",
+    "features": {
+        // View other available options with the "Configure Container Features" command (F1 to open)
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+            "moby": false,
+            "installDockerBuildx": true,
+            "version": "latest",
+            "dockerDashComposeVersion": "v2"
+        },
+        "ghcr.io/devcontainers-extra/features/k6:1": {}
+    },
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html",
+    "postCreateCommand": "bash .devcontainer/dev/setup-dotenv.sh && bash .devcontainer/dev/setup-project.sh",
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Set *default* container specific settings.json values on container create.
+            "settings": {
+                // Set *default* container specific settings.json values on container create.
+                // Note that settings will otherwise be inherited from your regular vscode workspace
+            },
+            "extensions": [
+                "redhat.vscode-yaml",
+                "redhat.vscode-xml",
+                "eamodio.gitlens",
+                "ms-azuretools.vscode-docker",
+                "mikestead.dotenv",
+                "DEVSENSE.phptools-vscode"
+            ]
+        }
+    }
+}

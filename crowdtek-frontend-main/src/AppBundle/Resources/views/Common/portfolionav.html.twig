@@ -1,0 +1,15 @@
+<div class="container">
+	<ul class="nav nav-pills page-nav mb-3" id="portfolio-nav" role="tablist">
+		<li class="nav-item">
+			<a class="nav-link {% if active|default() == 'dashboard' %}active{% endif %}" href="{{ path('my_portfolio') }}" >Dashboard</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link {% if active|default() == 'history' %}active{% endif %}" href="{{ path('portfolio_trade_history') }}" >History</a>
+		</li>
+		{% if userInfo.is_vip|default(false) %}
+		<li class="nav-item">
+			<a class="nav-link {% if active|default() == 'topyielders' %}active{% endif %}" href="{{ path('portfolio_top_yielders') }}">Top Yielders</a>
+		</li>
+		{% endif %}
+	</ul>
+</div>

@@ -1,0 +1,73 @@
+# This is Quayside A
+# Unique traits - in prefunding mode
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{neptunis} (extends asset_base):
+        name: Neptunis Quays - Bristol
+        alternateName: Bristol Wharf Apts. A
+        briefDescription: Newly renovated apartments set in a classical quayside building.
+        pricePerShare: 1.76
+        amountOfShares: 125000
+        companyNumber: SPVAF00001
+        visibility: 2
+        additionalType: "prefunding"
+        netProjectedYield: '0.0456'
+        netProjectedIncome: '10032'
+        createdAt: "<dateTimeBetween('-4 months', '-3 months')>"
+        termStart: "@self->createdAt"
+
+App\Entity\AssetAddress:
+    assetaddress{neptunis} (extends assetaddress_base):
+        address1: Bristol Harbour
+        address2: 17 Wharf Tides
+        city: Bristol
+        postCode: BR2 9TD
+        longitude: -2.607590
+        latitude: 51.450352
+
+App\Entity\AssetMember:
+    assetmember{neptunis} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{neptunis_aoa, neptunis_im}:
+        asset: "@assetneptunis"
+        document: "@doc<current()>"
+    assetdoc{neptunis_logo}:
+        asset: "@assetneptunis"
+        document: "@doc<current()>"
+    assetdoc{neptunis_calc}:
+        asset: "@assetneptunis"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{neptunis} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 4.56
+        grossProjectReturn: 25.32
+        offeringType: "prefunding"
+        visibility: 2
+
+App\Entity\OfferingDocuments:
+    offeringdoc{neptunis_calc}:
+        offering: "@offeringneptunis"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{neptunis_aoa} (extends doc_aoa):
+    doc{neptunis_im} (extends doc_im):
+    doc{neptunis_logo} (extends doc_logo):
+        description: "Quayside apartment showcase"
+        filename: "quaysidestock.jpg"
+    doc{neptunis_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{neptunis} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Acquiring)>

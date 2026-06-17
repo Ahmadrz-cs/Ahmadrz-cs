@@ -1,0 +1,50 @@
+parameters:
+    doctrine.dbal.connection_factory.class: Liuggio\Fastest\Doctrine\DBAL\ConnectionFactory
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    # Interface defaults
+    Fidry\AliceDataFixtures\LoaderInterface $loader: "@fidry_alice_data_fixtures.loader.doctrine"
+    Fidry\AliceDataFixtures\LoaderInterface: "@fidry_alice_data_fixtures.loader.doctrine"
+
+    # Service configs
+    App\DataFixtures\:
+        resource: "%kernel.project_dir%/src/DataFixtures/*"
+
+    # Services to be made public for overwriting
+    App\Service\Contego\ContegoClient:
+        factory:
+            - 'App\Service\Contego\ContegoClientFactory'
+            - "createApiClient"
+        arguments:
+            $baseUri: "%env(CONTEGO_URL)%"
+            $config: []
+
+    App\Service\ContegoService:
+        arguments:
+            $contego_organisation_uid: "%env(CONTEGO_ORGANISATION_UID)%"
+            $contego_person_uid: "%env(CONTEGO_PERSON_UID)%"
+            $contego_company_uid: "%env(CONTEGO_COMPANY_UID)%"
+            $contego_md5: "%env(CONTEGO_MD5)%"
+            $contego_url: "%env(CONTEGO_URL)%"
+            $contego_transaction_ref: "%env(CONTEGO_TRANSACTION_REF)%"
+
+    App\Service\MangoPay:
+        arguments:
+            $clientId: "%env(MANGOPAY_ID)%"
+            $clientPassword: "%env(MANGOPAY_PASSWORD)%"
+            $tempDir: "%env(resolve:MANGOPAY_TEMP_DIR)%"
+            $mangopayProdUrl: "%mangopay.prod_url%"
+            $mtlsCertB64: "%env(MANGOPAY_MTLS_CERT)%"
+            $mtlsKeyB64: "%env(MANGOPAY_MTLS_KEY)%"
+            $mangopayEnvironment: "%env(default:mangopay.default_environment:MANGOPAY_ENVIRONMENT)%"
+
+    App\Service\SalesforceService:
+        arguments:
+            $salesforce_id: "%env(SALESFORCE_ID)%"
+            $salesforce_secret: "%env(SALESFORCE_SECRET)%"
+            $salesforce_refresh_token: "%env(SALESFORCE_REFRESH_TOKEN)%"

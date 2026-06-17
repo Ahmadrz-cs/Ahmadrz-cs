@@ -1,0 +1,87 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "step-mangopay",
+    "sectionTitle": "Mangopay KYC",
+} %}
+    {% block sectionContent %}
+    {% set mangoStatus = kycState.mangopayStatus ?? 'N/A' %}
+
+    {% if mangoStatus|upper == 'N/A' %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "No Mangopay KYC records found. User may not have been checked by Mangopay yet.",
+        }) }}
+
+    {% endif %}
+
+    {% if mangoStatus|upper == 'REGULAR' %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "success",
+            message: "Mangopay has verified this user. You can inspect the history of KYC checks performed on this user below.",
+        }) }}
+
+    {% endif %}
+
+    {% if mangoStatus|upper == 'LIGHT' %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "Mangopay has not been able to verified this user. Either a Mangopay KYC check has not yet been performed or there was an issue with the most recent check. See below for more information.",
+        }) }}
+
+    {% endif %}
+
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'KYC Level',
+            value: mangoStatus
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Person Type',
+            value: kycState.mangopayPersonType|default('N/A')
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Regulatory Action Code',
+            value: kycState.mangopayRegulatory.ActionCode|default('N/A')
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Regulatory Blocked Inflows',
+            value: kycState.mangopayRegulatory.ScopeBlocked.Inflows|default(false)  ? 'Yes' : 'No'
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Regulatory Blocked Outflows',
+            value: kycState.mangopayRegulatory.ScopeBlocked.Outflows|default(false)  ? 'Yes' : 'No'
+        }) }}
+    </div>
+    <div class="table-responsive">
+        <h4 class="fw-bold fs-5">Mangopay KYC Document Check History</h3>
+        <table class="table" id="mangopay-kyc-docs">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Flags</th>
+                    <th>Refused Reason</th>
+                    <th>Created On</th>
+                    <th>Processed On</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for doc in kycState.mangopayDocs %}
+                <tr>
+                    <td>{{ doc.Id }}</td>
+                    <td>{{ doc.Type }}</td>
+                    <td>{{ doc.Status }}</td>
+                    <td>{{ doc.Flags|join(',') }}</td>
+                    <td>{{ doc.RefusedReasonType }} - {{ doc.RefusedReasonMessage }}</td>
+                    <td>{{ doc.CreationDate|date() }}</td>
+                    <td>{{ doc.ProcessedDate ? doc.ProcessedDate|date() : 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}

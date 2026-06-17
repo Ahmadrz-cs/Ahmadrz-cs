@@ -1,0 +1,10 @@
+<div class="btn-group border">
+    {% if is_granted('CAN_UPDATE_DOC', app.user) %}
+    <a href="{{ path('admin_assetdocument_edit', { id: assetdocument.id }) }}" type="button" class="btn btn-light"><i class="fa fa-pen"></i></a>
+    {% endif %}
+    <a href="{{ path('admin_document_download', { 'id' : assetdocument.document.id } ) }}" type="button" class="btn btn-light"><i class="fa fa-download"></i></a>
+    <a href="{{ path('admin_document_download', { 'id' : assetdocument.document.id, 'preview': 1 } ) }}" target="_blank" type="button" class="btn btn-light"><i class="fa fa-arrow-up-right-from-square"></i></a>
+    {% if is_granted('CAN_DELETE_DOC', app.user) %}
+    <a href="{{ path('admin_assetdocument_delete', { id: assetdocument.id }) }}" type="button" class="btn btn-danger" onclick="return confirm('Are You Sure? There is no undo for this operation')"><i class="fa fa-trash"></i></a>
+    {% endif %}
+</div>

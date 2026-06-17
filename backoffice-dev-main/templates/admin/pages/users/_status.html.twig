@@ -1,0 +1,79 @@
+{% if user.enabled == false %}
+<span class="badge text-bg-danger">blocked</span>
+{% endif %}
+{% if user.status.isApproved %}
+<span class="badge text-bg-success">approved</span>
+{% endif %}
+{% if user.status.isEmailNotVerifed %}
+<span class="badge text-bg-warning">email not verified</span>
+{% endif %}
+{% if user.status.isRegCompleted %}
+<span class="badge text-bg-success">registration complete</span>
+{% endif %}
+{% if user.status.isEmailValidated %}
+<span class="badge text-bg-success">email verified</span>
+{% endif %}
+{% if user.isVIP %}
+<span class="badge text-bg-success">isVIP</span>
+{% endif %}
+{% if user.findCustomFieldValue('fatca') %}
+<span class="badge text-bg-danger">FATCA</span>
+{% endif %}
+{% if user.findCustomFieldValue('companyApprovedOn') %}
+<span class="badge text-bg-success">Company Approved</span>
+{% endif %}
+{% if user.isGDPRAccepted == 0 %}
+<span class="badge text-bg-danger">GDPR Rejected</span>
+{% endif %}
+{% if user.isGDPRAccepted == 1 %}
+<span class="badge text-bg-success">GDPR Accepted</span>
+{% endif %}
+{% if user.isGDPRAccepted == 2 %}
+<span class="badge text-bg-danger">GDPR ERROR</span>
+{% endif %}
+
+{% if user.getOBStep == 1 %}
+<span class="badge text-bg-success">ob: {{ constant('App\\Entity\\OB_STEP_CONSTANT::STEP1')}}</span>
+{% endif %}
+{% if user.getOBStep == 2 %}
+<span class="badge text-bg-success">ob: {{ constant('App\\Entity\\OB_STEP_CONSTANT::STEP2')}}</span>
+{% endif %}
+{% if user.getOBStep == 3 %}
+{% if user.findCustomFieldValue(constant('App\\Entity\\CUST_FIELDS_CONSTANT::CF_Q_ATTEMPS')) >= 2 %}
+{% set questionnaireClass = 'danger' %}
+{% endif %}
+<span class="badge text-bg-{{ questionnaireClass|default('warning') }}">ob: {{
+    constant('App\\Entity\\OB_STEP_CONSTANT::STEP3')}}</span>
+{% endif %}
+{% if user.getOBStep == 4 %}
+<span class="badge text-bg-success">ob: {{ constant('App\\Entity\\OB_STEP_CONSTANT::STEP4')}}</span>
+{% endif %}
+{% if user.getOBStep == 5 %}
+<span class="badge text-bg-success">ob: {{ constant('App\\Entity\\OB_STEP_CONSTANT::STEP5')}}</span>
+{% endif %}
+{% if user.getOBStep == 6 %}
+<span class="badge text-bg-success">ob: {{ constant('App\\Entity\\OB_STEP_CONSTANT::STEP6')}}</span>
+{% endif %}
+{% if user.getOBStep == 7 %}
+<span class="badge text-bg-success">ob: {{ constant('App\\Entity\\OB_STEP_CONSTANT::STEP7')}}</span>
+{% endif %}
+
+{% set kycBadge = {
+    color: 'text-bg-light',
+    text: 'KYC Legacy/Unknown'
+} %}
+{% if user.kycProfile.lastReviewedAt is not empty %}
+    {% if user.kycProfile.verified %}
+        {% set kycBadge = {
+            color: 'text-bg-success',
+            text: 'KYC Verified'
+        } %}
+    {% else %}
+        {% set kycBadge = {
+            color: 'text-bg-danger',
+            text: 'KYC Failed'
+        } %}
+    {% endif %}
+{% endif %}
+
+<span class="badge {{ kycBadge.color }}">{{ kycBadge.text }}</span>

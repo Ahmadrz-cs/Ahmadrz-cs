@@ -1,0 +1,60 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Documents' %}
+{% set mainHeading = 'Asset Documents List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS', app.user) %}
+    <a href="{{ path('admin_assetdocument_add') }}" class="btn btn-success">Add Document</a>
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_assetdocument_index', { documentTag: 'logo' }) }}" class="btn btn-light">Logo</a>
+<a href="{{ path('admin_assetdocument_index', { documentTag: 'property_photos' }) }}" class="btn btn-light">Property photos</a>
+<a href="{{ path('admin_assetdocument_index', { documentTag: 'read_to_activate' }) }}" class="btn btn-light">Read to Activate</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.documentTag) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetId) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped" id="assetlist_doc">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Asset</th>
+            <th>File name</th>
+            <th>File description</th>
+            <th>Tag</th>
+            <th>Has Url</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for assetdocument in objects %}
+        <tr>
+            <td><a href="{{ path('admin_assetdocument_edit', { id: assetdocument.id }) }}">{{
+                    assetdocument.id }}</a></td>
+            <td>{{ assetdocument.asset }}</td>
+            <td><a href="{{ path('admin_assetdocument_edit', { id: assetdocument.id }) }}">{{
+                    assetdocument.document.filename }}</a></td>
+            <td>{{ assetdocument.document.description }}</td>
+            <td>{{ assetdocument.document.tag }}</td>
+            <td>
+                {% set has_url = assetdocument.document.documentUrl ? 'Set' : 'Missing' %}
+                {{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[has_url],
+                    value: has_url
+                }) }}
+            </td>
+            <td>{% include 'admin/pages/documents/asset/_actions.html.twig' %}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

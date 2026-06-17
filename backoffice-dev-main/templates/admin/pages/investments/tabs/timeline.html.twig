@@ -1,0 +1,18 @@
+<ul class="timeline timeline-inverse">
+    {% for date, userlogs in logs %}
+        <li class="time-label">
+            <span class="bg-blue">{{ date }}</span>
+        </li>
+        {% for log in userlogs  %}
+            <li>
+                <i class="fa fa-user bg-aqua"></i>
+
+                <div class="timeline-item">
+                    <span class="time"><i class="fa fa-clock-o"></i> {{ log.createdAt | date('h:i A') }}</span>
+
+                    <h3 class="timeline-header no-border">{{ log.user.fullname }} changed your <strong>{{ log.key }}</strong> from "{{ log.oldvalue }}" to "{{ log.newvalue }}"</h3>
+                </div>
+            </li>
+        {% endfor %}
+    {% endfor %}
+</ul>

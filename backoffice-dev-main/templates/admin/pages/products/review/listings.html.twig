@@ -1,0 +1,256 @@
+{% extends 'admin/layouts/product.html.twig' %}
+
+{% set areaHeading = 'Asset Products' %}
+{% set mainHeading = 'Review' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "listings-summary",
+    "sectionTitle": "Listings Summary",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "warning",
+        title: "Pending Upgrade to Share Trade Order System",
+        message: "This tool is still based on the legacy investments records rather than the new share trade order system.",
+    }) }}
+
+    {% embed 'admin/components/_alert.html.twig' with {
+        variant: "info",
+        title: "What is covered",
+    } %}
+        {% block message %}
+            <section class="mt-3">
+                <p class="mb-2">Table information:</p>
+                <ul>
+                    <li>The table does <em class="fw-bold">not</em> represent the current shareholding, only the cumulative listings and investments made over all time for each asset.</li>
+                    <li><span class="fw-bold">Asset issued</span>: the value/shares listed by the asset</li>
+                    <li><span class="fw-bold">Listed</span>: Sum of all published listings/offerings</li>
+                    <li><span class="fw-bold">Unpublished</span>: Sum of all unpublished listings/offerings. Typically pre-launch assets, or secondary market relistings</li>
+                    <li><span class="fw-bold">Prefunding</span>: Sum of all settled prefunding liquidation portion investments</li>
+                    <li><span class="fw-bold">Invested</span>: Sum of all settled retail investments (including prefunding retention portions)</li>
+                    <li><span class="fw-bold">Unsettled</span>: Sum of all unsettled investments irrespective of type. Prefunding and retail amounts are separated after investment settlement</li>
+                    <li><span class="fw-bold">Available</span>: Amount available to buy/invest. Equivalent to the difference between all published listings and all investments (settled or unsettled)</li>
+                </ul>
+            </section>
+            <section class="mt-3">
+                <p class="mb-2">Useful takeaways:</p>
+                <ul>
+                    <li>If the total listed is equal to the original issued by the asset, then the initial retail listing has been fully sold. Any additional listings will typically be secondary market relistings.</li>
+                    <li>A large backlog of "unpublished" listings could mean something is amiss with that asset. Could be something innocuous or something that was expected due to some event.</li>
+                    <li>The total "invested" is greater than or equal to the original asset issued amount and there is a still a lot "available" (unsold). Implies a large surplus of supply over demand, and some moderation of publishing additional relistings may be warranted.</li>
+                    <li>This supply (blue) and demand (grey) relation can also be explored in the listings composition graph further down the page.</li>
+                </ul>
+            </section>
+        {% endblock message %}
+    {% endembed %}
+
+    {{ form_start(form, {attr: {class: "d-grid gap-3 border rounded p-3"}}) }}
+        <h5 class="fw-bold fs-5">Filter Options</h5>
+        <div>
+            {{ form_widget(form.hideNoInvestors) }}
+            {{ form_widget(form.hideNoListings) }}
+            {{ form_widget(form.hideNoAvailable) }}
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Reset Criteria to Default",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {},
+                    "style": "btn-outline-secondary text-nowrap",
+                },
+            }) }}
+        </div>
+        {{ form_rest(form) }}
+    {{ form_end(form) }}
+
+    <div class="overflow-auto">
+        <table class="table table-bordered datatable" id="listings-breakdown">
+            <colgroup>
+                <col />
+                <col />
+                <col />
+                <col span="7" class="bg-light" />
+                <col span="7" class="" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th colspan="3"></th>
+                    <th class="text-center" colspan="7">Monetary Value (£)</th>
+                    <th class="text-center" colspan="7">Shares</th>
+                </tr>
+                <tr>
+                    <th>Asset</th>
+                    <th>Listing Count (Relisted Count)</th>
+                    <th class="text-end">Share Price (£)</th>
+
+                    <th class="text-end">Asset Issued</th>
+                    <th class="text-end">Listed</th>
+                    <th class="text-end">Unpublished</th>
+                    <th class="text-end">Prefunding</th>
+                    <th class="text-end">Invested</th>
+                    <th class="text-end">Unsettled</th>
+                    <th class="text-end">Available</th>
+
+                    <th class="text-end">Asset Issued</th>
+                    <th class="text-end">Listed</th>
+                    <th class="text-end">Unpublished</th>
+                    <th class="text-end">Prefunding</th>
+                    <th class="text-end">Invested</th>
+                    <th class="text-end">Unsettled</th>
+                    <th class="text-end">Available</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets|default([]) %}
+                <tr class="">
+                    {% set sharesAvailable = summary[asset.id].shares.altListed - summary[asset.id].shares.traded - summary[asset.id].shares.pendingTraded %}
+                    {% set availableValue = summary[asset.id].value.altListed - summary[asset.id].value.traded - summary[asset.id].value.pendingTraded %}
+                    <td><a href="{{ path('admin_product_dashboard', { id: asset.id }) }}">#{{ asset.id }} // {{ asset.name }} ({{ asset.companyNumber }})</a></td>
+                    <td>{{ summary[asset.id].listings }} ({{ summary[asset.id].relistings }})</td>
+                    <td class="text-end tw-tabular-nums">{{ asset.pricePerShare|number_format(2, '.', ',') }}</td>
+
+                    <td class="text-end tw-tabular-nums">{{ asset.fundingGoal|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums" data-original-value={{ summary[asset.id].value.listed }}>{{ summary[asset.id].value.altListed|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums" data-original-value={{ summary[asset.id].value.pendingListed }}>{{ summary[asset.id].value.altPendingListed|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ summary[asset.id].value.prefunded|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ summary[asset.id].value.traded|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ summary[asset.id].value.pendingTraded|number_format(2, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ availableValue|number_format(2, '.', ',') }}</td>
+
+                    <td class="text-end tw-tabular-nums">{{ asset.amountOfShares|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums" data-original-shares={{ summary[asset.id].shares.listed }}>{{ summary[asset.id].shares.altListed|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums" data-original-shares={{ summary[asset.id].shares.pendingListed }}>{{ summary[asset.id].shares.altPendingListed|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ summary[asset.id].shares.prefunded|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ summary[asset.id].shares.traded|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ summary[asset.id].shares.pendingTraded|number_format(0, '.', ',') }}</td>
+                    <td class="text-end tw-tabular-nums">{{ sharesAvailable|number_format(0, '.', ',') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "listings-composition",
+    "sectionTitle": "Listings Composition",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% embed 'admin/components/_alert.html.twig' with {
+        variant: "info",
+        title: "How to read the graphs",
+    } %}
+        {% block message %}
+            <p class="mb-2">Note that the bars are not necessarily to scale, as a minimum bar size has been set for readability.</p>
+            <ul>
+                <li>The green represent the shares that have been bought and settled.</li>
+                <li>The yellow represent the shares that have been bought but are awaiting settlement at monthend.</li>
+                <li>The blue represent the shares that have been listed for sale.</li>
+                <li>The grey represent the shares that have been offered, but have not yet been published for sale.</li>
+                <li>All values are in shares.</li>
+            </ul>
+        {% endblock message %}
+    {% endembed %}
+
+    {{ include('admin/components/_graph_legend.html.twig', {
+        layoutClass: "tw-grid tw-gap-y-2 tw-gap-x-4 sm:tw-grid-cols-2 sm:tw-gap-y-4 lg:tw-grid-cols-3 xl:tw-grid-cols-4",
+        graphLegend: [
+            {
+                color: "tw-text-emerald-200",
+                label: "Settled Investments",
+            },
+            {
+                color: "tw-text-yellow-200",
+                label: "Pending Settlement",
+            },
+            {
+                color: "tw-text-sky-200",
+                label: "Available to Invest",
+            },
+            {
+                color: "tw-text-gray-200",
+                label: "Unpublished Listings",
+            },
+        ]
+    }) }}
+
+    <div class="overflow-auto">
+        <table class="table datatable" id="listings-composition-graphical">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Composition</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets|default([]) %}
+                <tr class="">
+                    <td><a href="{{ path('admin_product_dashboard', { id: asset.id }) }}">#{{ asset.id }} // {{ asset.name }} ({{ asset.companyNumber }})</a></td>
+                    <td width="80%">
+                        {% set totalListed = summary[asset.id].shares.altListed + summary[asset.id].shares.altPendingListed %}
+                        {% set divisor = totalListed > 0 ? totalListed : 1 %}
+                        {% set soldPercent = 100 * (summary[asset.id].shares.traded / divisor) %}
+                        {% set toSettlePercent = 100 * (summary[asset.id].shares.pendingTraded / divisor) %}
+                        {% set unpublishedPercent = 100 * (summary[asset.id].shares.altPendingListed / divisor) %}
+                        {% set sharesAvailable = totalListed - summary[asset.id].shares.traded - summary[asset.id].shares.pendingTraded - summary[asset.id].shares.altPendingListed %}
+
+                        {# Set minimum lengths for bars #}
+                        {% set minBarSize = 5 %}
+                        {% set soldBar = soldPercent > 10 or soldPercent == 0 ? soldPercent : minBarSize %}
+                        {% set toSettleBar = toSettlePercent > 10 or toSettlePercent == 0 ? toSettlePercent : minBarSize %}
+                        {% set publishedBar = unpublishedPercent > 10 or unpublishedPercent == 0 ? unpublishedPercent : minBarSize %}
+                        {% set saleBar = 100 - soldBar - toSettleBar - publishedBar %}
+                        {{ include('admin/components/_progress_bar.html.twig', {
+                            showText: true,
+                            showUnit: false,
+                            progressBars: [
+                                {
+                                    color: "text-body tw-bg-emerald-200",
+                                    label: "Sold",
+                                    value: soldBar,
+                                    valueText: summary[asset.id].shares.traded|number_format(0),
+                                },
+                                {
+                                    color: "text-body tw-bg-yellow-200",
+                                    label: "toSettle",
+                                    value: toSettleBar,
+                                    valueText: summary[asset.id].shares.pendingTraded|number_format(0),
+                                    
+                                },
+                                {
+                                    color: "text-body tw-bg-sky-200",
+                                    label: "available",
+                                    value: saleBar,
+                                    valueText: sharesAvailable|number_format(0),
+                                },
+                                {
+                                    color: "text-body tw-bg-gray-200",
+                                    label: "unpublished",
+                                    value: publishedBar,
+                                    valueText: summary[asset.id].shares.altPendingListed|number_format(0),
+                                },
+                            ]
+                        }) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}
+
+{% endblock page_content %}

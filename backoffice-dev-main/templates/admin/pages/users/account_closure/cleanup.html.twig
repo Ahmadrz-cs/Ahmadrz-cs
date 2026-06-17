@@ -1,0 +1,135 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_user_account_closure_overview' %}
+{% set backToRouteParams = {id: user.id} %}
+{% set areaHeading = 'Account Closure' %}
+{% set mainHeading = 'Data Cleanup - Retention Level: ' ~ retentionLevel.name %}
+{% set maturityLabel = 'alpha' %}
+
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set actionToColor = {
+    'internal': 'gray',
+    'external': 'yellow',
+} %}
+
+{% set actionDescriptions = {
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Username.name): 'Anonymise username used for logging in. e.g. ' ~ anonUsername,
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Identity.name): 'Clear out name, gender, titles, nationality, date of birth, etc',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Contact.name): 'Anonymise email and clear out phone contact info',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Address.name): 'Clear out all addresses for this user',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Documents.name): 'Delete all user documents on CMS for this user',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Logs.name): 'Delete all communication records and logs for this user',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Onboarding.name): 'Clear out categorisation records. Other parts of onboarding profile are left as is.',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Company.name): 'Clear out company information for this user',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').AdditionalFields.name): 'Clears out any additional fields for this user',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Kyc.name): 'Delete any KYC records with PII in it, e.g. contego_log records. Only from our records, not anything on 3rd party services.',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Mangopay.name): 'Closes user Mangopay account if applicable',
+    (enum('App\\Entity\\Enum\\AccountCleanupAction').Salesforce.name): 'Delete Salesforce contact for this user.',
+} %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'closure-actions',
+        "sectionTitle": 'Account Closure Actions',
+        "linkActions": [
+            {
+                "text": "Configure custom username",
+                "route": "admin_user_update_username",
+                "params": { id: user.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+
+        <div class="mt-3">
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Select All Internal Actions",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {id: user.id, retentionLevel: retentionLevel.value, all: 1},
+                    "style": "btn-primary text-nowrap",
+                },
+            }) }}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Deselect All Actions",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {id: user.id, retentionLevel: retentionLevel.value},
+                    "style": "btn-outline-secondary text-nowrap",
+                },
+            }) }}
+        </div>
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "notice",
+            title: "Manual Cleanup Actions",
+        } %}
+            {% block message %}
+                <p>In addition to using this tool, there are a few manual cleanup and checks you should also perform:</p>
+                <ul>
+                    <li>[Action] Remove user's contact email from all Mailchimp (marketing) mailing lists via Mailchimp dashboard</li>
+                    <li>[Check] No additional wallets on user via Mangopay dashboard</li>
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+
+        {{ form_start(form) }}
+        {# {{ form_row(form.actions) }} #}
+        <div class="table-responsive mb-4">
+            <h5 class="fw-bold fs-5">Cleanup Actions</h5>
+            <table class="table" id="restrictions-list">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action_name, action_widget in form.actions.children %}
+                        <tr class="tw-text-sm">
+                            <td>{{ form_widget(action_widget) }}</td>
+                            <td>
+                                {% set aType = constant('App\\Entity\\Enum\\AccountCleanupAction::' ~ action_name).isInternalAction ? 'internal' : 'external' %}
+								{{ include('admin/components/_indicator_with_text.html.twig', {
+									color: actionToColor[aType],
+									value: aType|capitalize
+								}) }}
+                            </td>
+                            <td>{{ actionDescriptions[action_name] }}</td>
+                        </tr>
+                    {% else %}
+                        <tr class="tw-text-sm text-center">
+                            <td colspan="3">No Actions</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h5 class="fw-bold fs-5 mb-3">Manual Checks and Confirmation</h5>
+            {{ form_row(form.confirmationMailchimp) }}
+            {{ form_row(form.confirmationExtraWallets) }}
+            {{ form_row(form.confirmation) }}
+        </div>
+        {# {{ form_rest(form) }} #}
+        <div class="mt-3">
+            <button class="btn btn-danger" id="submit" type="submit">Delete User Data</button>
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Cancel",
+                    "route": "admin_user_account_closure_overview",
+                    "params": {id: user.id},
+                    "style": "btn-outline-secondary text-nowrap",
+                },
+            }) }}
+        </div>
+        {{ form_end(form ) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

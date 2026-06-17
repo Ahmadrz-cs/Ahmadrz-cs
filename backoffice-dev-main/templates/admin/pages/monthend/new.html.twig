@@ -1,0 +1,62 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'New Asset Transfer' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'cms' %}
+
+{% block objectMeta %}
+    {% set asset = transferOrder.asset %}
+    <section class="d-flex flex-column gap-3 border rounded-2 p-4">
+        <h2 class="fw-bold fs-4">Asset Info</h2>
+        <div>
+            <a class="btn btn-outline-dark" 
+                href="{{ path('admin_asset_wallets_manage', { asset: asset.id }) }}"
+                target="_blank">View Asset Wallet Balances (opens in new tab)
+            </a>
+        </div>
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Asset',
+                value: '#%s // %s (%s)'|format(asset.id, asset.name, asset.companyNumber),
+                className: 'col-12 col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Asset Value',
+                value: '£' ~ asset.fundingGoal|number_format(2, '.', ',')
+                }) }}
+            {% if offering is not empty %}
+                {% set monthlyDividend = (asset.fundingGoal / 1200) * offering.netRentProjected %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset Projected Yield (' ~ offering.netRentProjected|number_format(2, '.', ',') ~ '%)',
+                    value: '£' ~ (monthlyDividend * 12)|number_format(2, '.', ',')
+                    ~ ' (~£' ~ monthlyDividend|number_format(2, '.', ',') ~ '/month)',
+                    className: 'col-12 col-md-6'
+                }) }}
+                {% set corpTax = (monthlyDividend / 0.81) - monthlyDividend %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset Projected Corp Tax (19%)',
+                    value: '£' ~ (corpTax * 12)|number_format(2, '.', ',')
+                    ~ ' (~£' ~ corpTax|number_format(2, '.', ',') ~ '/month)',
+                    className: 'col-12 col-md-6'
+                }) }}
+            {% endif %}
+        </div>
+    </section>
+{% endblock objectMeta %}
+{# Configure page blocks #}
+{% block formContents %}
+    <section class="row">
+        <div class="col-sm-6">{{ form_row(form.debitWalletId) }}</div>
+        <div class="col-sm-6">{{ form_row(form.creditWalletId) }}</div>
+        <div class="col-12">{{ form_row(form.amount) }}</div>
+        <div class="col-12">{{ form_row(form.description) }}</div>
+    </section>
+{% endblock %}
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Add Transfer</button>
+    <a class="btn btn-outline-secondary"
+       href="{{ path('admin_transfer_order_manage', { id: transferOrder.id }) }}">Cancel</a>
+{% endblock %}

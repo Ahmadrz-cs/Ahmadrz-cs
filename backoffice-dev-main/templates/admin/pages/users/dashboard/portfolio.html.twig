@@ -1,0 +1,380 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'Portfolio' %}
+
+{% set totalCurrentValue = currentHoldings|reduce((carry, v) => carry + (v.currentHolding * assets[v.assetId].pricePerShare)) %}
+{% set totalDividendCount = dividendSummary|reduce((carry, v) => carry + v.paymentPeriods) %}
+{% set totalDividendValue = dividendSummary|reduce((carry, v) => carry + v.dividendsTotal) %}
+{% set totalMonthlyDividend = dividendSummary|reduce((carry, v) => carry + v.dividendsThisMonth) %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'trade-portfolio',
+        "sectionTitle": 'Trade Portfolio',
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Open Positions',
+                value: tradeHoldings|filter(h => h.shares > 0)|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Portfolio Value',
+                value: tradeHoldings|filter(h => h.shares > 0)|reduce((carry, h) => carry + h.value, 0)|abs|format_currency('GBP'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Closed Positions',
+                value: tradeHoldings|filter(h => h.shares <= 0)|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Cumulative Capital Gains',
+                value: (tradeHoldings|filter(h => h.shares <= 0)|reduce((carry, h) => carry + (h.value), 0))|format_currency('GBP'),
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Average Current price will go down if you buy at a lower price (obviously) OR sell at a higher price (the remaining shares will be on average cheaper)",
+        }) }}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped-columns">
+                <thead>
+                    <tr>
+                        <th colspan="3" class="text-center">Asset Info</th>
+                        <th colspan="5" title="current-net" class="text-center">Current/Net</th>
+                        <th colspan="4" title="bought" class="text-center">Bought</th>
+                        <th colspan="6" title="sold" class="text-center">Sold</th>
+                    </tr>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th class="text-end">Initial Price (2dp)</th>
+
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Profit Per Share (4dp)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Value</th>
+                        <th class="text-end">Profit</th>
+
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Avg Price (4dp)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Value</th>
+
+                        <th class="text-end">Sell Orders</th>
+                        <th class="text-end">Shares Listed</th>
+                        <th class="text-end">Trades</th>
+                        <th class="text-end">Avg Price (4dp)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in tradeHoldings|sort((a, b) => b.shares <=> a.shares) %}
+
+                    <tr>
+                        <td><a href="{{ path('admin_product_shareholders', { id: entry.assetid }) }}">{{ entry.assetid }}</a></td>
+                        <td>{{ assets[entry.assetid].name }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ assets[entry.assetid].pricePerShare|number_format(2, '.', ',') }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.trades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.spread|string|format_currency('GBP', {fraction_digit: 4}) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.shares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.currentValue|string|format_currency('GBP') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.profit|string|format_currency('GBP') }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyTrades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyMean|string|format_currency('GBP', {fraction_digit: 4}) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyShares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.buyValue|format_currency('GBP') }}</td>
+
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ sellOrderAggregate[entry.assetid]?.count|default(0)|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ sellOrderAggregate[entry.assetid]?.sharesListed|default(0)|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellTrades|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellMean|string|format_currency('GBP', {fraction_digit: 4}) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellShares|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.sellValue|format_currency('GBP')  }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'trade-prefunding',
+        "sectionTitle": 'Trade Prefunding',
+        "linkActions": [
+            {
+                "text": "View All Prefunding Sell orders",
+                "route": "admin_user_dashboard_trade_orders",
+                "params": {
+                    id: user.id,
+                    direction: [enum('App\\Entity\\Enum\\TradeDirection').Sell.value],
+                    type: [enum('App\\Entity\\Enum\\TradeOrderType').Prefunding.value]
+                },
+                "style": "btn-outline-dark",
+                "newTab": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            title: "Prefunding Liquidation Tracker",
+            message: "This section tracks the repayment progress on the prefunding liquidation portions, including all historical. If the user has never prefunded before, this will be empty.
+            
+            Trade based prefunding uses a trade order of type 'Prefunding' and direction 'Sell' to track the liquidation portion.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Open Positions',
+                value: repaymentSummary|filter(h => h.shares > 0)|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Closed Positions',
+                value: repaymentSummary|filter(h => h.shares <= 0)|length,
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="prefunder-repayment-list">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th class="text-end">Asset Initial Price</th>
+                        <th class="text-end">Original Order Count</th>
+                        <th class="text-end">Remaining Order Count</th>
+                        <th class="text-end">Original Shares</th>
+                        <th class="text-end">Original Value</th>
+                        <th class="text-end">Shares Repaid</th>
+                        <th class="text-end">Repaid Value</th>
+                        <th class="text-end">Shares Remaining</th>
+                        <th class="text-end">Remaining Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assetId, assetSummary in repaymentSummary %}
+
+                        <tr data-asset-id="{{ assetId }}">
+                            <td data-field="asset">
+                                <a href="{{ path('admin_product_dashboard', { id: assetId }) }}">
+                                    #{{ assetId }} // {{ assets[assetId].name }}
+                                    ({{ assets[assetId].companyNumber }})
+                                </a>
+                            </td>
+                            <td class="text-end tw-tabular-nums text-nowrap">£{{ assets[assetId].pricePerShare|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="orders-initial">
+                                <a href="{{ path('admin_user_dashboard_trade_orders', { 
+                                    id: user.id,
+                                    assetId: assetId,
+                                    direction: [enum('App\\Entity\\Enum\\TradeDirection').Sell.value],
+                                    type: [enum('App\\Entity\\Enum\\TradeOrderType').Prefunding.value]
+                                 }) }}">
+                                    {{ assetSummary.sellOrders|length }}
+                                </a>
+                            </td>
+                            <td class="text-end tw-tabular-nums" data-field="orders-remaining">{{ assetSummary.openSellOrders|length }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="shares-initial">{{ assetSummary.initialShares }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="value-initial">{{ (assetSummary.initialShares * assets[assetId].pricePerShare)|format_currency('GBP') }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="shares-repaid">{{ assetSummary.repaidShares }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="value-repaid">{{ (assetSummary.repaidShares * assets[assetId].pricePerShare)|format_currency('GBP') }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="shares-remaining">{{ assetSummary.shares }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="value-remaining">{{ (assetSummary.shares * assets[assetId].pricePerShare)|format_currency('GBP') }}</td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'performance',
+        "sectionTitle": 'Performance',
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            message: "Cumulative yield is based on the current value for open positions and original value for closed positions. Consider these as guideline figures rather than statistically correct ones. Monthly yield only uses open positions, so won't include any positions closed in the same month as the dividend",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Dividends Received',
+                value: totalDividendCount|number_format(0, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Dividend Value',
+                value: '£' ~ totalDividendValue|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Cumulative Yield',
+                value: (100 * totalDividendValue / totalCurrentValue|default(1))|number_format(2, '.', ',') ~ '%',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Dividend This Month',
+                value: '£' ~ totalMonthlyDividend|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Monthly Yield',
+                value: (100 * totalMonthlyDividend / totalCurrentValue|default(1))|number_format(2, '.', ',') ~ '%',
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th class="text-end">Original Value</th>
+                        <th class="text-end">Current Value</th>
+                        <th class="text-end">Dividends Received</th>
+                        <th class="text-end">Dividend Value</th>
+                        <th class="text-end">Dividend This Month</th>
+                        <th class="text-end">Cumulative Yield</th>
+                        <th>First Dividend</th>
+                        <th>Most Recent Dividend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in tradeHoldings %}
+                    
+                    {% set assetSharePrice = assets[entry.assetid].pricePerShare %}
+                    {% set currentValue = entry.shares * assetSharePrice %}
+                    {% set originalValue = entry.buyShares * assetSharePrice %}
+                    {% set dividendValue = dividendSummary[entry.assetid]['dividendsTotal']|default(0) %}
+                    {% set cumulativeYield = 0 %}
+                    {% if currentValue > 0 %}
+                        {% set cumulativeYield = ((dividendValue * 100) / currentValue) %}
+                    {% elseif originalValue > 0 %}
+                        {% set cumulativeYield = ((dividendValue * 100) / originalValue) %}
+                    {% endif %}
+                    
+                    <tr>
+                        <td><a href="{{ path('admin_product_dashboard', { id: entry.assetid }) }}">
+                            {{ entry.assetid }} // {{ assets[entry.assetid].name }} ({{ assets[entry.assetid].companyNumber }})
+                        </a></td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ originalValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ currentValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ dividendSummary[entry.assetid]['paymentPeriods']|default(0) }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ dividendValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ dividendSummary[entry.assetid]['dividendsThisMonth']|default(0)|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ cumulativeYield|number_format(2, '.', ',')  }}%</td>
+                        <td>{{ dividendSummary[entry.assetid]['firstDividendPaidAt']|default() is empty
+                        ? 'N/A'
+                        : dividendSummary[entry.assetid]['firstDividendPaidAt']|date('Y-m-d') }}</td>
+                        <td>{{ dividendSummary[entry.assetid]['lastDividendPaidAt']|default() is empty
+                        ? 'N/A'
+                        : dividendSummary[entry.assetid]['lastDividendPaidAt']|date('Y-m-d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'portfolio',
+        "sectionTitle": 'Investment Based Portfolio',
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Legacy Shareholdings",
+            message: "Investment based shareholdings has been superseded by trade based shareholdings.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Open Positions',
+                value: currentHoldings|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Portfolio Value',
+                value: '£' ~ totalCurrentValue|number_format(2, '.', ','),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th class="text-end">Share Price</th>
+                        <th class="text-end">Current Holding</th>
+                        <th class="text-end">Current Value</th>
+                        <th class="text-end">Original Holding</th>
+                        <th class="text-end">Divested Holding</th>
+                        <th class="text-end">Selling Holding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in currentHoldings %}
+                    
+                    {% set assetSharePrice = assets[entry.assetId].pricePerShare %}
+                    {% set currentValue = entry.currentHolding * assetSharePrice %}
+
+                    <tr>
+                        <td><a href="{{ path('admin_product_dashboard', { id: entry.assetId }) }}">{{ entry.assetId }}
+                            // {{ entry.asset }} ({{ assets[entry.assetId].companyNumber }})</a></td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ assetSharePrice|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.currentHolding|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ currentValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.originalHolding|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.divestedHolding|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ offeredHoldings[entry.assetId]|default(0)|number_format(0, '.', ',') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'archived',
+        "sectionTitle": 'Investment Based Archived',
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "Legacy Shareholdings",
+            message: "Investment based shareholdings has been superseded by trade based shareholdings.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Closed Positions',
+                value: formerHoldings|length,
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th class="text-end">Share Price</th>
+                        <th class="text-end">Original Holding</th>
+                        <th class="text-end">Original Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in formerHoldings %}
+                    
+                    {% set assetSharePrice = assets[entry.assetId].pricePerShare %}
+                    {% set originalValue = entry.originalHolding * assetSharePrice %}
+                    {% set dividendValue = dividendSummary[entry.assetId]['dividendsTotal']|default(0) %}
+                    
+                    <tr>
+                        <td><a href="{{ path('admin_product_dashboard', { id: entry.assetId }) }}">{{ entry.assetId }}
+                            // {{ entry.asset }} ({{ assets[entry.assetId].companyNumber }})</a></td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ assetSharePrice|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">{{ entry.originalHolding|number_format(0, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums text-nowrap">£{{ originalValue|number_format(2, '.', ',') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

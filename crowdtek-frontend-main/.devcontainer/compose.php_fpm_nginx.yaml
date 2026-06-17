@@ -1,0 +1,41 @@
+services:
+  nginx-web:
+    image: nginx:${NGINX_VERSION:-latest}
+    restart: unless-stopped
+    # Use Traefik proxy instead
+    # If you want to directly expose ports, avoid using the default ports 80 and 443
+    # ports:
+    #   - "${HTTP_PORT:-80}:80"
+    labels:
+      # Explicitly tell Traefik to expose this container
+      traefik.enable: true
+      # The domain(s) the service will respond to
+      traefik.http.routers.nginx_front.rule: "Host(`front.dev.local`)"
+      # Allow request only from the predefined entry point named "web"
+      traefik.http.routers.nginx_front.entrypoints: "web"
+      # Specify the network Traefik should use
+      traefik.docker.network: "yielderverse-back_net-common"
+    networks:
+      yielderverse-back_net-common:
+        aliases:
+          - front.dev.local
+    volumes:
+      - ./nginx/frontend.conf:/etc/nginx/conf.d/default.conf
+      - ..:/var/www/crowdtek-frontend
+  php-fpm:
+    build:
+      context: .
+      dockerfile: php/Dockerfile
+      args:
+        PHP_VERSION: "${PHP_VERSION:-8}"
+    restart: unless-stopped
+    networks:
+      # Need access to the backoffice's external network to speak to backoffice via useful hostname
+      # E.g. back.dev.local api.dev.local account.dev.local
+      - yielderverse-back_net-common
+    volumes:
+      - ..:/var/www/crowdtek-frontend
+
+networks:
+  yielderverse-back_net-common:
+    external: true

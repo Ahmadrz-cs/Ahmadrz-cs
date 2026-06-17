@@ -1,0 +1,103 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = app.request.query.get('redirectRoute') ?? 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Transfer Order' %}
+{% set mainHeading = 'Confirm Transfer Order ' ~ transition|replace({'_': ' '})|title %}
+{% set htmlTitle = transition|replace({'_': ' '})|title ~ '  Transfer Order' %}
+{% set baseTemplate = 'cms' %}
+
+{# Configure page blocks #}
+{% block notices %}
+    {% if transition == constant('App\\Entity\\AbstractOrder::TRANSITION_ABANDON') or transition == constant('App\\Entity\\AbstractOrder::META_TRANSITION_FORCE_COMPLETE') %}
+        {% embed 'admin/components/_alert.html.twig' with {
+            role: "alert",
+            variant: "warning",
+            showType: true,
+        } %}
+            {% block message %}
+                You are about to {{ transition|replace({'_': ' '}) }} an incomplete transfer order. <span class="fw-bold">This cannot be undone!</span>
+            {% endblock message %}
+        {% endembed %}
+    {% endif %}
+    {% if transition == constant('App\\Entity\\AbstractOrder::META_TRANSITION_FORCE_COMPLETE') %}
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "What is force completion?",
+        } %}
+            {% block message %}
+                <p>Force completing an order will do the following:</p>
+                <ul>
+                    <li>Set the amount of all incomplete transfer requests to 0 (zero) or delete them (you must check the option below)</li>
+                    <li>Run the order to completion</li>
+                </ul>
+                <p class="mb-0 mt-3">This is useful if the majority of transfer requests in an order are correct but a small number of them are incorrect or not needed and you don't want to abandon the order. Abandoned orders can also be force completed if you need to retrospectively mark them as completed.</p>
+            {% endblock message %}
+        {% endembed %}
+    {% endif %}
+{% endblock %}
+
+{# Configure page blocks #}
+{% block objectMeta %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "order-summary",
+        "sectionTitle": "Transfer Order #" ~ transferOrder.id|default(),
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3" data-object-id="{{ transferOrder.id|default() }}">
+            {% set asset = transferOrder.asset %}
+            {% if asset is not empty %}
+                {{ include('admin/components/stat.html.twig', {
+                key: 'Asset',
+                value: '#%s // %s (%s)'|format(asset.id, asset.name, asset.companyNumber),
+                className: 'col-12 col-md-6'
+            }) }}
+            {% else %}
+                {{ include('admin/components/stat.html.twig', {
+                key: 'Asset',
+                value: 'None',
+                className: 'col-12 col-md-6'
+            }) }}
+            {% endif %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled For',
+                value: transferOrder.scheduledFor|date('Y-m-d', false)
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Status',
+                value: transferOrder.status|replace({'_': ' '})|title|replace({'_':'-'})
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Transfers',
+                value: transferOrder.transfers|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfers Pending',
+            value: transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_PENDING'))|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfers Completed',
+                value: transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE'))|length
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}
+
+{% block formContents %}
+    <section class="d-flex flex-column gap-2 mb-2">
+        {{ form_row(form.reason) }}
+        {% if form.truncate is defined %}
+            {{ form_row(form.truncate) }}
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-danger" id="submit" type="submit">{{ transition|replace({'_': ' '})|title }}
+        Transfer Order</button>
+    <a class="btn btn-outline-secondary"
+        href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_transfer_order_manage', { id: transferOrder.id }) }}">Discard Changes</a>
+{% endblock %}

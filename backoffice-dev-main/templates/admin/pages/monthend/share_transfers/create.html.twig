@@ -1,0 +1,38 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% if form.vars.data.asset is not null %}
+	{% set backToRoute = 'admin_monthend_asset_dashboard' %}
+	{% set backToRouteParams = { id: form.vars.data.asset.id } %}
+{% else %}
+	{% set backToRoute = backToRoute|default('admin_monthend_share_transfers_list') %}
+{% endif %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = mainHeading|default('Share Transfers') %}
+{% set maturityLabel = 'beta' %}
+
+{% block notices %}
+{{ include('admin/components/_alert.html.twig', {
+    variant: "notice",
+    title: "Don't want aggregation?",
+    message: "The share transfer generator will aggregate each user's investments across the entire search period. If you do NOT want this to happen, you can use separate transfer orders to split the share transfers across multiple periods (e.g. individual-incremental months).",
+}) }}
+{% endblock %}
+
+{% block formContents %}
+    <div class="row">
+        <div class="col-md-6">{{ form_row(form.asset) }}</div>
+        <div class="col-md-6">{{ form_row(form.scheduledFor) }}</div>
+        <div class="col-md-6">{{ form_row(form.periodStart) }}</div>
+        <div class="col-md-6">{{ form_row(form.periodEnd) }}</div>
+        <div class="col-md-6">{{ form_row(form.repaymentStart) }}</div>
+        <div class="col-md-6">{{ form_row(form.repaymentEnd) }}</div>
+        <div class="col-12">{{ form_row(form.description) }}</div>
+    </div>
+{% endblock %}
+
+{% block formSubmit %}
+    <div class="">
+        <button class="btn btn-success" id="submit" type="submit">Create Share Transfer Order</button>
+        <a class="btn btn-outline-secondary" href="{{ path(backToRoute, backToRouteParams|default({})) }}">Abandon</a>
+    </div>
+{% endblock %}

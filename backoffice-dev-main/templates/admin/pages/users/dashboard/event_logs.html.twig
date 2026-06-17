@@ -1,0 +1,52 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'User Event Logs' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "event-logs",
+        "sectionTitle": "User Event Logs",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: results
+        }) }}
+        <div class="table-responsive">
+            <table class="table" id="user-event-logs-list">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Datetime</th>
+                        <th>Type</th>
+                        <th>Event</th>
+                        <th>Message</th>
+                        <th>Key</th>
+                        <th>Before</th>
+                        <th>After</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in results %}
+                        <tr class="tw-text-sm">
+                            <td class="">{{ l.id|default("N/A") }}</td>
+                            <td class="">{{ l.createdAt|date("Y-m-d H:i:s") }}</td>
+                            <td class="">{{ l.type|default("N/A") }}</td>
+                            <td class="">{{ l.event|default("N/A") }}</td>
+                            <td class="">{{ l.message|default("N/A") }}</td>
+                            <td class="">{{ l.key|default("N/A") }}</td>
+                            <td class="">{{ l.oldValue|default("N/A") }}</td>
+                            <td class="">{{ l.newValue|default("N/A") }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <th colspan="7">No Logs</th>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

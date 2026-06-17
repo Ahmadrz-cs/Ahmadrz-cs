@@ -1,0 +1,76 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_user_index' %}
+{% set areaHeading = 'Investments' %}
+{% set mainHeading = 'View Investment #' ~ investment.id %}
+{% set htmlTitle = 'View Investment' %}
+
+{% block page_content %}
+
+	<div>
+		{% if is_granted('CAN_UPDATE_INVESTMENT', app.user) %}
+			<a href="{{ path('admin_investment_edit', {'id': investment.id}) }}" class="btn btn-warning">Edit Investment</a>
+		{% endif %}
+		{% if is_granted('CAN_CREATE_INVESTMENT', app.user) %}
+			<a href="{{ path('admin_investment_add')}}" class="btn btn-success">Add New Investment</a>
+		{% endif %}
+	</div>
+	<div class="nav-tabs-custom">
+		<ul class="nav nav-tabs">
+			<li class="active">
+				<a href="#investment" data-bs-toggle="tab" aria-expanded="true">Investment</a>
+			</li>
+			<li class="">
+				<a href="#addField" data-bs-toggle="tab" aria-expanded="false">
+					Field</a>
+			</li>
+			<li class="">
+				<a href="#document" data-bs-toggle="tab" aria-expanded="false">Document</a>
+			</li>
+		</ul>
+		<div class="tab-content p-3">
+			<div class="tab-pane active" id="investment">
+				<p>Investment Name:
+					{{ investment.Name }}</p>
+				<p>Type:
+					{{ investment.Type }}</p>
+				<p>Currency:
+					{{ investment.currency }}</p>
+				<p>User:
+					{{ investment.user }}</p>
+				<p>Offering:
+					{{ investment.Offering }}</p>
+				<p>Amount Invested (£):
+					{{ investment.investmentValue }}</p>
+				<p>Share Amount:
+					{{ investment.shareAmount }}</p>
+				<p>Org Price Per Share (£):
+					{{ investment.orgPricePerShare }}</p>
+				{% if investment.offering.id | default(null) %}
+					<p>Offering ID:
+						{{ investment.offering.id }}</p>
+				{% endif %}
+				<p>Term:
+					{{ investment.term }}</p>
+				<p>Interest Rate:
+					{{ investment.interestRate }}</p>
+				<p>Transaction ID:
+					{{ investment.transactionid }}</p>
+				<p>Divested Amount:
+					{{ investment.divestedAmount }}</p>
+				<p>Status:
+					{% include 'admin/pages/investments/_status.html.twig' %}</p>
+				<p>Visibility:
+					{{ investment.visibility }}</p>
+				<p>Comments:
+					{{ investment.comments }}</p>
+			</div>
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="addField"></div>
+			<!-- /.tab-pane -->
+			<div class="tab-pane" id="document"></div>
+		</div>
+		<!-- /.tab-content -->
+	</div>
+
+{% endblock page_content %}

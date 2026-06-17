@@ -1,0 +1,411 @@
+{% if active is not defined %}
+	{% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+	{% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+	{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+	{% set hasUserInfo = app.session.has('userInfo') %}
+	{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+{% extends '@AppBundle/base.html.twig'%}
+{# {% block title %}Page title override{% endblock %} #}
+{% block body %}
+
+
+	<main
+		role="main">
+
+		<section>
+            <h1 class="sr-only">Page Promotion</h1>
+            <div class="hero-banner home slide1 bg-fixed">
+                <div class="container pt-6 pt-md-8 d-flex align-items-center h-100">
+                    <div class="hero-banner-content pr-2 mt-5" style="min-width:0;">  
+                        <div class="row">
+							<div class="col-9 col-sm-7">
+								<h2 class="h1 hero-banner-hd text-light mb-3">
+									Fair share of property
+								</h2>
+								<p class="hero-banner-dtls text-light mb-4">
+									Start from as low as £100. Ethical investing doesn't mean less profits.
+								</p>
+							</div>
+						</div>
+                        <!-- buttons -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="mb-0">
+									{% if authenticated %}
+										<a href="{{ path('product_properties_current') }}" class="btn btn-lg btn-secondary rounded-pill mb-3">Invest Now</a>
+									{% else %}
+										<a href="{{ path('Onboarding')}}" class="btn btn-lg btn-secondary rounded-pill mb-3">Sign up</a>
+									{% endif %}
+								</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+		<!-- items list -->
+		{% if authenticated and not userInfo.registration_complete %}
+		<div class="alert alert-warning mb-0 text text-center" role="alert">
+  			<a class="h6 mb-0" href="{{ path('Onboarding')}}">Complete your onboarding</a>
+		</div>
+		{% endif %}
+		<section class="bg-light">
+			<h2 class="sr-only">Features</h2>
+			<div class="container pl-4 pt-2">
+				<div class="row grid-view features">
+					<div class="col-md-6 col-lg-3">
+						<div class="card border-dark">
+							<div class="card-body text-center">
+								<figure>
+									<img src="{{asset('bundles/app/svg/')}}ethical.svg" loading="lazy" alt="" class="card-icon-height">
+								</figure>
+								<h5 class="card-title">Ethical Investing</h5>
+								<p class="card-text">Shariah Compliant, no interest. Earn competitive returns from our investment opportunities. No Bank or Mortgage!</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-lg-3">
+						<div class="card border-dark">
+							<div class="card-body text-center">
+								<figure>
+									<img src="{{asset('bundles/app/svg/')}}shield.svg" loading="lazy" alt="" class="card-icon-height">
+								</figure>
+								<h5 class="card-title">FCA Regulated</h5>
+								<p class="card-text">Yielders is authorised and regulated by the Financial Conduct Authority (FCA).</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-lg-3">
+						<div class="card border-dark">
+							<div class="card-body text-center">
+								<figure>
+									<img src="{{asset('bundles/app/svg/')}}multiple.svg" loading="lazy" alt="" class="card-icon-height">
+								</figure>
+								<h5 class="card-title">Multiple Returns</h5>
+								<p class="card-text">Earn monthly rental income, plus a share of the total profit upon sale.
+								</p>
+								<a class="btn-underline font-medium" href="http://help.yielders.co.uk/en/articles/3436312-our-fees" target="_blank">See our fees here</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-lg-3">
+						<div class="card border-dark">
+							<div class="card-body text-center">
+								<figure>
+									<img src="{{asset('bundles/app/svg/')}}home-lg.svg" loading="lazy" alt="" class="card-icon-height">
+								</figure>
+								<h5 class="card-title">Group</h5>
+								<p class="card-text">We are now part of the Sama Group, a family of companies ingrained in real estate.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		{% set featuredAssets = featuredAssets|sort((a, b) => b.featured <=> a.featured)|slice(0,2) %}
+		{# {% set featuredAssets = featuredAssets|filter(a => a.sharesAvailable > 0)|sort((a, b) => b.featured <=> a.featured) %} #}
+		
+		<section class="bg-light">
+			<div class="container pt-8 pb-6" id="featured-products">
+				{% if featuredAssets|length > 0 %}
+					<h2 class="text-center mb-3">Featured Properties</h2>
+					<div class="row gap-y-5 justify-content-center">
+						{% for entry in featuredAssets %}
+							<article class="col-md-6 col-lg-4 d-flex align-items-stretch">
+								{{ include('@AppBundle/Product/_asset_card.html.twig', {
+									asset: entry,
+									showFields: ["Net Projected Yield", "Target End Date"],
+									showLink: false,
+									showStatuses: false,
+								}) }}
+							</article>
+						{% endfor %}
+					</div>
+
+					{% if authenticated|default(false) %}
+						<div class="text-center mt-3">
+							<a href="{{ path('product_properties_current') }}"
+								class="btn btn-secondary rounded-pill px-2">View More Properties</a>
+						</div>
+					{% endif %}
+				
+				{% endif %}
+			</div>
+		</section>
+
+		<!-- process explanation -->
+		<div class="bg-dark pt-5 pb-5" id="how-it-works-process">
+			<div class="container">
+				<h2 class="text-center pt-5 mb-3">
+					How it works
+				</h2>
+				<div class="row py-6">
+					<div class="col-md-4 mb-4 mb-md-0 text-center">
+						<div class="d-flex flex-row flex-md-column">
+							<div class="px-2 px-md-0 howitwork-icon">
+								<img src="{{asset('bundles/app/svg/')}}invest.svg" class="icon mb-3 img-fluid" loading="lazy" alt="">
+							</div>
+							<div class="pr-2 px-md-0 howitwork-content">
+								<h5 class="mb-2 text-left text-md-center">Invest</h5>
+								<p class="text-md text-left text-md-center">Buy shares in income producing property
+									                                        investments from £100.
+									                                        Choose how
+									                                        many shares you wish to own in any available investment!</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 mb-4 mb-md-0 text-center">
+						<div class="d-flex flex-row flex-md-column">
+							<div class="px-2 px-md-0 howitwork-icon">
+								<img src="{{asset('bundles/app/svg/')}}grow.svg" class="icon mb-3 img-fluid" loading="lazy" alt="">
+							</div>
+							<div class="pr-2 px-md-0 howitwork-content">
+								<h5 class="mb-2 text-left text-md-center">Grow</h5>
+								<p class="text-md text-left text-md-center">As property prices grow so does the
+									                                        value of your shares.
+									                                        Track the
+									                                        movements
+									                                        from your online portfolio.</p>
+							</div>
+						</div>
+
+					</div>
+					<div class="col-md-4 mb-4 mb-md-0 text-center">
+						<div class="d-flex flex-row flex-md-column">
+							<div class="px-2 px-md-0 howitwork-icon">
+								<img src="{{asset('bundles/app/svg/')}}yield.svg" class="icon mb-3 img-fluid" loading="lazy" alt="">
+							</div>
+							<div class="pr-2 px-md-0 howitwork-content">
+								<h5 class="mb-2 text-left text-md-center">Yield</h5>
+								<p class="text-md text-left text-md-center">Receive your share of the rental income
+									                                        in the form of monthly
+									                                        dividends
+									                                        if
+									                                        there are profits, and a share of any sale proceeds upon exit.</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 text-center mt-4">
+						<a href="{{ path('how_it_works') }}" class="btn-underline invert font-medium">Learn more</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	{# <!-- testimonials -->
+	<section class="testimonial">
+		<div class="container-fluid pt-5 pb-8">
+			<h2 class="text-center mb-3">Our members think we’re great</h2>
+			<div class="text-center mb-2">
+				<img src="{{asset('bundles/app/img/')}}trustpilot.png" loading="lazy" alt="">
+			</div>
+			<!-- TrustBox widget - Micro Review Count -->
+			<div class="trustpilot-widget" data-locale="en-GB" data-template-id="5419b6a8b0d04a076446a9ad" data-businessunit-id="5a836e9ebee96e000199611f" data-style-height="30px" data-style-width="100%" data-theme="light">
+				<a href="https://uk.trustpilot.com/review/www.yielders.co.uk" target="_blank" rel="noopener">Trustpilot</a>
+			</div>
+			<!-- End TrustBox widget -->
+
+		</div>
+	</section> #}
+
+
+	{# <!-- award winning platforms -->
+	<section class="bg-light">
+		<div class="container py-7">
+			<h4 class="text-center">And people are talking about our award winning platform</h4>
+			<div class="row justify-content-center text-center mt-4 align-items-center" id="clients">
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://uk.reuters.com/article/uk-britain-islamic-fintech-idUKKBN17C0FM" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}thomson-reuters.png" loading="lazy" alt="" class="img-fluid">
+				</a>
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://www.independent.co.uk/Business/indyventure/yielders-islamic-fintech-uk-regulatory-approval-first-to-get-finance-financial-conduct-authority-a7675971.html" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}independent.png" loading="lazy" alt="" class="img-fluid">
+				</a>
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://www.ft.com/content/43f7cece-0086-11ea-be59-e49b2a136b8d" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}financial-times.jpg" loading="lazy" alt="" class="img-fluid">
+				</a>
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://ifnfintech.com/wp-content/uploads/2020/06/Landscape2020-3-7-2020.jpg" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}ifn-fintech-logo.jpg" loading="lazy" alt="" class="img-fluid">
+				</a>
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://thefintechtimes.com/award-winning-shariah-based-fintech-firm-yielders-pioneering-growth-islamic-finance/" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}fintech-times.png" loading="lazy" alt="" class="img-fluid">
+				</a>
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://www.salaamgateway.com/en/story/islamic_economy_award_2017_winners_announced-SALAAM27112017101913/" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}gieg.png" loading="lazy" alt="" class="img-fluid">
+				</a>
+				<a class="my-2 col-6 col-sm-4 col-md-2" href="https://www.forbes.com/sites/kittyknowles/2017/04/11/fintech-london-yielders-islamic-business-muslim-finance-crowdfunding-news/#3ec66d037497" target="_blank">
+					<img src="{{asset('bundles/app/img/')}}forbes.png" loading="lazy" alt="" class="img-fluid">
+				</a>
+			</div>
+		</div>
+	</section> #}
+
+
+	<!-- yielders benefits -->
+	<section class="y-benefits bg-overlay">
+		<div class="container py-6 position-relative layer-z-1">
+			<h4 class="text-center text-light">Yielders Benefits</h4>
+			<p class="text-white-87 mt-3 mb-4 h5 font-light text-center text-md-left">Over 4000 users have chosen to become Yielders. Here are the benefits enjoyed by them.</p>
+
+			<!-- mastcard -->
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="y-benefits-mastcard bg-white rounded p-3 mb-2">
+						<h5 class="d-flex justify-content-between align-items-center">Managed for you, by experts.
+							<img src="{{asset('bundles/app/svg/')}}experts.svg" loading="lazy" alt="">
+						</h5>
+						<p class="text-md pr-4">Our team is made up of property, financial, legal and technology experts with over 30 years’ combined investing experience. We use our exclusive network to get you the best - usually off-market - investment opportunities.</p>
+						<a href="{{ path('how_it_works') }}" class="btn-underline font-medium">Learn more</a>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="y-benefits-mastcard bg-white rounded p-3 mb-2">
+						<h5 class="d-flex justify-content-between align-items-center">Top Yielders
+							<img src="{{asset('bundles/app/svg/')}}man.svg" style="width:47px" loading="lazy" alt="">
+						</h5>
+						<p class="text-md pr-4">Looking to invest more than £50,000? We offer a range of tailored off market UK property investment opportunities that may be suitable for you.</p>
+						<br><a href="{{ path('become_top_yielder') }}" class="btn-underline font-medium">Learn more</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- subcard -->
+			<div class="subcard row mt-3">
+				<div class="col-lg-6">
+					<div class="y-benefits-subcard bg-white rounded-medium p-3 mb-2 mr-lg-2">
+						<div class="media flex-column flex-lg-row">
+							<img src="{{asset('bundles/app/svg/')}}smile.svg" class="mr-2" loading="lazy" alt="...">
+							<div class="media-body">
+								<h5 class="mt-0">Hassle-free investment</h5> <!-- check this -->
+								<p class="text-md">We manage everything so you don’t have to. That includes sourcing properties, finding tenants, dealing with legal contracts, property maintenance, revaluations and selling.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="y-benefits-subcard bg-white rounded-medium p-3 mb-2 ml-lg-2">
+						<div class="media flex-column flex-lg-row">
+							<img src="{{asset('bundles/app/svg/')}}thumbs-up.svg" class="mr-2" loading="lazy" alt="...">
+							<div class="media-body">
+								<h5 class="mt-0">We bring investments to everyone</h5> <!-- too long -->
+								<p class="text-md">Historically, property investment has only been available to the wealthy. But we’ve decided to change that by creating investment opportunities that are open to everyone. You only need £100 to get started, and our interest-free, debt-free assets are perfect as an ethical alternative.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-6">
+					<div class="y-benefits-subcard bg-white rounded-medium p-3 mb-2 mr-lg-2">
+						<div class="media flex-column flex-lg-row">
+							<img src="{{asset('bundles/app/svg/')}}consistency.svg" class="mr-2" loading="lazy" alt="...">
+							<div class="media-body">
+								<h5 class="mt-0">A stable way to make money</h5>
+								<p class="text-md">Property investment offers a consistently profitable alternative to traditional investment opportunities. Since our 2016 launch, we’ve never missed a monthly payment to our investors.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="y-benefits-subcard bg-white rounded-medium p-3 mb-2 ml-lg-2">
+						<div class="media flex-column flex-lg-row">
+							<img src="{{asset('bundles/app/svg/')}}home.svg" class="mr-2" loading="lazy" alt="...">
+							<div class="media-body">
+								<h5 class="mt-0">Ethical investing</h5>
+								<p class="text-md">Our investment model means there’s no mortgage, interest, debt, or hidden fees, and many of our properties are leased to local councils or housing associations so we can help tackle the housing shortage in the UK.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</section>
+	<!-- become yielders today -->
+	<section class="signup-section bg-overlay d-flex align-items-center bg-fixed">
+		<div class="container layer-z-1 signup-content text-center">
+			<div class="row">
+				<div class="col-lg-8 mx-lg-auto">
+					<h2 class="text-light mb-2">
+						Become a Yielder today
+					</h2>
+					<p class="text-light mb-3">
+						Start earning straight away with returns paid to your e-wallet monthly. With our online portal you can calculate potential returns, track your money, manage your investments and start building a property investment portfolio.
+					</p>
+					<div class="text-center">
+						{% if authenticated %}
+							<a href="{{ path('product_properties_current') }}" class="btn btn-lg btn-secondary rounded-pill mb-3 px-3">Invest Now</a>
+						{% else %}
+							<a href="{{ path('Onboarding')}}" class="btn btn-lg btn-secondary rounded-pill mb-3 px-3">Sign up</a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</section>
+
+	{# <!--social-->
+	<section>
+		<h2 class="sr-only">Social Feed</h2>
+		{{ include('@AppBundle/Common/social-feed-links.html.twig') }}
+	</section> #}
+
+</main>{% endblock %}{% block modals %}
+
+<!-- Modal -->
+{# begin modal:notice#}
+<div class="modal fade y-modal" id="modal-error-notice" tabindex="-1" role="dialog" aria-labelledby="modal-error-notice" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header" style="border: none">
+				<h4>Alert</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			</div>
+			<div class="modal-body px-2 pb-0">
+				{% if app.session.flashbag.has('errors') %}
+					<div class="alert alert-danger">
+						<div id="flash-content-errors">
+							{% for errorMessage in app.session.flashbag.get('errors') %}
+								{{ errorMessage|raw }}
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{# end model:notice#}{% endblock %}{% block pagejs %}
+{% set jsPath=asset('bundles/app/js/')%}
+
+<script>
+	let imgPath = "{{ asset('bundles/app/img/') }}";
+	let loggedInStatus="{{ authenticated }}";
+
+	{% if (is_mobile() or is_mobile_view()) %}
+	var isMobileDevice = true;
+	{%	else %}
+	var isMobileDevice = false;
+	{% endif %}
+
+</script>
+
+{# <!-- TrustBox script --> #}
+{# <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script> #}
+{# <script type="text/javascript" src="{{jsPath}}sliderCalculator.js?v={{ version }}"></script> #}
+
+{% endblock %}

@@ -1,0 +1,5 @@
+{% if offering.lifecyclestatus %}
+    <span class="badge text-bg-success">{{ offering.lifecyclestatus }}</span>
+{% else %}
+    <span class="badge text-bg-warning">{{ offering.lifecyclestatus }}</span>
+{% endif %}

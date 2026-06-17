@@ -1,0 +1,15 @@
+twig:
+    debug: "%kernel.debug%"
+    default_path: "%kernel.project_dir%/templates"
+    globals:
+        app_name: Yielders CMS
+        app_system_name: Yielders
+        version: "%app.version%"
+        consumer_app_url: "%env(APP_FRONTEND_URL)%"
+        logo_url: "%env(STATIC_CDN_URL)%/static/images/ylogo.png"
+    form_themes:
+        - "bootstrap_5_horizontal_layout.html.twig"
+
+when@test:
+    twig:
+        strict_variables: true

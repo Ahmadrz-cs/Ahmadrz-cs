@@ -1,0 +1,90 @@
+{% set statusToColor = {
+    'pending': 'gray',
+    'active': 'blue',
+    'suspended': 'yellow',
+    'closed': 'red',
+} %}
+
+{% set showFields = showFields|default([]) %}
+
+<div class="table-responsive">
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    <table class="table {{ tableStyle|default() }}" id="{{ tableId|default('users-list') }}">
+        <thead>
+            <tr>
+                {% if actions|default([]) is not empty %}<th>Actions</th>{% endif %}
+                <th>Id</th>
+                {% if 'name' in showFields %}<th>Name</th>{% endif %}
+                {% if 'username' in showFields %}<th>Username</th>{% endif %}
+                {% if 'contactEmail' in showFields %}<th>Contact Email</th>{% endif %}
+                {% if 'createdAt' in showFields %}<th>Join Date</th>{% endif %}
+                {% if 'lastLogin' in showFields %}<th>Last Login</th>{% endif %}
+                {% if 'userType' in showFields %}<th>User Type</th>{% endif %}
+                {% if 'mangopayUserId' in showFields %}<th>Mangopay User Id</th>{% endif %}
+                {% if 'mangopayWalletId' in showFields %}<th>Mangopay Wallet Id</th>{% endif %}
+                {% if 'mangopayUserVersion' in showFields %}<th>Mangopay User Version</th>{% endif %}
+                {% if 'status' in showFields %}<th>Account Status</th>{% endif %}
+                {% if 'kycStatus' in showFields %}<th>KYC Status</th>{% endif %}
+                {% if 'legacyStatus' in showFields %}<th>Legacy Statuses</th>{% endif %}
+                {% if 'legacyActions' in showFields  and is_granted('ROLE_OPERATIONS', app.user) %}<th>Actions</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in objects %}
+                <tr data-object-id="{{ item.id }}">
+                    {% if actions|default([]) is not empty %}
+                        <td data-field="actions">
+                            <div class="d-flex gap-2">
+                                {% for action in actions %}
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": action.text,
+                                            "route": action.route,
+                                            "params": action.params|merge({(action.objectParam|default('id')): item.id}),
+                                            "style": action.style,
+                                        },
+                                    }) }}
+                                {% endfor %}
+                            </div>
+                        </td>
+                    {% endif %}
+                    <td data-field="id">{{ item.id }}</td>
+                    {% if 'name' in showFields %}<td data-field="name">
+                        <a href="{{ path('admin_user_edit', { id: item.id }) }}">{{ item.fullname }}</a>
+                        {% if item.managedUsers|length %}
+                        <span class="badge text-bg-dark ms-1">Managing Users</span>
+                        {% endif %}
+                    </td>{% endif %}
+                    {% if 'username' in showFields %}<td data-field="username">{{ item.username }}</td>{% endif %}
+                    {% if 'contactEmail' in showFields %}<td data-field="contact-email">{{ item.email }}</td>{% endif %}
+                    {% if 'createdAt' in showFields %}<td data-field="created-at">{{ item.createdAt|date('Y-m-d H:i:s') }}</td>{% endif %}
+                    {% if 'lastLogin' in showFields %}<td data-field="last-login">{{ item.lastLogin is empty ? 'N/A' : item.lastLogin|date('Y-m-d H:i:s') }}</td>{% endif %}
+                    {% if 'userType' in showFields %}<td data-field="user-type">{{ item.investor.corporateInvestor ? 'Organisation' : 'Individual' }}</td>{% endif %}
+                    {% if 'mangopayUserId' in showFields %}<td data-field="mangopay-user-id">{{ item.mangopayUserId ?? 'N/A' }}</td>{% endif %}
+                    {% if 'mangopayWalletId' in showFields %}<td data-field="mangopay-wallet-id">{{ item.mangopayWalletId ?? 'N/A' }}</td>{% endif %}
+                    {% if 'mangopayUserVersion' in showFields %}<td data-field="mangopay-user-version">{{ item.walletUserVersion.name }} ({{ item.walletUserVersion.value }})</td>{% endif %}
+                    {% if 'status' in showFields %}<td data-field="status-log">
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[item.currentStatus.value],
+                            value: item.currentStatus.value|capitalize
+                        }) }}
+                    </td>{% endif %}
+                    {% if 'kycStatus' in showFields %}<td data-field="kyc-status" data-kyc-status="{{ item.kycProfile.verified ? 1 : 0 }}">
+                        {{ item.kycProfile.lastReviewedAt is empty
+                            ? 'Unknown'
+                            : (item.kycProfile.verified ? 'Verified' : 'Failed') 
+                        }}</td>
+                    {% endif %}
+                    {% if 'legacyStatus' in showFields %}<td data-field="legacy-status">{{ include('admin/pages/users/_status.html.twig', {
+                        user: item
+                    }) }}</td>{% endif %}
+                    {% if 'legacyActions' in showFields and is_granted('ROLE_OPERATIONS', app.user) %}
+                        <td data-field="legacy-actions">{{ include('admin/pages/users/_actions.html.twig', {
+                            user: item
+                        }) }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

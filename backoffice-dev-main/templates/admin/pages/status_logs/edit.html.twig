@@ -1,0 +1,19 @@
+{% extends 'admin/pages/status_logs/create.html.twig' %}
+
+{% set mainHeading = 'Edit ' ~ parentEntityName ~ ' Status Log' %}
+
+{% block notices %}{% endblock %}
+
+{% block formContents %}
+    <div class="row">
+        <div class="col-md-6">{{ form_row(form.status) }}</div>
+        <div class="col-md-6">{{ form_row(form.occuredAt) }}</div>
+        <div class="col-12">{{ form_row(form.notes) }}</div>
+    </div>
+    {% include 'admin/components/blame-timestamp.html.twig' with {'object': statusLog} only %}
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary text-nowrap" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary text-nowrap" href="{{ path(redirectRoute, {'id': redirectToId}) }}">Cancel</a>
+{% endblock %}

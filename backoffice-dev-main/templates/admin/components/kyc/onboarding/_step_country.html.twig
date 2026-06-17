@@ -1,0 +1,55 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "step-country",
+    "sectionTitle": "Supported Country",
+} %}
+    {% block sectionContent %}
+
+    <section class="d-flex flex-column gap-2">
+        <h5 class="fw-bold fs-6 mb-0">Countries the user is associated with through</h5>
+        <ul class="mb-0">
+            <li>Citizenship/Nationality (based on their proof of ID)</li>
+            <li>Domicile - current tax-residence or permanent-residence (based on their proof of address)</li>
+        </ul>
+    </section>
+    <section class="d-flex flex-column gap-2">
+        <h5 class="fw-bold fs-6 mb-0">Reasons to reject if the country is</h5>
+        <ul class="mb-0">
+            <li>Not supported by Mangopay. <a target="_blank" href="https://mangopay.com/docs/concepts/users/policies/country-restrictions">See Mangopay's docs on country restrictions <i class="fa-solid fa-fw fa-arrow-up-right-from-square tw-text-sm"></i></a>. If the link doesn't work, you can google for "Mangopay country restrictions".</li>
+            <li>Under sanctions (whether it be UN or country/region specific like UK, EU, USA imposed sanctions). There is no single universal list for this, recommend using Google to find relevant lists published by Governments or regulatory bodies (like the FCA).</li>
+            <li>Countries listed in your process documents as high risk for any other reasons.</li>
+        </ul>
+    </section>
+
+    <section class="d-flex flex-column gap-2">
+        <h5 class="fw-bold fs-6 mb-0">Supporting Information</h5>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            message: "Nationality may not be collected automatically. You can still derive this from the user's proof of identity document.",
+        }) }}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Subject to FATCA (US Citizen)',
+                value: user.findCustomFieldValue('fatca') ? 'Yes' : 'No',
+                className: 'col-sm-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Nationality',
+                value: user.nationality ? user.nationality|country_name : 'N/A',
+                className: 'col-sm-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Main Address',
+                value: user.getMainAddress.formatWithLinebreak|default('-'),
+                className: 'col-xl-6',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Company Address',
+                value: user.company.formatAddressWithLinebreak|default('-'),
+                className: 'col-xl-6',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+        </div>
+    </section>
+    {% endblock %}
+{% endembed %}

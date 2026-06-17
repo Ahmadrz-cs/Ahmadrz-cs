@@ -1,0 +1,89 @@
+{% extends 'admin/layouts/' ~ baseTemplate|default('col_1') ~'.html.twig' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set statusToColor = statusToColor|default({
+    'Yes': 'green',
+    'No': 'red',
+    'Pending': 'gray',
+	'Missing': 'gray',
+    'Set': 'blue',
+}) %}
+
+{% block page_content %}
+
+	{% block foreword %}{% endblock %}
+
+	<section class="d-flex flex-wrap gap-2" id="create-actions">
+		{% block createActions %}{% endblock %}
+	</section>
+
+	<section class="d-flex flex-column gap-2 border rounded-2 p-3 " id="filter-presets">
+		<div class="fw-bold fs-5">Presets</div>
+		<div class="d-flex flex-wrap gap-2">
+			{% block filterPresets %}{% endblock %}
+		</div>
+	</section>
+
+	{{ form_start(form) }}
+		<button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#filter-customise" aria-expanded="true" aria-controls="filter-customise">
+			Show/Hide Filters
+			{% if app.request.query.all|length > 0 %}(Customised)
+			{% endif %}
+			<i class="fas fa-filter ms-1"></i>
+		</button>
+		<section class="collapse my-3" id="filter-customise" style="transition: none;">
+			<section class="row my-3">
+				{% block collapsibleFilters %}{% endblock %}
+			</section>
+			<section class="row my-3">
+				{% block collapsibleFiltersRange %}{% endblock %}
+			</section>
+		</section>
+		<section class="row pt-4 border-top border-dark my-3">
+			
+			{% include 'admin/components/query_controls.html.twig' with {'form': form} only %}
+		</section>
+		{{ form_rest(form) }}
+		<section class="d-flex flex-wrap gap-2">
+			<button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+			<a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset to Defaults</a>
+		</section>
+	{{ form_end(form) }}
+
+	<section class="d-flex flex-column gap-3">
+		{% include 'admin/components/pagerfanta_meta_slim.html.twig' with {'list': objects} only %}
+		<div class="col d-flex flex-wrap gap-2 justify-content-md-end">
+			{% if exportUri|default(false) %}
+				<a href="{{ exportUri }}" class="btn btn-outline-dark">
+					<i class="fas fa-file-csv me-2"></i>Export Current Results
+				</a>
+			{% endif %}
+			{% if formFieldPicker|default(false) %}
+				<button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#field-customise" aria-expanded="true" aria-controls="field-customise">
+					Customise columns
+					<i class="fas fa-chevron-down ms-1"></i>
+				</button>
+			{% endif %}
+		</div>
+	</section>
+
+	{% if formFieldPicker|default(false) %}
+		{{ form_start(formFieldPicker, {
+			'attr': {
+				'class': 'row collapse my-3',
+				'id': 'field-customise',
+				'style': 'transition: none;'
+			}
+		}) }}
+		{% for key, choice in formFieldPicker.chosenFields.children %}
+			<div class="col-sm-6 col-md-4 col-lg-3 py-1">{{ form_widget(choice) }}</div>
+		{% endfor %}
+		{{ form_end(formFieldPicker) }}
+	{% endif %}
+	
+	<section class="table-responsive">
+		{% block table %}{% endblock %}
+	</section>
+		
+{% endblock page_content %}

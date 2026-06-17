@@ -1,0 +1,32 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_webhooks_mangopay_index' %}
+{% set areaHeading = 'Platform Configuration' %}
+{% set mainHeading = 'Create Mangopay Webhooks' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'create-hook-form',
+        "sectionTitle": 'Configure Mangopay Hook',
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<div class="row ">
+				<div class="col-md-6">{{ form_row(form.EventType) }}</div>
+				<div class="col-md-6">{{ form_row(form.Status) }}</div>
+				<div class="col-12">{{ form_row(form.Url) }}</div>
+				<div class="col-12">{{ form_row(form.Tag) }}</div>
+			</div>
+			<div class="">
+				<button class="btn btn-success" id="submit" type="submit">Create Hook</button>
+				<a class="btn btn-outline-secondary" href="{{ path('admin_webhooks_mangopay_index') }}">Abandon</a>
+			</div>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

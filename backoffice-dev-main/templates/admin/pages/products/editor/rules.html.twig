@@ -1,0 +1,25 @@
+{% extends 'admin/pages/products/editor/_editor.html.twig' %}
+
+{% block editor_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "trading-rules",
+        "sectionTitle": "Trading Rules",
+        "sectionStyle": "pb-3",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form, {attr: {class: "d-flex flex-column gap-3"}}) }}
+        <div class="row ">
+            <div class="col-sm-6 col-md-4">{{ form_row(form.minCommitUser) }}</div>
+            <div class="col-sm-6 col-md-4">{{ form_row(form.maxCommitUser) }}</div>
+        </div>
+        <div class="">
+            {{ include('admin/pages/products/editor/_editor_form_actions.html.twig', {
+                routeParams: {id: asset.id}
+            }) }}
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

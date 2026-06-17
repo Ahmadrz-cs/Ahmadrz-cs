@@ -1,0 +1,40 @@
+{# KYC Verification is unknown if user has not been reviewed under the new system #}
+{{ include('admin/components/_kv_table.html.twig', {
+    valueDefaultStyle: "tw-font-mono",
+    kv: {
+        "KYC Verification State": user.kycProfile.lastReviewedAt is empty 
+            ? 'Unknown'
+            : user.kycProfile.verified ? 'Verified' : 'Failed',
+        "Due Diligence Level": user.kycProfile.dueDiligenceLevel.name,
+        "Last KYC Review": user.kycProfile.lastReviewedAt ? user.kycProfile.lastReviewedAt|date('Y-m-d H:i:s') : 'N/A',
+        "Last KYC Profile Update": user.kycProfile.updatedAt ? user.kycProfile.updatedAt|date('Y-m-d H:i:s') : 'N/A',
+        "KYC Verified By": user.kycProfile.verifiedBy|default('N/A'),
+    }
+}) }}
+{% if showPermissions|default(false) %}
+{{ include('admin/components/_alert.html.twig', {
+    variant: "info",
+    title: "Restrictions/Permissions - Work in Progress",
+    message: "The restrictions/permissions system is currently work in progress so they are not yet enforced on the frontend.
+        Legacy users will also need to be marked as verified before it works properly.",
+}) }}
+{{ include('admin/components/_kv_table.html.twig', {
+    title: "Permissions",
+    tableId: "kyc-permissions-list",
+    valueDefaultStyle: "tw-font-mono",
+    kv: {
+        "Can Buy": user.kycProfile.buyRestricted 
+            ? "No (overridden)"
+            : user.kycProfile.verified ? "Yes": "No",
+        "Can Sell": user.kycProfile.sellRestricted 
+            ? "No (overridden)"
+            : user.kycProfile.verified ? "Yes": "No",
+        "Can Deposit": user.kycProfile.depositRestricted 
+            ? "No (overridden)"
+            : user.kycProfile.verified ? "Yes": "No",
+        "Can Withdraw": user.kycProfile.withdrawRestricted 
+            ? "No (overridden)"
+            : user.kycProfile.verified ? "Yes": "No",
+    }
+}) }}
+{% endif %}

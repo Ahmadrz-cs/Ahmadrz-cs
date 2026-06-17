@@ -1,0 +1,66 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2 text-center d-flex flex-column" style="gap: 1rem;">
+                    <h3>Investor Type Confirmation</h3>
+                    <h5>
+                        <b><u>Restricted Investor</u></b>
+                    </h5>
+                    <div class="border rounded p-3 mb-3 mt-2 text-left">
+                        <p>You must confirm that you qualify as a restricted investor on the basis that <span class="font-medium">both A and B</span> apply to you. If not, you must choose a different investor type.</p>
+                        <ul>
+                            <li>
+                                <p>
+                                    (A) In the
+                                    <b>past twelve months</b>
+                                    I have invested less than 10% of my net assets in high-risk investments (as defined above)
+                                </p>
+                            </li>
+                            <li>
+                                <p>
+                                    (B) In the
+                                    <b>next twelve months</b>
+                                    I intend to limit my investment in high-risk investments (as defined above) to less than 10% of my net assets
+                                </p>
+                            </li>
+                        </ul>
+                        <p>Please confirm that <span class="font-medium">both A and B</span> apply to you by answering the following:</p>
+                        {{ form_start(form) }}
+                            {{ form_row(form.last12M) }}
+                            {{ form_row(form.next12M) }}
+                            <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                                {# <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Update Later</a> #}
+                                <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('checkup_categorisation') }} role="button">Choose a Different Type</a>
+                                <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Confirm Investor Type</button>
+                            </div>  
+                            {{ form_rest(form) }}
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

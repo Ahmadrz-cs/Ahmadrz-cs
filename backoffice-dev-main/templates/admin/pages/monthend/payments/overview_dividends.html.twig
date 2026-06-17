@@ -1,0 +1,93 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Dividends Overview' %}
+
+{% block page_content %}
+
+    {% include 'admin/components/_horizontal_nav_btn_group.html.twig' with {'links': {
+		navId: 'dividend-order-filter',
+		navLabel: 'dividend-filter-options',
+		linkDefinitions: [
+			{
+				route: app.request.attributes.get('_route'),
+                params: {status: ['completed']},
+				text: 'Completed Dividends',
+				active: app.request.query.all.status|default() == ['completed']
+			},
+			{
+				route: app.request.attributes.get('_route'),
+				text: 'All Dividends',
+				active: app.request.query.all is empty or app.request.query.all|keys == ['page']
+			},
+		]
+	}} only %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "dividend-summary",
+        "sectionTitle": "Dividend Orders",
+        "linkActions": [
+            {
+				"text": "Create Dividend",
+				"route": "admin_monthend_dividend_create",
+				"params": {},
+				"style": "btn-success",
+				"roleRequired": "ROLE_OPERATIONS",
+			},
+            {
+				"text": "See More Analytics",
+				"route": "admin_analytics_dividends",
+				"params": {},
+				"style": "btn-outline-dark",
+				"newTab": true,
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: objects
+        }) }}
+        <div class="table-responsive">
+            <table class="table" id="dividend-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Related Monthend</th>
+                        <th>Asset</th>
+                        <th class="text-end">Asset Value (£)</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Annualised Yield (%)</th>
+                        <th class="text-end">Payments</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paymentOrder in objects|default([]) %}
+                    {% set totalShareholding = paymentOrder.payments|reduce((carry, v) => carry + v.shareholding) %}
+                    {% set totalValue = paymentOrder.payments|reduce((carry, v) => carry + v.amount) %}
+                    <tr>
+                        <td><a class="btn btn-outline-primary"
+                            href="{{ path('admin_monthend_dividend_manage', { id: paymentOrder.id }) }}">
+                            {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View{% endif -%}
+                            </a>
+                        </td>
+                        <td>{{ paymentOrder.id }}</td>
+                        <td>{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                        <td>#{{ paymentOrder.asset.id }} // {{ paymentOrder.asset.name }} ({{ paymentOrder.asset.companyNumber }})</td>
+                        <td class="text-end tw-tabular-nums">{{ paymentOrder.asset.fundingGoal|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ totalShareholding|default('0') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ totalValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ (1200 * totalValue / paymentOrder.asset.fundingGoal|default(1))|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ paymentOrder.payments|length }}</td>
+                        <td>{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

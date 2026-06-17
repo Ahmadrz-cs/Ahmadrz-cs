@@ -1,0 +1,113 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2 text-center">
+                    <h3>Investor Type</h3>
+                    <p>Before you can invest through the Yielders platform, we are required by the FCA to categorise you into one of the following investor types on an annual basis. You can change your investor type from your profile at any time.</p>
+
+                    {% if currentCategory %}
+                    <div class="border rounded p-2 text-left text-medium">
+                        Your current investor type: <span id="current-category">{{ currentCategory.name|humanize }}</span>
+                    </div>
+                    {% endif %}
+
+                    {{ form_start(form) }}
+                        <div class="row mt-4">
+                        {% for category in form.category %}
+                            <div class="col-4">
+                                <label class="d-flex" style="gap: 0.5rem;">
+                                    {{ form_widget(category) }}
+                                    {% set label = category.vars.label %}
+                                    <div class="fw-normal tw-text-sm">{{ label|humanize }}</div>
+                                </label>
+                            </div>
+                        {% endfor %}
+                        </div>
+
+                        <div class="bg-light rounded p-3 mb-3 mt-2 text-left" id="category-summary">
+                            <div class="restricted d-none">
+                                {{ include('@AppBundle/Common/categorisation/_restricted.html.twig') }}
+                            </div>
+                            <div class="sophisticated d-none">
+                                {{ include('@AppBundle/Common/categorisation/_sophisticated.html.twig') }}
+                            </div>
+                            <div class="high-net-worth d-none">
+                                {{ include('@AppBundle/Common/categorisation/_hnw.html.twig') }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center p-4" style="gap: 0.5rem;">
+                            <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Update Later</a>
+                            <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Continue</button>
+                        </div>     
+                    {{ form_rest(form) }}
+                    {{ form_end(form) }}
+
+                    <div class="border rounded p-3 mb-3 mt-2">
+                        If none of the investor types fits your circumstances, then our investments may not be suitable for you at the present time. You can always resume in the future if your circumstances change.
+                        <div class="mt-2">
+                            <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Leave</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block pagejs %}
+<script>
+    $(document).ready(function () {
+    getChecked($('input[name="user_categorisation[category]"]:checked').attr('id'));
+    $('input[name="user_categorisation[category]"]').click(function () {
+        if ($(this).is(':checked')) {
+            console.log($(this).attr('id'));
+            let selectedblock = $(this).attr('id');
+            getChecked(selectedblock);
+        }
+
+
+    });
+    function getChecked(selectedblock) {
+
+        if (selectedblock == 'user_categorisation_category_0') {
+            $('.restricted').removeClass('d-none');
+            $('.sophisticated').addClass('d-none');
+            $('.high-net-worth').addClass('d-none');
+        }
+        if (selectedblock == 'user_categorisation_category_1') {
+            $('.restricted').addClass('d-none');
+            $('.sophisticated').removeClass('d-none');
+            $('.high-net-worth').addClass('d-none');
+        }
+        if (selectedblock == 'user_categorisation_category_2') {
+            $('.restricted').addClass('d-none');
+            $('.sophisticated').addClass('d-none');
+            $('.high-net-worth').removeClass('d-none');
+        }
+    }
+});
+</script>
+{% endblock %}

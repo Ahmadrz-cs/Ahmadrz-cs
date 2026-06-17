@@ -1,0 +1,206 @@
+{% extends 'admin/pages/monthend/dashboard/_dashboard.html.twig' %}
+
+{% block dashboard_content %}
+
+    <div class="row g-3">
+    
+        {% if currentRepayment is not empty %}
+
+        {% set paymentsCompletedList = currentRepayment.payments|filter(p => p.status == constant('App\\Entity\\PaymentRequest::STATE_PAID')) %}
+        {% set originalTotal = currentRepayment.payments|reduce((carry, v) => carry + v.amount) %}
+        {% set completedTotal = paymentsCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "current-monthend",
+                "sectionTitle": "Current Monthend",
+                "linkActions": [
+                    {
+                        "text": "View Current Monthend",
+                        "route": "admin_monthend_repayment_manage",
+                        "params": {"id": currentRepayment.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Current Monthend',
+                        value: currentRepayment.scheduledFor|date('Y-m-d'),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: currentRepayment.status|capitalize|replace({'_':'-'}),
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Payments Completed',
+                        value: paymentsCompletedList|length
+                            ~ '/' ~ currentRepayment.payments|length
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Paid (£)',
+                        value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        {# {% set originalSharesToRepay = prefundingInvestments|reduce((carry, v) => carry + v.shareAmount) %}
+
+        {% if originalSharesToRepay > 0 %}
+
+        {% set remainingSharesToRepay = allPrefunders|reduce((carry, v) => carry + v) %}
+        {% set percentAlreadyPaid = 100 * (originalSharesToRepay - remainingSharesToRepay) / originalSharesToRepay|default(1) %}
+        {% set percentRemaining = 100 - percentAlreadyPaid %} #}
+
+        {% set initialShares = prefunderSellOrders|reduce((carry, v) => carry + v.numberOfShares) %}
+
+        {% if initialShares > 0 %}
+            {% set repaidShares = repaymentSummary|reduce((carry, v) => carry + v.repaidShares) %}
+            {% set remainingShares = initialShares - repaidShares %}
+            {% set percentAlreadyPaid = 100 * repaidShares / initialShares|default(1) %}
+            {% set percentRemaining = 100 - percentAlreadyPaid %}
+
+            <div class="col-12">
+                {% embed 'admin/components/_bordered_section.html.twig' with {
+                    "sectionId": "repayment-progress",
+                    "sectionTitle": "Prefunder Repayment Progress",
+                    "linkActions": []
+                } %}
+                    {% block sectionContent %}
+                    {{ include('admin/components/_progress_bar.html.twig', {
+                        progressBars: [
+                            {
+                                color: "text-bg-success",
+                                label: "percentage-already-paid",
+                                value: percentAlreadyPaid,
+                            },
+                            {
+                                color: "text-bg-warning",
+                                label: "percentage-still-to-repay",
+                                value: percentRemaining,
+                            },
+                        ]
+                    }) }}
+                    <div class="">
+                        {{ include('admin/components/_graph_legend.html.twig', {
+                            layoutClass: "tw-grid tw-gap-y-2 tw-gap-x-24 sm:tw-grid-cols-2 sm:tw-gap-y-4 lg:tw-grid-cols-3 xl:tw-grid-cols-4",
+                            graphLegend: [
+                                {
+                                    color: "text-dark",
+                                    label: "Original Shares to Repay",
+                                    value: initialShares|number_format(0, '', ','),
+                                },
+                                {
+                                    color: "text-success",
+                                    label: "Shares Already Repaid",
+                                    value: repaidShares|number_format(0, '', ','),
+                                },
+                                {
+                                    color: "text-warning",
+                                    label: "Shares Still to Repay",
+                                    value: remainingShares|number_format(0, '', ','),
+                                },
+                            ]
+                        }) }}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="prefunder-repayment-breakdown">
+                            <thead>
+                                <tr>
+                                    <th>Prefunder</th>
+                                    <th class="text-end">Original Shares to Repay</th>
+                                    <th class="text-end">Shares Already Repaid</th>
+                                    <th class="text-end">Shares Still to Repay</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for userRepayment in repaymentSummary|default([]) %}
+                                {% set user = (userRepayment.sellOrders|first).user %}
+                                <tr>
+                                    <td><a href="{{ path('admin_user_dashboard_portfolio', { id: user.id }) }}">#{{ user.id }} // {{ user.userIdentifier }}</a></td>
+                                    <td class="text-end tw-tabular-nums">{{ userRepayment.initialShares|number_format(0, '.', ',') }}</td>
+                                    <td class="text-end tw-tabular-nums">{{ userRepayment.repaidShares|number_format(0, '.', ',') }}</td>
+                                    <td class="text-end tw-tabular-nums">{{ (userRepayment.initialShares - userRepayment.repaidShares)|number_format(0, '.', ',') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endblock %}
+                {% endembed %}
+            </div>
+
+        {% endif %}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "payment-orders",
+                "sectionTitle": "All Prefunder Repayments",
+                "linkActions": [
+                    {
+                        "text": "Create Prefunder Repayment",
+                        "route": "admin_monthend_repayment_create",
+                        "params": {assetId: asset.id},
+                        "style": "btn-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                    {
+                        "text": "Transfer Repayment Funds",
+                        "route": "admin_monthend_repayment_transfer_create",
+                        "params": {id: asset.id},
+                        "style": "btn-outline-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row">
+                    <div class="col-sm-6">{{ pagerfanta(paymentOrders, 'twitter_bootstrap4') }}</div>
+                    <section class="col-sm-6 mb-3 d-flex justify-content-end">
+                        <span class="border rounded-2 d-inline-block p-2 me-1" id="list-meta-results">{{ paymentOrders.count()|number_format(0, '.', ',') }} Results</span>
+                        <span class="border rounded-2 d-inline-block p-2" id="list-meta-page">{{ paymentOrders.getNbPages()|number_format(0, '.', ',') }} Pages</span>
+                    </section> 
+                </div>
+                <div class="table-responsive">
+                    <table class="table" id="payment-order-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Id</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Scheduled For</th>
+                                <th>Payments</th>
+                                <th>Status</th> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paymentOrder in paymentOrders|default([]) %}
+                            <tr>
+                                <td><a class="btn btn-outline-primary"
+                                    href="{{ path('admin_monthend_repayment_manage', { id: paymentOrder.id }) }}">
+                                    {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View{% endif -%}
+                                    </a>
+                                </td>
+                                <td>{{ paymentOrder.id }}</td>
+                                <td>{{ paymentOrder.paymentType|capitalize }}</td>
+                                <td>{{ paymentOrder.description }}</td>
+                                <td>{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                                <td>{{ paymentOrder.payments|length }}</td>
+                                <td>{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock dashboard_content %}

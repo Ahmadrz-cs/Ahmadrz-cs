@@ -1,0 +1,5 @@
+'Invalid credentials.': 'The username or password you entered was invalid! Please check them and try again.'
+'Username could not be found.': 'The username or password you entered was invalid!'
+'Account is disabled.': 'Your account is currently unavailable. Please contact the team on team@yielders.co.uk for further assistance.'
+'Account is locked.' : 'Your account is currently unavailable. Please contact the team on team@yielders.co.uk for further assistance.'
+'Invalid CSRF token.': 'The login form has expired. Refresh the page and try again.'

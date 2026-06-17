@@ -1,0 +1,38 @@
+.video {
+    &-play {
+        z-index: 9999;
+
+
+        &-close {
+            color: $white;
+            opacity: 0.7;
+            font-size: 2.0rem;
+            text-shadow: none;
+
+            &:hover {
+                color: $white;
+                opacity: 1 !important;
+            }
+        }
+
+        .modal-content {
+            background-color: $black;
+        }
+        &-close {
+                position:absolute;
+                right:-30px;
+                top:0;
+                z-index:999;
+                font-size:2rem;
+                font-weight: normal;
+                color:#fff;
+                opacity:1;
+             
+            @include media('<tablet') {
+                position: absolute;
+                top: -36px;
+                right: 0px;
+            }
+        }
+    }
+}

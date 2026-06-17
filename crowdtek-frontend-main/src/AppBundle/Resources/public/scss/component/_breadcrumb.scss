@@ -1,0 +1,19 @@
+.breadcrumb {
+    li {
+        a {
+            @extend .text-white-87;
+            &:hover {
+                color: $white;
+            }
+    }
+
+        &.active {
+            color:rgba($white, 0.6);
+        }
+    }
+
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    @extend .text-white-87;
+ }

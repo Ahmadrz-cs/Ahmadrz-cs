@@ -1,0 +1,45 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Assets' %}
+{% set mainHeading = mainHeading|default('Assets List') %}
+{% set baseTemplate = baseTemplate|default('cms') %}
+
+{% block page_content %}
+    {{ include('admin/pages/assets/_list_w_filters.html.twig', {
+        options: {
+            showLinks: true,
+            showPresets: true,
+            showFilters: true,
+            viewRoute: "admin_asset_edit",
+            links: [
+                {
+                    "text": "Add Asset",
+                    "route": "admin_asset_add",
+                    "params": {},
+                    "style": "btn-success",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+                {
+                    "text": "Share Price Suggester",
+                    "route": "admin_utilities_asset_share_price",
+                    "params": {},
+                    "style": "btn-light",
+                },
+            ],
+            showFields: [
+                'assetType',
+                'createdAt',
+                'sharePriceTool',
+                'featured',
+                'buying',
+                'selling',
+                'feesConfig',
+                'status',
+                'visibility',
+                'legacyStatus',
+                'legacyActions',
+            ],
+        },
+        
+    }) }}
+{% endblock page_content %}

@@ -1,0 +1,120 @@
+# Large prefunding, mostly complete
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_nixis_freya_1: 5000 # 4k:1k split
+    shares_nixis_freya_2: 250 # unsettled
+    shares_nixis_jim_1: 5000 # 3.75k:1.25k split
+    shares_nixis_holly_1: 1000 # retail
+
+App\Entity\TradeOrder:
+    buy_order_nixis_{freya_1} (extends trade_order_prefund):
+        asset: "@assetnixis"
+        user: "@userfreya"
+        numberOfShares: 5000
+        pricePerShare: "@assetnixis->pricePerShare"
+        complementaryOrder: "@sell_order_prefund_nixis_<current()>"
+        createdAt: "<dateTimeBetween('first wednesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    sell_order_prefund_nixis_{freya_1} (extends trade_order_prefund_sell):
+        asset: "@assetnixis"
+        user: "@userfreya"
+        numberOfShares: 4000
+        pricePerShare: "@assetnixis->pricePerShare"
+        complementaryOrder: "@buy_order_nixis_<current()>"
+        createdAt: "@buy_order_nixis_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_nixis_{freya_2} (extends trade_order_prefund):
+        asset: "@assetnixis"
+        user: "@userfreya"
+        numberOfShares: 250
+        pricePerShare: "@assetnixis->pricePerShare"
+        complementaryOrder: "@sell_order_prefund_nixis_<current()>"
+        createdAt: "<dateTimeBetween('first wednesday of -1 months', 'last friday of -1 months')>"
+        createdBy: "$user"
+    sell_order_prefund_nixis_{freya_2} (extends trade_order_prefund_sell):
+        asset: "@assetnixis"
+        user: "@userfreya"
+        numberOfShares: 250
+        pricePerShare: "@assetnixis->pricePerShare"
+        complementaryOrder: "@buy_order_nixis_<current()>"
+        createdAt: "@buy_order_nixis_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_nixis_{jim_1} (extends trade_order_prefund):
+        asset: "@assetnixis"
+        user: "@userjim"
+        numberOfShares: 5000
+        pricePerShare: "@assetnixis->pricePerShare"
+        complementaryOrder: "@sell_order_prefund_nixis_<current()>"
+        createdAt: "<dateTimeBetween('first tuesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    sell_order_prefund_nixis_{jim_1} (extends trade_order_prefund_sell):
+        asset: "@assetnixis"
+        user: "@userjim"
+        numberOfShares: 3750
+        pricePerShare: "@assetnixis->pricePerShare"
+        complementaryOrder: "@buy_order_nixis_<current()>"
+        createdAt: "@buy_order_nixis_<current()>->createdAt"
+        createdBy: "$user"
+    buy_order_nixis_{holly_1} (extends trade_order_prefund):
+        asset: "@assetnixis"
+        user: "@userholly"
+        numberOfShares: 1000
+        pricePerShare: "@assetnixis->pricePerShare"
+        notes: "Round 1k prefunding"
+        complementaryOrder: "@sell_order_prefund_nixis_<current()>"
+        transaction: "@transaction_buy_order_nixis_<current()>"
+        createdAt: "<dateTimeBetween('first tuesday of -2 months', 'last friday of -2 months')>"
+        createdBy: "$user"
+    sell_order_prefund_nixis_{holly_1} (extends trade_order_prefund_sell):
+        asset: "@assetnixis"
+        user: "@userholly"
+        numberOfShares: 1000
+        pricePerShare: "@assetnixis->pricePerShare"
+        notes: "Round 1k prefunding"
+        complementaryOrder: "@buy_order_nixis_<current()>"
+        createdAt: "@buy_order_nixis_<current()>->createdAt"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_nixis_{freya_1, freya_2, jim_1, holly_1}:
+        tradeOrder: "@buy_order_nixis_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_nixis_<current()>->createdAt"
+    buy_order_status_completed_nixis_{freya_1, freya_2, jim_1, holly_1}:
+        tradeOrder: "@buy_order_nixis_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_nixis_<current()>->createdAt"
+    sell_order_status_active_nixis_{freya_1, freya_2, jim_1, holly_1}:
+        tradeOrder: "@sell_order_prefund_nixis_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@sell_order_prefund_nixis_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    # prefunding
+    share_trade_nixis_{freya_1, freya_2, jim_1, holly_1}:
+        buyOrder: "@buy_order_nixis_<current()>"
+        sellOrder: "@sell_order_initial_nixis"
+        numberOfShares: "@buy_order_nixis_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_nixis_<current()>->pricePerShare"
+        createdAt: "@buy_order_nixis_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_nixis_{freya_1, freya_2, jim_1, holly_1}:
+        shareTrade: "@share_trade_nixis_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_nixis_<current()>->createdAt"
+    trade_status_settled_nixis_{freya_1, jim_1, holly_1}:
+        shareTrade: "@share_trade_nixis_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first tuesday of -1 months 16:00:04'))>"
+
+App\Entity\Transaction:
+    transaction_buy_order_nixis_{holly_1} (extends transaction_base):
+        amount: "176000" # Note that this is in pence 1000 shares at 1.76 each
+        comments: "For functional testing trade order transaction relations"

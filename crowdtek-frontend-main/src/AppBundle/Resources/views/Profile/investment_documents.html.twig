@@ -1,0 +1,23 @@
+<h2>{{ offering.name }} - Documents</h2>
+<table width="100%">
+    <thead>
+        <tr>
+            <th>Filename</th>        
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if res|length > 0 %}
+            {% for doc in res %}
+                <tr>
+                    <td>{{ doc.file_alias|default('N/A') }}</td>
+                    <td><a href="{{ doc.url }}" target="_blank" title="Download">Download</a></td>                
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="2">No documents</td>                
+            </tr>
+        {% endif %}
+    </tbody>
+</table>

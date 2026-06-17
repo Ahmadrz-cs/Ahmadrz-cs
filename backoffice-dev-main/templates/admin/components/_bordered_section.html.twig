@@ -1,0 +1,44 @@
+{# Required variables
+- sectionId
+- sectionTitle
+#}
+
+{# {% set linkActions = [
+    {
+        "text": "linkName",
+        "route": "symfony_route_name",
+        "params": {"query": "params"},
+        "style": "btn-primary",
+        "newTab": true,
+        "roleRequired": "ROLE_ADMIN",
+		"render": true,
+    },
+] %} #}
+
+{# Remove any links that the logged in user lacks permissions for - default to any staff (permissive) #}
+{% set linkActions = linkActions|default([])|filter(v => is_granted(v.roleRequired|default('ROLE_ANALYST'), app.user)) %}
+
+<section class="d-grid gap-3 gap-lg-4 {{ sectionStyle ?? 'border rounded-3 p-3 p-lg-4' }} {{ appendSectionStyle|default('') }} tw-auto-rows-min" id="{{ sectionId }}">
+	{% if sectionTitle is defined or linkActions is not empty %}
+		<header class="d-flex flex-column gap-2">
+			{% if sectionTitle|default('') is not empty %}
+				<h3 class="fw-bold fs-4">{{ sectionTitle }}</h3>
+			{% endif %}
+			{% if linkActions is not empty %}
+				<div class="section-actions d-flex flex-wrap gap-2">
+					{% for link in linkActions %}
+						{% if link.render is defined and link.render == true or link.render is not defined %}
+							{{ include('admin/components/button_link.html.twig', {
+								linkProps: link,
+							}) }}
+						{% endif %}
+					{% endfor %}
+				</div>
+			{% else %}
+                {% block customLinkActions %}{% endblock customLinkActions %}
+			{% endif %}
+		</header>
+	{% endif %}
+
+	{% block sectionContent %}{% endblock %}
+</section>

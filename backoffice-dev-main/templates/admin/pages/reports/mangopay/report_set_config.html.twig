@@ -1,0 +1,57 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% if reportSet.id is null %}
+	{% set backToRoute = 'admin_report_mangopay_sets' %}
+{% else %}
+	{% set backToRoute = 'admin_reports_mangopay_set_view' %}
+	{% set backToRouteParams = {id: reportSet.id} %}
+{% endif %}
+
+{% set areaHeading = 'Mangopay Reports' %}
+{% set mainHeading = 'Transaction Report Builder' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% if reportSet.progress == constant('\\App\\Entity\\ReportSet::PROGRESS_END') %}
+	
+	{{ include('admin/components/_alert.html.twig', {
+		variant: "warning",
+		title: "Transaction Report Completed",
+		message: "This transaction report has been completed. Be careful making any changes here as any created reports will not be updated.",
+	}) }}
+			
+	{% endif %}
+	
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'create-report-form',
+        "sectionTitle": 'Configure Report Builder',
+		"linkActions": []
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<div class="row ">
+				<div class="col-12">{{ form_row(form.asset, {attr: {'class': 'searchable'}}) }}</div>
+				<div class="col-md-6">{{ form_row(form.periodStart) }}</div>
+				<div class="col-md-6">{{ form_row(form.periodEnd) }}</div>
+				<div class="col-12">{{ form_row(form.description) }}</div>
+			</div>
+			<div class="">
+				{{ form_widget(form.submit) }}
+				{% if reportSet.id is null %}
+					<a class="btn btn-outline-secondary" href="{{ path('admin_report_mangopay_sets') }}">Abandon</a>
+				{% else %}
+					<a class="btn btn-outline-secondary" href="{{ path('admin_reports_mangopay_set_view', {
+						id: reportSet.id
+					}) }}">Discard Changes</a>
+				{% endif %}
+			</div>
+			{{ form_rest(form) }}
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

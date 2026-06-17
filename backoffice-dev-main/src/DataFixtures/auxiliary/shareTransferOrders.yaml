@@ -1,0 +1,13 @@
+include:
+    - ../templates/baseShareTransferOrder.yaml
+
+App\Entity\ShareTransferOrder:
+    shareTransferOrder_status_{draft} (extends shareTransferOrder_base):
+        asset: "@assetlodge"
+        status: "<current()>"
+        description: "Current monthend share transfer order"
+    shareTransferOrder_status_completed (extends shareTransferOrder_base):
+        asset: "@assetlodge"
+        status: "completed"
+        scheduledFor: "<(new DateTime('first day of last month'))>"
+        description: "Preview monthend share transfer order"

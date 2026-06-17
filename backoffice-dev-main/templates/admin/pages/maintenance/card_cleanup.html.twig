@@ -1,0 +1,65 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Mangopay User Card Cleanup' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "deactive-user-cards",
+        "sectionTitle": "Deactivate User Cards",
+        "linkActions": [
+            {
+                "text": "Configure Cleanup Job",
+                "route": "admin_maintenance_jobs_card_cleanup",
+                "params": {},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_TECH_OPS",
+            },
+            {
+                "text": "Reset Task Tracker",
+                "route": "admin_maintenance_card_cleanup_reset",
+                "params": {},
+                "style": "btn-outline-danger",
+                "roleRequired": "ROLE_TECH_OPS",
+                "dangerous": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Only non admin users will be cleaned up. Only active cards are searched for. Cleanup will disable at most 1 page (10 items) per run. Be mindful of Mangopay API rate limits!",
+        }) }}
+
+        {{ include('admin/pages/maintenance/_card_cleanup_tracker.html.twig') }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "user-info",
+            title: "User Info",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "User Id": userToProcess.id|default("N/A"),
+                "Username": userToProcess.username|default("N/A"),
+                "Mangopay User Id": userToProcess.mangopayUserId|default("N/A"),
+                "Number of Active Cards": pagination.TotalItems|default("N/A"),
+                "Card Ids in Current Page": cards|map(c => c.Id)|join('\n'),
+                "Pagination Page": pagination.Page|default("N/A"),
+                "Pagination Per page": pagination.ItemsPerPage|default("N/A"),
+                "Pagination Total Pages": pagination.TotalPages|default("N/A"),
+            }
+        }) }}
+
+        {{ form_start(form, { attr: {class: "d-flex flex-column gap-2"} }) }}
+        {{ form_row(form.batchSize) }}
+        {{ form_row(form.confirmation) }}
+        {{ form_row(form.submit, { attr: {class: "btn btn-danger"} }) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

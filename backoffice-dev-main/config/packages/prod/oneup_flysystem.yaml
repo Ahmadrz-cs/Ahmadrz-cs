@@ -1,0 +1,17 @@
+# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle/tree/master/Resources/doc/index.md
+oneup_flysystem:
+    adapters: # League\Flysystem\AwsS3v3\AwsS3Adapter
+        public_s3_adapter:
+            awss3v3:
+                client: aws.s3
+                bucket: "%env(S3_BUCKET_PUBLIC)%"
+        private_s3_adapter:
+            awss3v3:
+                client: aws.s3
+                bucket: "%env(S3_BUCKET_PRIVATE)%"
+
+    filesystems: # League\Flysystem\Filesystem
+        fs.public:
+            adapter: public_s3_adapter
+        fs.private:
+            adapter: private_s3_adapter

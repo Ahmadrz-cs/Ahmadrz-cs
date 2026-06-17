@@ -1,0 +1,109 @@
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% embed 'admin/layouts/embeddable_filtered_list.html.twig' with options|default({}) %}
+    {% block createActions %}
+        {% for link in links|default([])|filter(v => is_granted(v.roleRequired|default('ROLE_ANALYST'), app.user)) %}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: link
+            }) }}
+        {% endfor %}
+    {% endblock %}
+
+    {% block filterPresets %}
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ featured: 1 })
+        ) }}" class="btn btn-light">Featured</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ assetType: 'Residential' })
+        ) }}" class="btn btn-light">Residential</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ assetType: 'Commercial' })
+        ) }}" class="btn btn-light">Commercial</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\AssetStatus').Draft.value
+            ] })
+        ) }}" class="btn btn-light">Prelaunch (Draft)</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\AssetStatus').Acquiring.value
+            ] })
+        ) }}" class="btn btn-light">Prefunding (Acquiring)</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\AssetStatus').Active.value,
+                enum('App\\Entity\\Enum\\AssetStatus').Closing.value
+            ] })
+        ) }}" class="btn btn-light">Retail (Active and Closing)</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\AssetStatus').Active.value,
+            ] })
+        ) }}" class="btn btn-light">Retail (Active only)</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\AssetStatus').Closing.value
+            ] })
+        ) }}" class="btn btn-light">Retail (Closing only)</a>
+        <a href="{{ path(
+            app.request.attributes.get('_route'),
+            app.request.attributes.get('_route_params')|merge({ status: [
+                enum('App\\Entity\\Enum\\AssetStatus').Archived.value
+            ] })
+        ) }}" class="btn btn-light">Completed (Archived)</a>
+    {% endblock %}
+
+    {% block collapsibleFilters %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.name) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.companyNumber) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.assetType) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.visibility) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.featured) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.buyRestricted) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.sellRestricted) }}</div>
+        
+    {% endblock %}
+
+    {% block collapsibleFiltersExpandedChoice %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.lifecycleStatus) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.status) }}</div>
+        {# <div class="col-sm-6 col-md-4 col-xl-3">
+        {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.lifecycleStatus} only %}
+        </div>
+        <div class="col-sm-6 col-md-4 col-xl-3">
+            {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.status} only %}
+        </div> #}
+    {% endblock %}
+
+    {% block collapsibleFiltersRange %}
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+        <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+    {% endblock %}
+
+    {% block table %}
+        {{ include('admin/components/assets/_list_table.html.twig', {
+            showLegacyActions: true,
+            objects: objects,
+            showFields: showFields|default([
+                'assetType',
+                'createdAt',
+                'featured',
+                'buying',
+                'selling',
+                'feesConfig',
+                'status',
+                'legacyStatus',
+                'legacyActions',
+            ])
+        }) }}
+    {% endblock %}
+{% endembed %}

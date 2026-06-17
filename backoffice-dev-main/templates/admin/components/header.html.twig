@@ -1,0 +1,19 @@
+<header class="bg-light border-bottom tw-pt-20 tw-pb-4">
+	<div class="{{ containerClass|default('container-xxl') }} d-grid gap-2">
+		{% if backToRoute is defined %}
+			<div class="mb-2">
+				<a class="btn btn-light border" href="{{ path(backToRoute, backToRouteParams|default({})) }}">
+					<i class="nav-icon me-3 fa fa-arrow-left"></i>Back
+				</a>
+			</div>
+		{% endif %}
+		{%- if areaHeading is defined -%}
+			<div class="fw-medium fs-6">{{ areaHeading }}
+				{%- if maturityLabel is defined -%}
+					{{ include('admin/components/maturity_label.html.twig') }}
+				{%- endif -%}
+			</div>
+		{%- endif -%}
+		<h1 class="fw-bold fs-2">{{ mainHeading|default('Main Page Title') }}</h1>
+	</div>
+</header>

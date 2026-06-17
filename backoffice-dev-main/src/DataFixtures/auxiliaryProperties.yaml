@@ -1,0 +1,22 @@
+# Properties include
+# - Asset
+# - Asset Documents
+# - Offering
+# = Offering Documents
+
+include:
+    - auxiliary/propertyOrchid.yaml
+    - auxiliary/propertyNeptunis.yaml
+    - auxiliary/propertySaturna.yaml
+    - auxiliary/propertyLakeside.yaml
+    - auxiliary/propertySolaris.yaml
+    - auxiliary/propertyNovaPlaza.yaml
+    - auxiliary/propertyPartingdale.yaml
+    - auxiliary/propertyKolness.yaml
+    - auxiliary/propertyRoyalGardens.yaml
+    - auxiliary/propertySandfox.yaml
+    - auxiliary/propertySilverhood.yaml
+    - auxiliary/propertyClarenceHold.yaml
+    - auxiliary/propertyNixis.yaml 
+    - auxiliary/propertyRoyalGlades.yaml
+    - auxiliary/propertyEystar.yaml

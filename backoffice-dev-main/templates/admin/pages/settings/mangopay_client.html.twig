@@ -1,0 +1,67 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_app_setting' %}
+{% set areaHeading = 'Platform Configuration' %}
+{% set mainHeading = 'Application Settings - Mangopay' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'mangopay-client-overview',
+        "sectionTitle": 'Mangopay Client',
+        "linkActions": [],
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "This view is for reference only. If there is anything incorrect or missing, contact a senior member of staff with access to Mangopay dashboard who can make changes.",
+            }) }}
+
+            {% if client is not null %}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    valueDefaultStyle: "tw-font-mono",
+                    kv: {
+                        "Client ID": client.ClientId,
+                        "Name": client.Name,
+                        "Primary Theme Colour": client.PrimaryThemeColour,
+                        "Primary Button Colour": client.PrimaryButtonColour,
+                        "Logo URL": client.Logo,
+                        "Tech Contact Emails": { 
+                            value: client.TechEmails,
+                            format: "json",
+                        },
+                        "Admin Contact Emails": { 
+                            value: client.AdminEmails,
+                            format: "json",
+                        },
+                        "Fraud Contact Emails": { 
+                            value: client.FraudEmails,
+                            format: "json",
+                        },
+                        "Billing Contact Emails": { 
+                            value: client.BillingEmails,
+                            format: "json",
+                        },
+                        "Platform Description": client.PlatformDescription,
+                        "Platform Categorization - Business Type": client.PlatformCategorization.BusinessType,
+                        "Platform Categorization - Sector": client.PlatformCategorization.Sector,
+                        "Platform URL": client.PlatformURL,
+                        "Headquarters Address": { 
+                            value: client.HeadquartersAddress,
+                            format: "json",
+                        },
+                        "Headquarters PhoneNumber": client.HeadquartersPhoneNumber,
+                        "Tax/VAT Number": client.TaxNumber,
+                        "Licensor": client.Licensor,
+                        "Raw": { 
+                            value: client,
+                            format: "json",
+                        },
+                    }
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

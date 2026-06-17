@@ -1,0 +1,75 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "kyc-review-report-card",
+    "sectionTitle": "KYC Review Report Card",
+    "linkActions": [
+        {
+            "text": "Manage Notifications",
+            "route": "admin_kyc_review_notify",
+            "params": {"id": kycReview.id, "redirectRoute": "admin_kyc_recurring_review"},
+            "style": "btn-outline-secondary",
+            "render": canNotify|default(false),
+        },
+        {
+            "text": "Edit Review",
+            "route": "admin_kyc_review_edit",
+            "params": {"id": kycReview.id, "redirectRoute": "admin_kyc_recurring_review"},
+            "style": "btn-outline-secondary",
+        },
+    ]
+} %}
+    {% block sectionContent %}
+        <section class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Review Status',
+                value: kycReview.status.value|replace({'_': ' '})|capitalize,
+                className: 'col-12'
+            }) }}
+            {% if kycReview.status == constant('\\App\\Entity\\Enum\\KycReviewStatus::PendingSubjectAction') %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    title: "Still waiting for subject action",
+                    message: "This review is still waiting for the subject action to be completed. Until then, there may be insufficient information to complete this review. However, you can still go ahead with the review if desired.",
+                }) }}
+            {% endif %}
+        </section>
+        {% if kycReview.status in enum('App\\Entity\\Enum\\KycReviewStatus').editableCases() %}
+            {{ form_start(form, {attr: {class:"d-flex flex-column gap-4"}}) }}
+            <div class="d-flex flex-column gap-4">
+                <section>
+                    <h4 class="fw-bold fs-5">Checklist</h4>
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "notice",
+                        title: "All steps must be completed",
+                        message: "This is to ensure the review for each step has been performed, not whether the user has passed or failed that step.",
+                    }) }}
+                </section>
+                <div>
+                    {% for action in constant('App\\Service\\KycReviewService::CONFIGURABLE_ACTIONS') %}
+                        {% if attribute(kycReview, action)%}
+                            {{ form_widget(attribute(form, action)) }}
+                        {% endif %}
+                        
+                    {% endfor %}
+                </div>
+            </div>
+            {% if kycReview.dueDiligenceLevelReview %}
+                <div class="d-flex flex-column gap-2">
+                    <h4 class="fw-bold fs-5">Due Diligence Level</h4>
+                    {{ form_widget(form.dueDiligenceLevel) }}
+                </div>
+            {% endif %}
+            <div class="d-flex flex-column gap-2">
+                <h4 class="fw-bold fs-5">Comments</h4>
+                {{ form_widget(form.notes) }}
+                {{ form_help(form.notes) }}
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {{ form_widget(form.pass) }}
+                {{ form_widget(form.fail) }}
+            </div>
+            {{ form_rest(form) }}
+            {{ form_end(form) }}
+        {% endif %}
+    {% endblock sectionContent %}
+{% endembed %}
+

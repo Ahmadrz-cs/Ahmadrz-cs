@@ -1,0 +1,45 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_manage' %}
+{% set backToRouteParams = {id: bankAccount.id} %}
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Bank Account Registration' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'action-requests',
+        "sectionTitle": 'Action Requests Configuration',
+        "linkActions": [
+            {
+                "text": "Clear All Choices",
+                "route": app.request.attributes.get('_route'),
+                "params": { id: bankAccount.id, clear: true },
+                "style": "btn-secondary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+        {{ form_row(form.actionRequests) }}
+        <div class="d-flex flex-column gap-2 my-4">
+            <h5 class="fw-bold fs-6">Notification Options</h4>
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                title: "Sending Notifications",
+                message: "Notifications are only sent if you opt-in (not enabled by default) and there are one or more actions requested. Otherwise, choosing to notify user does nothing. The notification will include a list of all actions requested. \n\nYou can also resend notifications by opting-in and clicking 'Save Changes'.",
+            }) }}
+            {{ form_widget(form.notifyUser) }}
+        </div>
+        <div>
+            <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_bank_account_manage', {id: bankAccount.id}) }}">Discard Changes</a>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

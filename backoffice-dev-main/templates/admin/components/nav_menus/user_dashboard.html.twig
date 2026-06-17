@@ -1,0 +1,81 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: "admin_user_dashboard_overview",
+                text: "Overview",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_onboarding",
+                text: "Onboarding",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_kyc",
+                text: "KYC",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_documents",
+                text: "Documents",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_status_logs",
+                text: "Status Logs",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_investments",
+                text: "Investments",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_relistings",
+                text: "Relistings",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_payments",
+                text: "Payments",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_portfolio",
+                text: "Portfolio",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_trade_orders",
+                text: "Trade Orders",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_share_trades",
+                text: "Share Trades",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_statements",
+                text: "Statements",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_bank_accounts",
+                text: "Bank Accounts",
+                params: {},
+            },
+            {
+                route: "admin_user_dashboard_event_logs",
+                text: "Event Logs",
+                params: {},
+            },
+        ]
+    }
+] %}
+
+{{ include('admin/components/_horizontal_nav.html.twig', {
+    navId: 'userDashboardNav',
+    links: menuLinks,
+}) }}

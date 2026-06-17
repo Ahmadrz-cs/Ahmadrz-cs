@@ -1,0 +1,56 @@
+# This is completed and exited
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{orchid} (extends asset_base):
+        name: Orchid House - Kings Lynn
+        briefDescription: Mixed used building consisting of a 3 unit commercial ground floor and 6 apartments on the upper floors.
+        pricePerShare: 3.75
+        amountOfShares: 100000
+        companyNumber: SPVAF10001
+        investmentTerm: 24
+        netProjectedYield: '0.0506'
+        netProjectedIncome: '18975'
+        buyRestricted: true
+        sellRestricted: true
+        termStart: "@self->createdAt"
+        createdAt: "<dateTimeBetween('-30 months', '-27 months')>"
+
+App\Entity\AssetAddress:
+    assetaddress{orchid} (extends assetaddress_base):
+        address1: 20 King Street
+        city: King's Lynn
+        postCode: PE30 1ET
+        longitude: 0.393727
+        latitude: 52.75562
+
+App\Entity\AssetMember:
+    assetmember{orchid} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc_orchid_{AoA, IM, Cover, Financials, photo1, photo2}:
+        asset: "@assetorchid"
+        document: "@doc_orchid_<current()>"
+
+App\Entity\Document:
+    doc_orchid_{AoA} (extends doc_aoa):
+    doc_orchid_{IM} (extends doc_im):
+    doc_orchid_{Cover} (extends doc_logo):
+        filename: "royalwayproperty.jpg"
+    doc_orchid_{Financials} (extends doc_calculations):
+    doc_orchid_photo{1..2} (extends doc_property_photo):
+        description: "Example property document"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{orchid} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>
+        occuredAt: "@asset<current()>->termStart"
+    assetstatuslog_closing_{orchid} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Closing)>
+        occuredAt: "<dateTimeBetween('-9 months', '-8 months')>"
+    assetstatuslog_archived_{orchid} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Archived)>
+        occuredAt: "<dateTimeBetween('-6 months', '-6 months')>"

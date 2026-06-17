@@ -1,0 +1,137 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_setup' %}
+{% set backToRouteParams = {'id': transferOrder.id} %}
+{% set areaHeading = 'Monthend - Fee Collection' %}
+{% set mainHeading = 'Setup Transfers' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% set transfersCompletedList = matchingRequests|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE')) %}
+{% set originalTotal = matchingRequests|reduce((carry, v) => carry + v.amount) %}
+{% set completedTotal = transfersCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "warning",
+        message: "This generator works best if you are using the new multi-wallet system and the accompanying income transfer tool for provisioning expenses. For assets using the legacy/single wallet system, you should add transfers with alternative methods.",
+    }) }}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "search-generate-config",
+        "sectionTitle": "Search Transfers and Generate Fee Collection Transfers",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        {# {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "About this tool",
+            showIcon: false,
+        } %}
+            {% block message %}
+                <p>This tool is primarily intended for collecting Yielders fees that were provisioned as part of each asset's income transfer process during monthend. The generator will create a "relay" transfer that will collect that provisioned fee into a Yielders owned wallet.</p>
+                <p class="mb-0">However, given the primarily search criteria is the description, it is possible to find other transfers by changing the "description" search criteria. Although, it would have to be an exact match.</p>
+            {% endblock message %}
+        {% endembed %} #}
+
+        {{ form_start(form, {attr: {class: "d-grid sm:tw-grid-cols-2 gap-4"}}) }}
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-1">
+                <h4 class="fw-bold fs-5">Step 1: Search for Transfers</h4>
+                {{ form_row(form.scheduledFor_gte) }}
+                {{ form_row(form.scheduledFor_lt) }}
+                {{ form_row(form.description) }}
+                <datalist id="{{ form.description.vars.attr.list|default(form.description.vars.name) }}">
+                    <option value="{{ constant('App\\Service\\MonthEndService::DESCRIPTION_PRESETS')['management'] }}">
+                </datalist>
+                <div class="d-flex flex-wrap gap-2">
+                    {{ form_widget( form.search, { 'attr': {'class': 'btn-primary'} } ) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Cancel",
+                            "route": "admin_monthend_fee_collection_manage",
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Reset Criteria to Default",
+                            "route": app.request.attributes.get('_route'),
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-2">
+                <h4 class="fw-bold fs-5">Step 2: Generate Fee Collection Transfers</h4>
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Generated transfers will go from the original transfer's credited wallet to the fee wallet (or superadmin wallet if no fee wallet configured). For fee collections, the debit wallet is usually the asset's expenses wallet.",
+                }) }}
+                {{ form_row(form.feeWalletId) }}
+                <div class="mt-auto">
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "warning",
+                        message: "The will clear all existing transfers before generating the new ones.",
+                    }) }}
+                    {{ form_widget( form.generate, { 'attr': {'class': 'btn-success mt-3'} } ) }}
+                </div>
+            </section>
+
+            {{ form_rest(form) }}
+        {{ form_end(form) }}
+
+        <div class="row g-3">
+            <h4 class="fw-bold fs-5">Matching Transfers Found</h4>
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Matches',
+                value: matchingRequests|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Amount in Matching Transfers',
+                value: '£' ~ completedTotal|number_format(2, '.', ','),
+            }) }}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped" id="transfers-list">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Description</th>
+                        <th>Original Credit Wallet Id</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Proportion (%)</th>
+                        <th>Updated</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferRequest in matchingRequests|default([]) %}
+                        {% set asset = transferRequest.transferOrder.asset %}
+                        <tr data-object-id="{{ transferRequest.id }}">
+                            <td data-field="asset">
+                                {% if asset is not empty %}
+                                #{{ asset.id }} // {{ asset.name }} ({{ asset.companyNumber }})
+                                {% endif %}
+                            </td>
+                            <td data-field="description">{{ transferRequest.description }}</td>
+                            <td data-field="creditWalletId">{{ transferRequest.creditWalletId }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums">{{ (transferRequest.amount * 100 / max(originalTotal, 0.01))|number_format(3, '.', ',') }}</td>
+                            <td>{{ transferRequest.updatedAt|date('Y-m-d H:i:s') }}</td>
+                            <td>{{ transferRequest.status|capitalize }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

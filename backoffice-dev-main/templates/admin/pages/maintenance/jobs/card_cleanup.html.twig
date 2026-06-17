@@ -1,0 +1,58 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Jobs' %}
+{% set mainHeading = 'Mangopay User Card Cleanup' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "deactive-user-cards",
+        "sectionTitle": "Deactivate User Cards",
+        "linkActions": [
+            {
+                "text": "Back to Regular Cleanup Tool",
+                "route": "admin_maintenance_card_cleanup",
+                "params": {},
+                "style": "btn-outline-secondary",
+                "roleRequired": "ROLE_TECH_OPS",
+            },
+            {
+                "text": "Refresh",
+                "route": app.request.get("_route"),
+                "params": {},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_TECH_OPS",
+            },
+            {
+                "text": "Cancel Active Card Cleanup Job",
+                "route": "admin_maintenance_jobs_cancel_card_cleanup",
+                "params": {},
+                "style": "btn-outline-danger",
+                "roleRequired": "ROLE_TECH_OPS",
+                "render": taskTracker.metadata.jobInProgress,
+                "dangerous": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Only non admin users will be cleaned up. Only active cards are searched for.",
+        }) }}
+        {{ include('admin/pages/maintenance/_card_cleanup_tracker.html.twig') }}
+
+        {{ form_start(form, { attr: {class: "d-flex flex-column gap-2"} }) }}
+        <div class="d-grid lg:tw-grid-cols-2 gap-3">
+            {{ form_row(form.batchSize) }}
+            {{ form_row(form.jobSize) }}
+        </div>
+        {{ form_row(form.submit, { attr: {class: "btn btn-primary"} }) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

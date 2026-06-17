@@ -1,0 +1,25 @@
+{% extends 'admin/pages/payment_order/reject.html.twig' %}
+
+{% set mainHeading = 'Confirm Payment Order Abandonment' %}
+{% set htmlTitle = 'Abandon Payment Order' %}
+
+{# Configure page blocks #}
+{% block notices %}
+    {% embed 'admin/components/_alert.html.twig' with {
+        role: "alert",
+        variant: "warning",
+        showType: true,
+    } %}
+        {% block message %}
+            You are about to abandon an in-progress payment order. <span class="fw-bold">This cannot be undone!</span>
+        {% endblock message %}
+    {% endembed %}
+{% endblock %}
+
+{% block formSubmit %}
+<button class="btn btn-danger" id="submit" type="submit">Abandon Payment Order</button>
+<a class="btn btn-outline-secondary"
+    href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_payment_order_manage', {
+        id:  paymentOrder.id
+    }) }}">Discard Changes</a>
+{% endblock %}

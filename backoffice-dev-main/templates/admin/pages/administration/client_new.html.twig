@@ -1,0 +1,40 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_administration_clients' %}
+{% set areaHeading = 'API Clients' %}
+{% set mainHeading = 'Create New OAuth2 Client' %}
+
+{% block page_content %}
+    <div>
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Cancel and Delete",
+                "route": 'admin_administration_clients_delete',
+                "params": {
+                    identifier: userClient.client.identifier,
+                    new: '1',
+                },
+                "style": "btn-danger text-nowrap",
+            },
+        }) }}
+    </div>
+    <div class="row mb-1">
+        <div class="col-md-12 mb-1">
+            <h4>Client ID</h4>
+            <p class="card card-body bg-light border shadow-none" id="client-id">{{ userClient.client.identifier }}</p>
+        </div>
+        <div class="col-md-12">
+            <h4>Client Secret</h4>
+            <p class="alert alert-warning fw-bold">Please make a note of the secret. It will not be retrievable later</p>
+            <p class="card card-body bg-light border shadow-none" id="client-secret">{{ userClient.client.secret }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-1">
+        <div class="col-md-12">
+            <h4>Configure the new client</h4>
+            <p>Define allowed redirect URIs and pick permitted grants and scopes.</p>
+            <a href="{{ path('admin_administration_clients_edit', {identifier: userClient.client.identifier}) }}" class="btn btn-success">Configure Client</a>
+        </div>
+    </div>
+{% endblock page_content %}

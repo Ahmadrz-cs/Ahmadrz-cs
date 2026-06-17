@@ -1,0 +1,40 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Users' %}
+{% set mainHeading = 'User Managers' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+	<div class="table-responsive">
+		<table class="table table-striped datatable " id="userlist">
+			<thead>
+				<tr>
+					<th>Id</th>
+					<th>Name</th>
+					<th>Contact Email</th>
+					<th>Join Date (d/m/Y)</th>
+					<th>Users Managed</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for user in users %}
+					<tr>
+						<td>{{ user.id }}</td>
+						<td>
+							<a href="{{ path('admin_user_edit', { id: user.id }) }}">{{ user.fullname }}</a>
+						</td>
+						<td title="Username: {{ user.username }}">{{ user.email }}</td>
+						<td>{{ user.createdAt|date("d/m/Y", false) }}</td>
+						<td>{{ user.managedUsers|length }}</td>
+						<td>
+							<a href="{{ path('admin_user_managed_users', { id: user.id }) }}" type="button" class="btn btn-light border">View Managed Users</a>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+{% endblock page_content %}

@@ -1,0 +1,222 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_trade_system_port_repayments' %}
+{% set areaHeading = 'Trade System Porting Tools' %}
+{% set mainHeading = 'Port Repayments' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "repayments-analysis",
+        "sectionTitle": "Repayments Analysis",
+    } %}
+        {% block sectionContent %}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "Repayment Generations",
+        } %}
+            {% block message %}
+                <p>For simplicity, all generations will be ported based on the investment as a single repayment.</p>
+                <ul>
+                    <li>Generation 1 assets are those repaid before payment orders existed.</li>
+                    <li>Generation 1.5 are hybrids where assets were partially repaid with payment orders.</li>
+                    <li>Generation 2 assets are those repaid with payment orders.</li>
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+
+        {% if sharesCirculating > asset.amountOfShares %}
+            {{ form_start(form) }}
+            {{ form_row(form.port) }}
+            {{ form_end(form) }}
+        {% endif %}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "aggregate-info",
+            title: "Aggregate Summary",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Asset Id": asset.id,
+                "Asset Name": asset.name,
+                "Asset SPV": asset.companyNumber,
+                "Asset Shares Issued": asset.amountOfShares|number_format,
+                "Asset Share Price": asset.pricePerShare|format_currency('GBP'),
+                "Shares Circulating": sharesCirculating|number_format,
+                "Prefunding with Liquidation Count": repaymentsMade|reduce((carry, v) => carry + v.count)|number_format,
+                "Last 1st Party Investment": lastRetailInvestments ? lastRetailInvestments[0].createdAt|date('Y-m-d H:i:s') : 'N/A',
+                "First Party Offering": lastRetailInvestments ? lastRetailInvestments[0].offering.id,
+                "Shares To Liquidate": repaymentsMade|reduce((carry, v) => carry + v.prefunded)|number_format,
+                "Shares Repaid Native": repaymentsMade|reduce((carry, v) => carry + v.sharesNative)|number_format,
+                "Shares Repaid Additional Field": repaymentsMade|reduce((carry, v) => carry + v.sharesAdditionalField)|number_format,
+                "Shares Repaid Combined": repaymentsMade|reduce((carry, v) => carry + v.sharesCombined)|number_format,
+                "Repayment Order Count": repaymentsMade|reduce((carry, v) => carry + v.orderCount)|number_format,
+                "Repayment Order Value": repaymentsMade|reduce((carry, v) => carry + v.orderValue)|number_format,
+                "Repayment Order Shares": repaymentsMade|reduce((carry, v) => carry + v.orderShares)|number_format,
+                "Buyback Count": repaymentBuyBacks|reduce((carry, v) => carry + v.count)|number_format,
+                "Buybacks Paid": repaymentBuyBacks|reduce((carry, v) => carry + v.value)|format_currency('GBP'),
+                "Buyback Shares": repaymentBuyBacks|reduce((carry, v) => carry + v.shares)|number_format,
+            }
+        }) }}
+
+        {{ include('admin/components/trade_orders/_list_table.html.twig', {
+            tableId: "buy-orders-list",
+            title: "Proxy Buy Orders List",
+            showAsset: false,
+            showDirection: true,
+            objects: buyOrders|sort((a, b) => b.user.id <=> a.user.id),
+        }) }}
+
+        {{ include('admin/components/trade_orders/_list_table.html.twig', {
+            tableId: "sell-orders-list",
+            title: "Prefunding Sell Orders List",
+            showAsset: false,
+            showDirection: true,
+            objects: sellOrders|sort((a, b) => b.user.id <=> a.user.id),
+        }) }}
+
+        <div class="row">
+            <section class="col-md-6">
+                <h5 class="fw-bold fs-5">Prefunding Investments</h5>
+                <table class="table table-bordered" id="prefunding-investment-list">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Created</th>
+                            <th>Investor</th>
+                            <th class="text-end">Shares</th>
+                            <th class="text-end">Divested</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for investment in investments|sort((a, b) => b.user.id <=> a.user.id) %}
+                        <tr>
+                            <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">{{ investment.id }}</a></td>
+                            <td>{{ investment.createdAt|date("Y-m-d H:i:s", false) }}</td>
+                            <td><a href="{{ path('admin_user_edit', { id: investment.user.id }) }}">{{ investment.user.id }}</a></td>
+                            <td class="text-end tw-tabular-nums">{{ investment.shareamount }}</td>
+                            <td class="text-end tw-tabular-nums">{{ investment.divestedshares|default(0) }}</td>
+                            <td>{{ investment.lifecycleStatus }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="col-md-6">
+                <h5 class="fw-bold fs-5">Repayment Orders</h5>
+                <table class="table table-bordered" id="repayment-orders-list">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Related Monthend</th>
+                            <th class="text-end">Shares</th>
+                            <th class="text-end">Payments</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paymentOrder in repaymentOrders %}
+                        {% set totalShareholding = paymentOrder.payments|reduce((carry, v) => carry + v.shareholding) %}
+                        {% set totalValue = paymentOrder.payments|reduce((carry, v) => carry + v.amount) %}
+                        <tr>
+                            <td><a href="{{ path('admin_monthend_repayment_manage', { id: paymentOrder.id }) }}">{{ paymentOrder.id }}</a></td>
+                            <td>{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ totalShareholding|default('0') }}</td>
+                            <td class="text-end tw-tabular-nums">{{ paymentOrder.payments|length }}</td>
+                            <td>{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Sort Default (user id)",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {id: asset.id},
+                    "style": "btn-outline-dark text-nowrap",
+                },
+            }) }}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Sort By Largest Shareholder First",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {id: asset.id, sort: 'largest_first'},
+                    "style": "btn-outline-dark text-nowrap",
+                },
+            }) }}
+        </div>
+
+        {% if (app.request.query.all.sort ?? false) == 'largest_first' %}
+            {% set repaymentsMade = repaymentsMade|sort((a, b) => b.prefunded <=> a.prefunded) %}
+        {% endif %}
+        
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            title: "Objective",
+            message: "Ensure the proxy buy back info matches the investment repaid shares, either native or additional field depending on generation.",
+        }) }}
+
+        <table class="table table-bordered table-striped-columns" id="repayment-summary">
+            <thead>
+                <tr>
+                    <th colspan="1" title="asset-info" class="text-center">User Info</th>
+                    <th colspan="5" title="payout-info" class="text-center">Prefunding Investments Info</th>
+                    <th colspan="4" title="order-info" class="text-center">Repayment Order Info</th>
+                    <th colspan="4" title="buyback-info" class="text-center">Proxy Buy Back Info</th>
+                </tr>
+                <tr>
+                    <th>Id</th>
+
+                    <th>Last Prefunded</th>
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Prefunded</th>
+                    <th class="text-end">Native Field</th>
+                    <th class="text-end">Additional Field</th>
+                    
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Shares (Gen 2)</th>
+                    <th class="text-end">Difference (Gen 1)</th>
+
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Shares</th>
+                    <th class="text-end">Difference</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in repaymentsMade %}
+                <tr>
+                    <td><a href="{{ path('admin_user_dashboard_portfolio', { id: item.userid }) }}">{{ item.userid }}</a></td>
+                    <td class="tw-font-mono">{{ item.lastPrefunded ? item.lastPrefunded|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                    <td class="tw-font-mono text-end">{{ item.count|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.prefunded|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.sharesNative|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.sharesAdditionalField|number_format }}</td>
+
+                    <td class="tw-font-mono text-end">{{ item.orderCount|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.orderValue|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ item.orderShares|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.sharesNative + item.sharesAdditionalField - item.orderShares)|number_format }}</td>
+
+                    <td class="tw-font-mono text-end">{{ (item.userid in repaymentBuyBacks|keys ? repaymentBuyBacks[item.userid].count : 0)|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.userid in repaymentBuyBacks|keys ? repaymentBuyBacks[item.userid].value : 0)|string|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.userid in repaymentBuyBacks|keys ? repaymentBuyBacks[item.userid].shares : 0)|number_format  }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.userid in repaymentBuyBacks|keys ? repaymentBuyBacks[item.userid].shares - item.sharesCombined : 0)|number_format  }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

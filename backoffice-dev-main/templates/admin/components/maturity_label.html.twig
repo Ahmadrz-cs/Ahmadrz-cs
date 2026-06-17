@@ -1,0 +1,13 @@
+{% set labelStyles = {
+    'alpha': 'danger',
+    'beta': 'warning',
+    'legacy': 'dark',
+    'stable': 'light',
+} %}
+
+{% if maturityLabel not in labelStyles|keys %}
+	{# Info is the default styling #}
+	{% set label = 'stable' %}
+{% endif %}
+
+<span class="badge text-bg-{{ labelStyles[maturityLabel|lower] }}">{{ maturityLabel|capitalize }}</span>

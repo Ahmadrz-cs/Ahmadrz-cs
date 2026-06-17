@@ -1,0 +1,498 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Review Activity' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+{{ include('admin/components/_alert.html.twig', {
+    variant: "notice",
+    title: "Tracking Coverage",
+    message: "Only monthend activity using the new orders system (i.e. anything done through the Monthend Hub) is tracked in this tool.",
+}) }}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "query-configuration",
+    "sectionTitle": "Query Configuration",
+    "linkActions": [
+        {
+            "text": "Last 12 Months",
+            "route": app.request.attributes.get('_route'),
+            "params": {
+                startMonth: 'first day -12 months'|date('Y-m-d'),
+                endMonth: 'last day of last month'|date('Y-m-d'), 
+            },
+            "style": "btn-outline-primary",
+        },
+        {
+            "text": "Last 6 Months",
+            "route": app.request.attributes.get('_route'),
+            "params": {
+                startMonth: 'first day -6 months'|date('Y-m-d'),
+                endMonth: 'last day of last month'|date('Y-m-d'),
+            },
+            "style": "btn-outline-primary",
+        },
+        {
+            "text": "Last 3 Months",
+            "route": app.request.attributes.get('_route'),
+            "params": {
+                startMonth: 'first day -3 months'|date('Y-m-d'),
+                endMonth: 'last day of last month'|date('Y-m-d'),
+            },
+            "style": "btn-outline-primary",
+        },
+        {
+            "text": "Year to date",
+            "route": app.request.attributes.get('_route'),
+            "params": {
+                startMonth: 'first day of january this year'|date('Y-m-d'),
+                endMonth: 'last day of this month'|date('Y-m-d'),
+            },
+            "style": "btn-outline-primary",
+        },
+        {
+            "text": "Current Month",
+            "route": app.request.attributes.get('_route'),
+            "params": {
+                startMonth: 'now'|date('Y-m-d'),
+                endMonth: 'last day of this month'|date('Y-m-d'),
+            },
+            "style": "btn-outline-primary",
+        },
+    ]
+} %}
+    {% block sectionContent %}
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Currrent Search Range',
+            value: form.vars.data.startMonth|date('Y F') ~ ' to ' ~ form.vars.data.endMonth|date('Y F') ~ ' (inclusive)',
+            className: "col-md-6",
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Months in Currrent Search Range',
+            value: searchInterval ~ ' months',
+            className: "col-md-6",
+        }) }}
+    </div>
+    {{ form_start(form) }}
+        <div class="d-grid md:tw-grid-cols-3 gap-3">
+            {{ form_row(form.startMonth) }}
+            {{ form_row(form.endMonth) }}
+            {{ form_row(form.status) }}
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Reset Criteria to Default",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {},
+                    "style": "btn-outline-secondary text-nowrap",
+                },
+            }) }}
+        </div>
+        {{ form_rest(form) }}
+    {{ form_end(form) }}
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "income-disaggregations",
+    "sectionTitle": "Income Disaggregations",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% set aggregatedByMonth = {} %}
+    {% for month, orders in activity.incomeDisaggregations|default([]) %}
+        {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+            (month) : { 
+                'count': orders|length,
+                'actions': orders|reduce((carry, order) => carry + order.transfers|length),
+                'value': orders|reduce((carry, order) => carry + order.transfers|reduce((c, v) => c + v.amount))
+            }
+        }) %}
+    {% endfor %}
+
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th class="text-end">Income Disaggregations Orders</th>
+                    <th class="text-end">Number of Transfers</th>
+                    <th class="text-end">Total Disaggregation Amount (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total in search range</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(2) }}</td>
+                </tr>
+                {% for month, aggregates in aggregatedByMonth|default([]) %}
+                <tr>
+                    <td class="text-nowrap">{{ month }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "dividends",
+    "sectionTitle": "Dividends",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% set aggregatedByMonth = {} %}
+    {% for month, orders in activity.dividends|default([]) %}
+        {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+            (month) : { 
+                'count': orders|length,
+                'actions': orders|reduce((carry, order) => carry + order.payments|length),
+                'value': orders|reduce((carry, order) => carry + order.payments|reduce((c, v) => c + v.amount))
+            }
+        }) %}
+    {% endfor %}
+
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th class="text-end">Dividend Orders</th>
+                    <th class="text-end">Number of Payments</th>
+                    <th class="text-end">Total Dividends (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total in search range</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(2) }}</td>
+                </tr>
+                {% for month, aggregates in aggregatedByMonth|default([]) %}
+                <tr>
+                    <td class="text-nowrap">{{ month }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "investment-settlements",
+    "sectionTitle": "Investment Settlements",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% set aggregatedByMonth = {} %}
+    {% for month, breakdown in settlementsBreakdown|default([]) %}
+        {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+            (month) : { 
+                'count': activity.settlements[(month)]|length,
+                'settlementActions': breakdown.settlement|length,
+                'settlementValue': breakdown.settlement|reduce((c, v) => c + v.amount),
+                'stampDutyActions': breakdown.stampDuty|length,
+                'stampDutyValue': breakdown.stampDuty|reduce((c, v) => c + v.amount),
+            }
+        }) %}
+    {% endfor %}
+
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th class="text-end">Settlement Orders</th>
+                    <th class="text-end">Number of Investment Settlements</th>
+                    <th class="text-end">Total Settlement Value (£)</th>
+                    <th class="text-end">Number of Stamp Duty Collections</th>
+                    <th class="text-end">Total Stamp Duty (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total in search range</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.settlementActions)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.settlementValue)|number_format(2) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.stampDutyActions)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.stampDutyValue)|number_format(2) }}</td>
+                </tr>
+                {% for month, aggregates in aggregatedByMonth|default([]) %}
+                <tr>
+                    <td class="text-nowrap">{{ month }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.settlementActions|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.settlementValue|number_format(2) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.stampDutyActions|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.stampDutyValue|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "prefunder-repayments",
+    "sectionTitle": "Prefunder Repayments",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% set aggregatedByMonth = {} %}
+    {% for month, orders in activity.repayments|default([]) %}
+        {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+            (month) : { 
+                'count': orders|length,
+                'actions': orders|reduce((carry, order) => carry + order.payments|length),
+                'value': orders|reduce((carry, order) => carry + order.payments|reduce((c, v) => c + v.amount))
+            }
+        }) %}
+    {% endfor %}
+
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-nowrap">Month</th>
+                    <th class="text-end">Repayment Orders</th>
+                    <th class="text-end">Number of Repayments</th>
+                    <th class="text-end">Total Repayments (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total in search range</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(2) }}</td>
+                </tr>
+                {% for month, aggregates in aggregatedByMonth|default([]) %}
+                <tr>
+                    <td class="text-nowrap">{{ month }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "fee-collections",
+    "sectionTitle": "Fee Collections",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+    {% set aggregatedByMonth = {} %}
+    {% for month, orders in activity.feeCollections|default([]) %}
+        {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+            (month) : { 
+                'count': orders|length,
+                'actions': orders|reduce((carry, order) => carry + order.transfers|length),
+                'value': orders|reduce((carry, order) => carry + order.transfers|reduce((c, v) => c + v.amount))
+            }
+        }) %}
+    {% endfor %}
+
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th class="text-end">Fee Collections</th>
+                    <th class="text-end">Number of Transfers</th>
+                    <th class="text-end">Total Fees (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total in search range</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(2) }}</td>
+                </tr>
+                {% for month, aggregates in aggregatedByMonth|default([]) %}
+                <tr>
+                    <td class="text-nowrap">{{ month }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                    <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "divestments",
+    "sectionTitle": "Divestments",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+        {% set aggregatedByMonth = {} %}
+        {% for month, orders in activity.exits|default([]) %}
+            {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+                (month) : { 
+                    'count': orders|length,
+                    'actions': orders|reduce((carry, order) => carry + order.payments|length),
+                    'value': orders|reduce((carry, order) => carry + order.payments|reduce((c, v) => c + v.amount))
+                }
+            }) %}
+        {% endfor %}
+
+        <section>
+            <h5 class="fw-bold fs-5">Full Divestments (Exits)</h5>
+            <div class="overflow-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th class="text-end">Full Divestments</th>
+                            <th class="text-end">Number of Payments</th>
+                            <th class="text-end">Total Divestment (£)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total in search range</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(2) }}</td>
+                        </tr>
+                        {% for month, aggregates in aggregatedByMonth|default([]) %}
+                        <tr>
+                            <td class="text-nowrap">{{ month }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        {% set aggregatedByMonth = {} %}
+        {% for month, orders in divestments|default([]) %}
+            {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+                (month) : { 
+                    'count': orders|length,
+                    'actions': orders|reduce((carry, order) => carry + order.payments|length),
+                    'value': orders|reduce((carry, order) => carry + order.payments|reduce((c, v) => c + v.amount))
+                }
+            }) %}
+        {% endfor %}
+
+        <section class="mt-3">
+            <h5 class="fw-bold fs-5">Partial Divestments</h5>
+            <div class="overflow-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th class="text-end">Partial Divestments</th>
+                            <th class="text-end">Number of Payments</th>
+                            <th class="text-end">Total Divestment (£)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total in search range</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(2) }}</td>
+                        </tr>
+                        {% for month, aggregates in aggregatedByMonth|default([]) %}
+                        <tr>
+                            <td class="text-nowrap">{{ month }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                            <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% endblock %}
+{% endembed %}
+
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "share-transfers",
+    "sectionTitle": "Share Transfers",
+    "linkActions": []
+} %}
+    {% block sectionContent %}
+
+        {% set aggregatedByMonth = {} %}
+        {% for month, orders in activity.shareTransfers|default([]) %}
+            {% set aggregatedByMonth = aggregatedByMonth|merge({ 
+                (month) : { 
+                    'count': orders|length,
+                    'actions': orders|reduce((carry, order) => carry + order.shareTransfers|length),
+                    'value': orders|reduce((carry, order) => carry + order.shareTransfers|reduce((c, v) => c + v.shares))
+                }
+            }) %}
+        {% endfor %}
+        <div class="overflow-auto">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th class="text-end">Share Transfer Orders</th>
+                        <th class="text-end">Number of Share Transfers</th>
+                        <th class="text-end">Total Shares Transfered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total in search range</td>
+                        <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.count)|number_format(0) }}</td>
+                        <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.actions)|number_format(0) }}</td>
+                        <td class="text-end tw-tabular-nums">{{ aggregatedByMonth|reduce((carry, x) => carry + x.value)|number_format(0) }}</td>
+                    </tr>
+                    {% for month, aggregates in aggregatedByMonth|default([]) %}
+                    <tr>
+                        <td class="text-nowrap">{{ month }}</td>
+                        <td class="text-end tw-tabular-nums">{{ aggregates.count|number_format(0) }}</td>
+                        <td class="text-end tw-tabular-nums">{{ aggregates.actions|number_format(0) }}</td>
+                        <td class="text-end tw-tabular-nums">{{ aggregates.value|number_format(0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endblock %}
+{% endembed %}
+
+{% endblock page_content %}

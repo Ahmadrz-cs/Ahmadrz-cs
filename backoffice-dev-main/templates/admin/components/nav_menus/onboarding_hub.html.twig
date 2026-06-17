@@ -1,0 +1,35 @@
+{% set menuLinks = [
+    {
+        "linkDefinitions": [
+            {
+                route: 'admin_onboarding_index',
+                text: 'Dashboard',
+            },
+            {
+                route: 'admin_onboarding_categorisation_index',
+                text: 'Categorisations',
+            },
+            {
+                route: 'admin_onboarding_assessment_index',
+                text: 'Assessments',
+            },
+            {
+                route: 'admin_onboarding_assessment_questions',
+                text: 'Assessment Question Areas',
+            },
+            {
+                route: 'admin_onboarding_assessment_set',
+                params: {
+                    set: 1
+                },
+                text: 'Assessment Question Sets',
+            },
+        ]
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_horizontal_nav') ~'.html.twig', {
+    navId: 'onboardingHubNav',
+    toggleText: 'Onboarding',
+    links: menuLinks,
+}) }}

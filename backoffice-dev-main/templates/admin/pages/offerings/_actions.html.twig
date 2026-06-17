@@ -1,0 +1,41 @@
+<div class="btn-group border">
+	{% if is_granted('CAN_UPDATE_OFFERING', app.user) %}
+    	<a href="{{ path('admin_offering_edit', { id: offering.id }) }}" type="button" class="btn btn-light"><i class="fa fa-pen"></i></a>
+	{% endif %}
+	<a href="{{ path('admin_investment_index', { offeringId: offering.id }) }}" type="button" class="btn btn-light"><i class="fa fa-money-bill"></i></a>
+	{% if is_granted('CAN_UPDATE_OFFERING', app.user) %}
+    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" data-display="static"><i class="fa fa-bars"></i></button>
+	<div class="dropdown-menu dropdown-menu-end p-2 tw-text-sm" style="right: 0; left: auto;">
+
+		{% if offering.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO')%}
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') } ) }}"><i class="fa fa-user-lock fa-fw me-2"></i>Set visibility admin</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') } ) }}"><i class="fa fa-user-check fa-fw me-2"></i>Set visibility VIP</a>
+		{% endif %}
+		{% if offering.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN')%}
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') } ) }}"><i class="fa fa-user fa-fw me-2"></i>Set visibility auto/default</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') } ) }}"><i class="fa fa-user-check fa-fw me-2"></i>Set visibility VIP</a>
+		{% endif %}
+		{% if offering.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP')%}
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') } ) }}"><i class="fa fa-user fa-fw me-2"></i>Set visibility auto/default</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') } ) }}"><i class="fa fa-user-lock fa-fw me-2"></i>Set visibility admin</a>
+		{% endif %}
+		{% if offering.visibility in [constant('App\\Entity\\BaseEntity::VISIBILITY_NORMAL'), constant('App\\Entity\\BaseEntity::VISIBILITY_ALL')] %}
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_visibility', { id: offering.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') } ) }}"><i class="fa fa-user fa-fw me-2"></i>Set visibility auto/default</a>
+		{% endif %}
+
+		<div><hr class="dropdown-divider"></div>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_retail_mode', { id: offering.id } ) }}"><i class="fa fa-door-open fa-fw me-2"></i>Switch to retail mode</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_prefunding_mode', { id: offering.id} ) }}"><i class="fa fa-money-bill fa-fw me-2"></i>Switch to prefunding mode</a>
+		{#
+		<li><hr class="dropdown-divider"></li>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_view', { id: offering.id } ) }}#timeline"><i class="fa fa-file-alt fa-fw me-2"></i> Change Log</a>
+		#}
+
+		<div><hr class="dropdown-divider"></div>
+		<a class="dropdown-item rounded" href="{{ path('admin_offering_featured_mode', { id: offering.id } ) }}"><i class="fa fa-star text-warning fa-fw me-2"></i>Toggle Featured</a>
+	</div>
+	
+	{% else %}
+	<a class="dropdown-item rounded" href="{{ path('admin_offering_edit', { id: offering.id }) }}" type="button" class="btn btn-light"><i>View Offering</i></a>
+	{% endif %}
+</div>

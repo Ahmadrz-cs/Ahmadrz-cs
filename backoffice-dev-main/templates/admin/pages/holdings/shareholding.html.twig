@@ -1,0 +1,72 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'Shareholdings' %}
+{% set mainHeading = 'Current Shareholdings' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{{ form_start(form, {'attr': {'class': 'd-flex flex-column gap-3'}}) }}
+	<div class="row g-3">
+		<div class="col-sm-6 col-md-4">{{ form_row(form.assetId) }}</div>
+		<div class="col-sm-6 col-md-4">{{ form_row(form.userId) }}</div>
+	</div>
+	<div class="row g-3">
+		<div class="col-sm-6 col-md-4">
+			{{ form_label(form.currentHolding) }}
+			{{ form_widget(form.currentHolding) }}
+			{{ form_help(form.currentHolding) }}
+		</div>
+		<div class="col-sm-6 col-md-4">
+			<label class="card card-body bg-light shadow-none border">
+				{{ form_widget(form.capitalRepayments) }}
+				{{ form_help(form.capitalRepayments) }}
+			</label>
+		</div>
+	</div>
+	{{ form_rest(form) }}
+
+	<div>
+		<button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+		<a href="{{ path('admin_holding_current') }}" class="btn-secondary btn">Clear Filters</a>
+	</div>
+	
+	{{ form_end(form) }}
+
+	<div class="table-responsive">
+		<table class="table table-striped datatable" id="shareholdinglist">
+			<thead>
+				<tr>
+					<th>Asset</th>
+					<th>User (username)</th>
+					<th>Current Shareholding</th>
+					<th class="text-body-secondary">Original Shareholding</th>
+					<th class="text-body-secondary">Divested Shareholding</th>
+					<th class="text-body-secondary">Divestment Trades</th>
+					<th class="text-body-secondary">Repaid Shareholding</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for entry in shareholdings %}
+					<tr>
+						<td>
+							<a href="{{ path('admin_asset_edit', { id: entry.assetId }) }}">{{ entry.asset }}</a>
+						</td>
+						<td>
+							<a href="{{ path('admin_user_edit', { id: entry.userId }) }}">{{ entry.user }}</a>
+						</td>
+						<td>{{ entry.currentHolding }}</td>
+						<td class="text-body-secondary">{{ entry.originalHolding }}</td>
+						<td class="text-body-secondary">{{ entry.divestedHolding }}</td>
+						<td>
+							<a href="{{ path('admin_holding_trades', { 'assetId': entry.assetId, 'sellerId': entry.userId, }) }}">{{ entry.divestmentTrades }}</a>
+						</td>
+						<td>{{ entry.capitalRepayments }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+{% endblock page_content %}

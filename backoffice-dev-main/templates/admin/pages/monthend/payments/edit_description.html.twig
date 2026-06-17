@@ -1,0 +1,26 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% if app.request.query.get('redirectRoute')
+    and app.request.query.get('redirectRoute') in constant('App\\Controller\\Admin\\MonthEndController::REDIRECT_ROUTES') %}
+	{% set exitRoute = app.request.query.get('redirectRoute') %}
+{% endif %}
+
+{% set backToRoute = exitRoute|default('admin_monthend_dividend_manage') %}
+{% set backToRouteParams = {id: paymentOrder.id} %}
+{% set areaHeading = 'Monthend - Payments' %}
+{% set mainHeading = 'Edit ' ~ paymentOrder.paymentType ~ ' Payment Order' %}
+
+
+{% block page_content %}
+
+	{{ form_start(form) }}
+	<div class="row ">
+		<div class="col-sm-6">{{ form_row(form.description) }}</div>
+	</div>
+	<div class="">
+		<button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+		<a class="btn btn-outline-secondary" href="{{ path(exitRoute|default('admin_monthend_dividend_manage'), { id: paymentOrder.id }) }}">Discard Changes</a>
+	</div>
+	{{ form_end(form) }}
+
+{% endblock page_content %}

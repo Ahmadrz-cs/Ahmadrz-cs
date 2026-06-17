@@ -1,0 +1,183 @@
+{% set statusToColor = statusToColor|default({
+    'cancelled': 'red',
+    'draft': 'gray',
+    'archived': 'gray',
+    'active': 'green',
+    'acquiring': 'yellow',
+    'closing': 'yellow',
+}) %}
+
+{% set showFields = showFields|default([]) %}
+
+<div class="table-responsive">
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    
+    <table class="table {{ showAggregate|default(false) ? 'mt-3' : '' }} {{ tableStyle|default() }}" id="{{ tableId|default('assets-list') }}">
+        <thead>
+            <tr>
+                {% if actions|default([]) is not empty %}<th>Actions</th>{% endif %}
+                <th>Id</th>
+                <th>Name</th>
+                <th>SPV Id</th>
+                {% if 'assetType' in showFields %}<th>Asset Type</th>{% endif %}
+                {% if 'createdAt' in showFields %}<th>Created</th>{% endif %}
+                {% if 'mode' in showFields %}<th>Mode</th>{% endif %}
+                {% if 'status' in showFields %}<th>Status</th>{% endif %}
+                {% if 'fundingGoal' in showFields %}<th class="text-end">Funding Goal</th>{% endif %}
+                {% if 'sharesAvailable' in showFields %}<th class="text-end">Shares Available</th>{% endif %}
+                {% if 'netProjectedIncome' in showFields %}<th class="text-end">Net Projected Income</th>{% endif %}
+                {% if 'netProjectedYield' in showFields %}<th class="text-end">Net Projected Yield</th>{% endif %}
+                {% if 'featured' in showFields %}<th>Featured</th>{% endif %}
+                {% if 'buying' in showFields %}<th>Buying</th>{% endif %}
+                {% if 'selling' in showFields %}<th>Selling</th>{% endif %}
+                {% if 'feesConfig' in showFields %}<th>Relisting Fee Type</th>{% endif %}
+                {% if 'visibility' in showFields %}<th>Visibility</th>{% endif %}
+                {% if 'legacyStatus' in showFields %}<th>Legacy Status</th>{% endif %}
+                {% if 'legacyActions' in showFields  and is_granted('ROLE_OPERATIONS', app.user) %}<th>Actions</th>{% endif %}
+                {% if 'taskTracker' in showFields %}<th width="20%">Task Tracker</th>{% endif %}
+
+                {% if 'wallets' in showFields %}
+                <th title="holdingWalletId">Holding</th>
+                <th title="settlementWalletId">Settlement</th>
+                <th title="depositWalletId">Deposit</th>
+                <th title="expensesWalletId">Expenses</th>
+                <th title="taxWalletId">Tax</th>
+                <th title="distributionWalletId">Distribution</th>
+                <th title="treasuryWalletId">Treasury</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in objects %}
+                <tr data-object-id="{{ item.id }}">
+                    {% if actions|default([]) is not empty %}
+                        <td data-field="actions">
+                            <div class="d-flex gap-2">
+                                {% for action in actions %}
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": action.text,
+                                            "route": action.route,
+                                            "params": action.params|merge({(action.objectParam|default('id')): item.id}),
+                                            "style": action.style,
+                                        },
+                                    }) }}
+                                {% endfor %}
+                            </div>
+                        </td>
+                    {% endif %}
+                    <td data-field="id">{{ item.id }}</td>
+                    <td data-field="name">
+                        {# {% if item.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') %}
+                            <span class="badge text-bg-dark me-1">Admin</span>
+                        {% elseif item.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') %}
+                            <span class="badge text-bg-dark me-1">VIP</span>
+                        {% endif %} #}
+                        <a href="{{ path(viewRoute|default('admin_product_dashboard'), { id: item.id }) }}">{{ item.name }}</a>
+                    </td>
+                    <td data-field="companyNumber">{{ item.companyNumber }}</td>
+                    {% if 'assetType' in showFields %}<td data-field="asset-type">{{ item.assetType }}</td>{% endif %}
+                    {% if 'createdAt' in showFields %}<td data-field="created-at">{{ item.createdAt|date('Y-m-d H:i:s') }}</td>{% endif %}
+                    {% if 'mode' in showFields %}
+                        {% set mode = 'N/A' %}
+                        {% if item.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Acquiring %}
+                            {% set mode = enum('App\\Entity\\Enum\\ProductMode').Prefunding.value|capitalize %}
+                        {% elseif item.currentStatus != enum('App\\Entity\\Enum\\AssetStatus').Draft %}
+                            {% set mode = enum('App\\Entity\\Enum\\ProductMode').Retail.value|capitalize %}
+                        {% endif %}
+                        <td data-field="mode">{{ mode }}</td>
+                    {% endif %}
+                    {% if 'status' in showFields %}<td data-field="status-log">
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[item.currentStatus.value],
+                            value: item.currentStatus.value|capitalize
+                        }) }}
+                    </td>{% endif %}
+                    {% if 'fundingGoal' in showFields %}
+                        <td class="text-end tw-tabular-nums text-nowrap" data-field="funding-goal">{{ item.fundingGoal ? item.fundingGoal|format_currency('GBP') : 'N/A' }}</td>
+                    {% endif %}
+                    {% if 'sharesAvailable' in showFields %}
+                        <td data-field="shares-available">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: commonStatusToColor[item.sharesAvailable > 0 ? 'Set' : 'Missing'],
+                            value: item.sharesAvailable|number_format ,
+                            appendStyle: 'tw-tabular-nums justify-content-end',
+                            indicatorPosition: 'right',
+                        }) }}</td>
+                    {% endif %}
+                    {% if 'netProjectedIncome' in showFields %}
+                        <td data-field="net-projected-income">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: commonStatusToColor[item.netProjectedIncome ? 'Set' : 'Missing'],
+                            value: item.netProjectedIncome ? item.netProjectedIncome|format_currency('GBP') : 'Not set' ,
+                            appendStyle: 'tw-tabular-nums justify-content-end',
+                            indicatorPosition: 'right',
+                        }) }}</td>
+                    {% endif %}
+                    {% if 'netProjectedYield' in showFields %}
+                        <td data-field="net-projected-yield">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: commonStatusToColor[item.netProjectedYield ? 'Set' : 'Missing'],
+                            value: item.netProjectedYield ? item.netProjectedYield|format_number({max_fraction_digit: 2}, style: 'percent') : 'Not set',
+                            appendStyle: 'tw-tabular-nums justify-content-end',
+                            indicatorPosition: 'right'
+                        }) }}</td>
+                    {% endif %}
+                    {% if 'featured' in showFields %}<td data-field="featured">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            value: item.featured > 0 ? 'Yes (' ~ item.featured ~ ')' : 'No',
+                            color: item.featured > 0 ? 'blue' : 'gray',
+                        }) }}</td>{% endif %}
+                    {% if 'buying' in showFields %}<td data-field="buying">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: item.buyRestricted ? 'red' : 'green',
+                            value: item.buyRestricted ? 'Closed' : 'Open'
+                        }) }}</td>{% endif %}
+                    {% if 'selling' in showFields %}<td data-field="selling">{{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: item.sellRestricted ? 'red' : 'green',
+                            value: item.sellRestricted ? 'Closed' : 'Open'
+                        }) }}</td>{% endif %}
+                    {% if 'feesConfig' in showFields %}<td data-field="fees-config">{{ item.fees|length > 0 ? 'Custom' : 'Standard' }}</td>{% endif %}
+                    {% if 'visibility' in showFields %}<td data-field="visibility">
+                        {% if item.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') %}
+                            Admin Only
+                            {% elseif item.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') %}
+                            VIP Only
+                            {% else %}
+                            Everyone
+                            {% endif %}
+                        </td>{% endif %}
+                    {% if 'legacyStatus' in showFields %}<td data-field="legacy-status">{{ include('admin/pages/assets/_status.html.twig', {
+                        asset: item
+                    }) }}</td>{% endif %}
+                    {% if 'legacyActions' in showFields and is_granted('ROLE_OPERATIONS', app.user) %}
+                        <td data-field="legacy-actions">{{ include('admin/pages/assets/_actions.html.twig', {
+                            asset: item
+                        }) }}</td>
+                    {% endif %}
+                    {% if 'taskTracker' in showFields %}<td data-field="task-tracker">
+                        {{ include('admin/pages/monthend/_step_progress.html.twig', {
+                            tasks: item|monthend_checklist
+                        }) }}
+                    </td>{% endif %}
+                    
+                    {% if 'wallets' in showFields %}
+                        {% set wallets = {
+                            'holding': item.mangoPayWalletId,
+                            'settlement': item.settlementWalletId,
+                            'deposit': item.depositWalletId,
+                            'expenses': item.expensesWalletId,
+                            'tax': item.taxWalletId,
+                            'distribution': item.distributionWalletId,
+                            'treasury': item.treasuryWalletId,
+                        } %}
+                        {% for walletName, walletId in wallets %}
+                            <td data-field="{{ walletName }}-wallet">
+                                {% if walletId is null %}
+                                    <span class="badge text-bg-warning">Missing</span>
+                                {% else %}
+                                    {{ walletId }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

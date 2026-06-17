@@ -1,0 +1,156 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Onboarding' %}
+{% set mainHeading = 'Dashboard' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'onboarding' %}
+
+{% set statusToColor = {
+    'Yes': 'green',
+    'No': 'red',
+    'Pending': 'gray',
+    'Set': 'blue',
+} %}
+
+{% block foreword %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        title: "Onboarding Hub is for PS22/10",
+        message: "The onboarding hub is primarily for ensuring users meet the FCA PS22/10 requirements for financial promotion. It is not yet intended to fully capture the end-to-end onboarding flow that incldues personal details capture and KYC checks.",
+    }) }}
+{% endblock %}
+
+{% block createActions %}
+	<a href="{{ path('admin_kyc_index') }}" class="btn btn-outline-dark">Go to KYC Hub</a>
+{% endblock %}
+
+{% block filterPresets %}
+	<a href="{{ path('admin_onboarding_index', { isVIP: 1 }) }}" class="btn btn-light">Top Yielders</a>
+	<a href="{{ path('admin_onboarding_index', { corporateInvestor: 1 }) }}" class="btn btn-light">Is Corporate Investor</a>
+{% endblock %}
+
+{% block collapsibleFilters %}
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.username) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.email) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.name) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.phoneNumber) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.referralCode) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.isVIP) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.ob_step) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.wordsOfOwn) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.gender) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.corporateInvestor) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.companyName) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.mangoPayUserId) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.mangoPayWalletId) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasInvestments) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasManagedUsers) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasKycProfile) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasVerifiedBy) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.verified) }}</div>
+    <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasOnboardingProfile) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasMangoPayUserId) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.hasMangoPayWalletId) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">
+		{% include 'admin/components/collapsible_field.html.twig' with {'formField': form.status} only %}
+	</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">
+		{% include 'admin/components/collapsible_field.html.twig' with {'formField': form.lifecycleStatus} only %}
+	</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+	<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+	{{ include('admin/components/_alert.html.twig', {
+		variant: "info",
+		title: "PS22/10 full enforcement from 2023-02-01",
+		message: "Users registered before the full enforcement date do NOT need to retake the assessment, so they are automatically marked as passed",
+	}) }}
+	<table class="table table-striped" id="userlist">
+		<thead>
+			<tr>
+				<th>Actions</th>
+				<th>Id</th>
+				<th>Name</th>
+				<th>Username</th>
+				<th>Signed up</th>
+                <th>Has Onboarding Profile</th>
+				<th>Cool Off Accepted</th>
+				<th>Risk Warning Accepted</th>
+				<th>Assessment Passed (Attempts)</th>
+				<th>Category</th>
+				<th>Category Last Reviewed</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for user in objects %}
+				{% set obp = user.onboardingProfile %}
+				{% set cooloff = obp.cooloffAccepted is not null ? (obp.cooloffAccepted ? 'Yes' : 'No') : 'Pending' %}
+				{% set risk_warning = obp.riskWarningAccepted is not null ? (obp.riskWarningAccepted ? 'Yes' : 'No') : 'Pending' %}
+				{% set assessment = obp.assessmentPassed is not null ? (obp.assessmentPassed ? 'Yes' : 'No') : 'Pending' %}
+				{% set assessment_attempts = obp ? obp.assessments|filter(a => a.complete)|length : 0 %}
+                {% set has_category = obp.category ? 'Set' : 'Pending' %}
+                {% set has_obp = obp.id is not null ? 'Yes' : 'Pending' %}
+				<tr data-object-id="{{ user.id }}">
+					<td>
+						<div class="d-flex flex-wrap gap-1">
+							{% if is_granted('ROLE_OPERATIONS', app.user) %}
+								{{ include('admin/components/button_link.html.twig', {
+									linkProps: {
+										"text": "View",
+										"route": 'admin_onboarding_profile',
+										"params": {id: user.id},
+										"style": "btn-outline-dark text-nowrap",
+										
+									},
+								}) }}
+							{% endif %}
+						</div>
+					</td>
+					<td>{{ user.id }}</td>
+					<td>
+                        <a href="{{ path('admin_user_dashboard_overview', { id: user.id }) }}">{{ user.fullname }}</a>
+                    </td>
+					<td>{{ user.username }}</td>
+					<td class="text-nowrap">{{ user.createdAt|date('Y-m-d') }}</td>
+                    <td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[has_obp],
+                            value: has_obp
+                        }) }}
+                    </td>
+					<td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[cooloff],
+                            value: cooloff
+                        }) }}
+					</td>
+					<td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[risk_warning],
+                            value: risk_warning
+                        }) }}
+					</td>
+					<td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[assessment],
+                            value: assessment ~ " (" ~ assessment_attempts ~ ")"
+                        }) }}
+					</td>
+					<td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[has_category],
+                            value: obp.category ? obp.category.name|humanize : 'Pending'
+                        }) }}
+                    </td>
+					<td class="text-nowrap">{{ obp.categoryReviewedAt ? obp.categoryReviewedAt|date('Y-m-d') : '-' }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

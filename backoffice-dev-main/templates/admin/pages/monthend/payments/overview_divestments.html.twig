@@ -1,0 +1,111 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Divestments Overview' %}
+
+{% block page_content %}
+
+    {% include 'admin/components/_horizontal_nav_btn_group.html.twig' with {'links': {
+		navId: 'divestment-order-filter',
+		navLabel: 'divestment-filter-options',
+		linkDefinitions: [
+			{
+				route: app.request.attributes.get('_route'),
+                params: {status: ['completed']},
+				text: 'Completed Divestments',
+				active: app.request.query.all.status|default() == ['completed']
+			},
+			{
+				route: app.request.attributes.get('_route'),
+				text: 'All Divestments',
+				active: app.request.query.all is empty or app.request.query.all|keys == ['page']
+			},
+		]
+	}} only %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "divestments-summary",
+        "sectionTitle": "Divestments Orders",
+        "linkActions": [
+            {
+				"text": "Create Divestment",
+				"route": "admin_monthend_divestment_create",
+				"params": {},
+				"style": "btn-success",
+				"roleRequired": "ROLE_OPERATIONS",
+			},
+            {
+				"text": "Review All Tracked Shares",
+				"route": "admin_administration_shares_circulation",
+				"params": {},
+				"style": "btn-outline-dark",
+				"newTab": true,
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {# {{ include('admin/components/stat.html.twig', {
+                key: 'Assets with Prefunders to Repay',
+                value: prefundingShareholdings|filter(v => v > 0)|length,
+                className: "col-md-6",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assets With Shares Available to Repay',
+                value: assetsAvailableToRepay|length,
+                className: "col-md-6",
+            }) }} #}
+        </div>
+        {{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+            list: objects
+        }) }}
+        <div class="table-responsive">
+            <table class="table" id="divestment-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Id</th>
+                        <th>Asset</th>
+                        <th>Type</th>
+                        <th>Scheduled For</th>
+                        <th class="text-end">Shares</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Profit-Loss (£)</th>
+                        <th class="text-end">Profit-Loss (%)</th>
+                        {# <th>Description</th> #}
+                        <th class="text-end">Payments</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paymentOrder in objects|default([]) %}
+                    {% set sharesDivested = paymentOrder.payments|reduce((carry, v) => carry + v.shareholding) %}
+                    {% set divestmentValue = paymentOrder.payments|reduce((carry, v) => carry + v.amount) %}
+                    {% set capitalDifference = (divestmentValue - (sharesDivested * paymentOrder.asset.pricePerShare)) %}
+                    {% set percentageDifference = (sharesDivested * paymentOrder.asset.pricePerShare) > 0 ? (100 * capitalDifference) / (sharesDivested * paymentOrder.asset.pricePerShare) : '-' %}
+                    <tr>
+                        <td><a class="btn btn-outline-primary"
+                            href="{{ path('admin_monthend_divestment_manage', { id: paymentOrder.id }) }}">
+                            {%- if is_granted('ROLE_OPERATIONS') %}Manage{% else %}View{% endif -%}
+                            </a>
+                        </td>
+                        <td>{{ paymentOrder.id }}</td>
+                        <td>#{{ paymentOrder.asset.id }} // {{ paymentOrder.asset.name }} ({{ paymentOrder.asset.companyNumber }})</td>
+                        <td>{{ paymentOrder.paymentType|capitalize }}</td>
+                        <td>{{ paymentOrder.scheduledFor|date('Y-m-d', false) }}</td>
+                        <td class="text-end tw-tabular-nums">{{ sharesDivested|default('0') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ divestmentValue|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ capitalDifference|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ percentageDifference|number_format(2, '.', ',') }}</td>
+                        {# <td>{{ paymentOrder.description }}</td> #}
+                        <td class="text-end tw-tabular-nums">{{ paymentOrder.payments|length }}</td>
+                        <td>{{ paymentOrder.status|capitalize|replace({'_':'-'}) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

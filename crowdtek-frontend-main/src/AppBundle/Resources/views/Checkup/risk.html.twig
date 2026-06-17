@@ -1,0 +1,68 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% set cooloffElapsed = date() >= onboardingProfile.cooloffEnd %}
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2 text-center">
+                    {% if cooloffElapsed %}
+                        <h3>Understanding of risk</h3>
+                        <div class="p-3 my-2 rounded" style="background-color: #cddfea; gap: 0.5rem;">
+                            <b>{{ userInfo.given_name }}
+                                {{ userInfo.family_name }}, this is a high-risk investment. How would you feel if you lost the money you’re about to invest?</b>
+                            <a class="font-medium text-dark-87" href="#" data-toggle="modal" data-target="#risk-summary">
+                                <u>Take 2 mins to learn more.</u>
+                            </a>
+                        </div>
+                        <p></p>
+                        <p>If you are satisfied that the investments we offer and its associated risk are right for you, you can begin your investment 
+                        journey with us by clicking on "Proceed". Otherwise, click on "Leave".</p>
+                        <p>If you choose "Leave" but subsequently change your mind in the future, you can return to this page from your profile.</p>
+                        <p>For more information about how Yielders works, <b><a href="https://help.yielders.co.uk/en" target="_blank">please visit the help centre</a></b>. You can also contact our team at <b>team@yielders.co.uk</b></p>
+                        {{ form_start(form) }}
+                        <div class="d-flex justify-content-center mt-3" style="gap: 0.5rem;">
+                            {{ form_widget(form.no, {attr: {class:"btn btn-primary rounded-pill px-1 px-sm-2 "}}) }}
+                            {{ form_widget(form.yes, {attr: {class:"btn btn-primary rounded-pill px-1 px-sm-2 "}}) }}
+                        </div>
+                        {{ form_rest(form) }}
+                        {{ form_end(form) }}
+                    {% else %}
+                        {% set timeInterval = onboardingProfile.cooloffEnd.diff(date()) %}
+                        <h3>Cooling off period</h3>
+                        <div class="my-2">
+                            <p>Your cooling off period is due to end in
+                                <span class="font-medium">
+                                    <u>{{ timeInterval.h }}hrs {{ timeInterval.i }}mins</u>
+                                </span>
+                            </p>
+                            <p>You will not be able to invest during the first 24 hours after starting the signing up process. This is to provide a period of time for you to decide whether the investments we offer are right for you. However, you will still be able to browse investment opportunities during this time.</p>
+                        </div>
+                        <div class="d-flex justify-content-center py-2" style="gap: 0.5rem;">
+                            <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('product_properties_current') }} role="button">View Opportunities</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

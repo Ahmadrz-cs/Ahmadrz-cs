@@ -1,0 +1,509 @@
+{% extends 'admin/pages/products/dashboard/_dashboard.html.twig' %}
+
+{% set assetStatusToColor = assetStatusToColor|default({
+    'cancelled': 'red',
+    'draft': 'gray',
+    'archived': 'gray',
+    'active': 'green',
+    'acquiring': 'yellow',
+    'closing': 'yellow',
+}) %}
+
+{% set visibilityToColor = {
+    'Everyone (Default)': 'green',
+    'Top Yielders Only': 'yellow',
+    'Admin Only': 'red',
+} %}
+
+{% set assetModeToColor = {
+    'retail': 'green',
+    'prefunding': 'yellow',
+    'N/A': 'gray',
+} %}
+
+{% block dashboard_content %}
+
+    <div class="row g-3">
+
+        {% if not alreadyLaunched  %}
+
+        {% if launchTodo is empty %}
+        
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "launch-prompt",
+                "sectionTitle": "Ready For Launch",
+                "sectionStyle": "border rounded-3 p-4 border-success",
+                "linkActions": [
+                    {
+                        "text": "Go to Launch Centre",
+                        "route": "admin_product_edit_launch",
+                        "params": {id: asset.id},
+                        "style": "btn-success",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "success",
+                    message: "Go to the launch centre to launch this product!",
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% else %}
+            
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "launch-readiness",
+                "sectionTitle": "Not Ready For Launch",
+                "sectionStyle": "border rounded-3 p-4 border-warning",
+                "linkActions": [
+                    {
+                        "text": "Setup Product",
+                        "route": "admin_product_edit_about",
+                        "params": {
+                            id: asset.id,
+                            setup: 1,
+                        },
+                        "style": "btn-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    message: "Complete the setup to get this product ready for launch",
+                }) }}
+                <div>Most issues will be fixed as part of the setup process. But if the external commitments or asset/offering statuses are identified as issues, they must be manually fixed. The setup will not modify them.</div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {% endif %}
+
+        {% endif %}
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "financial-information",
+                "sectionTitle": "Financial Information",
+                "linkActions": [
+                    {
+                        "text": "Edit Financial Info",
+                        "route": "admin_product_edit_financials",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Go to Monthend Dashboard",
+                        "route": "admin_monthend_asset_dashboard",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/pages/products/dashboard/_todo_list.html.twig', {
+                    sectionRequirements: [
+                        'termSet',
+                        'termMultiple',
+                        'sharePriceSet',
+                        'shareAmountSet',
+                        'fundingGoalSet',
+                        'yieldSet',
+                    ],
+                }) }}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: '"Net Projected Income" and "Net Projected Yield" will be used in future. They will replace "Net Annual Yield".',
+                }) }}
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Valuation</h4>
+                    {{ include('admin/components/_kv_table.html.twig', {
+                        tableId: "asset-valuation-info",
+                        valueDefaultStyle: "tw-font-mono",
+                        kv: {
+                            "Share Price": "£" ~ asset.pricePerShare|number_format(2, '.', ','),
+                            "Shares Issued": asset.amountOfShares|number_format(0, '.', ','),
+                            "Asset Valuation": "£" ~ asset.fundingGoal|number_format(2, '.', ','),
+                        }
+                    }) }}
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Term and Yield</h4>
+                    {{ include('admin/components/_kv_table.html.twig', {
+                        tableId: "term-yield-info",
+                        valueDefaultStyle: "tw-font-mono",
+                        kv: {
+                            "Investment Term": asset.investmentTerm|default('-') ~ " months",
+                            "Net Projected Income": asset.netProjectedIncome ? "£" ~ asset.netProjectedIncome|number_format(2, '.', ',') : 'N/A',
+                            "Net Projected Yield": asset.netProjectedYield ? (asset.netProjectedYield * 100)|number_format(2, '.', ',') ~ "%" : 'N/A',
+                        }
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6">
+            {% set launchStatus = "Not Yet Launched" %}
+            {% if alreadyLaunched %}
+            {% set launchStatus = "Launched" %}
+            {% endif %}
+            
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "status",
+                "sectionTitle": "Status - " ~ launchStatus,
+                "linkActions": [
+                    {
+                        "text": "Edit Status",
+                        "route": "admin_product_edit_status",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Go to Launch Centre",
+                        "route": "admin_product_edit_launch",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-success",
+                    },
+                    {
+                        "text": "Create State Transition and Log",
+                        "route": "admin_asset_status_log_create",
+                        "params": {
+                            id: asset.id,
+                            redirectRoute: "admin_product_dashboard"
+                        },
+                        "style": "btn-outline-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {% if not alreadyLaunched %}
+                {{ include('admin/pages/products/dashboard/_todo_list.html.twig', {
+                    sectionRequirements: [
+                        'assetStatus',
+                    ],
+                }) }}
+                {% endif %}
+
+                {% set commonVisibility = 'Everyone (Default)' %}
+                {% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') %}
+                    {% set commonVisibility = 'Top Yielders Only' %}
+                {% endif %}
+                {% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') %}
+                    {% set commonVisibility = 'Admin Only' %}
+                {% endif %}
+
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Asset</h4>
+                    {{ include('admin/components/_kv_table.html.twig', {
+                        tableId: "asset-status-info",
+                        valueDefaultStyle: "tw-font-mono",
+                        kv: {
+                            "Legacy Status": asset.assetStatus.lifecycleStatus|capitalize,
+                            "Current Status": {
+                                value: asset.currentStatus.value|capitalize,
+                                indicator: assetStatusToColor[asset.currentStatus.value],
+                            },
+                            
+                        }
+                    }) }}
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Trading</h4>
+                    {% set mode = 'N/A' %}
+                    {% if asset.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Acquiring %}
+                        {% set mode = enum('App\\Entity\\Enum\\ProductMode').Prefunding.value %}
+                    {% elseif asset.currentStatus != enum('App\\Entity\\Enum\\AssetStatus').Draft %}
+                        {% set mode = enum('App\\Entity\\Enum\\ProductMode').Retail.value %}
+                    {% endif %}
+
+                    {{ include('admin/components/_kv_table.html.twig', {
+                        tableId: "trading-status-info",
+                        valueDefaultStyle: "tw-font-mono",
+                        kv: {
+                            "Buying": {
+                                value: asset.buyRestricted ? 'Closed' : 'Open',
+                                indicator: asset.buyRestricted ? 'red' : 'green',
+                            },
+                            "Selling": {
+                                value: asset.sellRestricted ? 'Closed' : 'Open',
+                                indicator: asset.sellRestricted ? 'red' : 'green',
+                            },
+                            "Featured (weighting)": {
+                                value: asset.featured > 0 ? 'Yes (' ~ asset.featured ~ ')' : 'No',
+                                indicator: asset.featured > 0 ? 'blue' : 'gray',
+                            },
+                            "Visible To": {
+                                value: commonVisibility,
+                                indicator: visibilityToColor[commonVisibility],
+                            },
+                            "Mode": {
+                                value: mode|capitalize,
+                                indicator: assetModeToColor[mode],
+                            },
+                        }
+                    }) }}
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Investment Term</h4>
+                    {% if asset.termStart is not empty and asset.investmentTerm is not empty %}
+                        {% set timeSinceLaunch = "now"|date("U") - asset.termStart|date("U") %}
+                        {% set timeStartToFinish = asset.termEnd|date("U") - asset.termStart|date("U") %}
+                        {% set timeElapsedPercent = min(100 * (timeSinceLaunch / timeStartToFinish), 100) %}
+                    {% endif %}
+
+                    {{ include('admin/components/_kv_table.html.twig', {
+                        tableId: "investment-term-info",
+                        valueDefaultStyle: "tw-font-mono",
+                        kv: {
+                            "Term Start": asset.termStart is empty ? "N/A" : asset.termStart|date("Y-m-d"),
+                            "Term End": asset.termEnd is empty ? "N/A" : asset.termEnd|date("Y-m-d"),
+                            "Term Remaining": asset.termRemaining is empty ? "N/A" : asset.termRemaining ~ " months remaining",
+                            "Term Progress": timeElapsedPercent is defined ? timeElapsedPercent|number_format(0, '.') ~ "%" : "N/A",
+                        }
+                    }) }}
+                </div>
+
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-asset",
+                "sectionTitle": "About Asset",
+                "linkActions": [
+                    {
+                        "text": "Edit Asset Info",
+                        "route": "admin_product_edit_about",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Edit Asset Location",
+                        "route": "admin_product_edit_location",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/pages/products/dashboard/_todo_list.html.twig', {
+                    sectionRequirements: [
+                        'nameSet',
+                        'nameSynced',
+                        'spvSet',
+                        'descriptionSet',
+                        'addressSet',
+                        'coordinatesSet',
+                        'authorSet',
+                        'contactPointSet',
+                        'orgEmailSet',
+                        'stampDutyUserSet',
+                        'secondaryMarket',
+                        'externalCommitmentsClear',
+                    ],
+                }) }}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    tableId: "property-info-list",
+                    valueDefaultStyle: "tw-font-mono",
+                    kv: {
+                        "Asset ID": asset.id,
+                        "Company Number": asset.companyNumber|default('-'),
+                        "Property Type": asset.assetType,
+                        "Financial Year": asset.financialYearStart 
+                            ? asset.financialYearStart|date('jS F') ~ ' - '  ~ asset.financialYearStart|date_modify('-1 day')|date('jS F')
+                            : 'Not Configured',
+                        "Description": asset.briefDescription|default('-'),
+                        "Address": asset.getMainAddress.formatWithLinebreak|default('-'),
+                        "Coordinates": asset.getMainAddress.formatCoordinates|default('-'),
+                        "Asset Created": asset.createdAt|date(constant('DateTimeInterface::ATOM')),
+                        "Last Updated": asset.updatedAt|date(constant('DateTimeInterface::ATOM')),
+                    }
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "trading-rules",
+                "sectionTitle": "Trading Rules",
+                "linkActions": [
+                    {
+                        "text": "Edit Trading Rules",
+                        "route": "admin_product_edit_investment_rules",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/pages/products/dashboard/_todo_list.html.twig', {
+                    sectionRequirements: ['commitmentRulesSet'],
+                }) }}
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Default Investment Rules</h5>
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "info",
+                        message: "Minimum and maximums can be configured at launch (pre-filled with defaults show below), or retrospectively by editing the trade order.",
+                    }) }}
+                    {{ include('admin/components/_kv_table.html.twig', {
+                        tableId: "default-investment-rules",
+                        valueDefaultStyle: "tw-font-mono",
+                        keyColumnWidth: 50,
+                        kv: {
+                            "Minimum Single Prefunding Investment": min('25000', asset.fundingGoal|default(0))|format_currency('GBP'),
+                            "Minimum Single Retail Investment": min('100', asset.minimumInvestment ?? '100')|string|format_currency('GBP'),
+                            "Maximum Single Investment": asset.fundingGoal|default(0)|format_currency('GBP'),
+                        }
+                    }) }}
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <h5 class="fw-bold fs-6">Relisting Fees</h5>
+                    {{ include('admin/pages/assets/_default_relisting_fee.html.twig', {'object': asset, 'alertClass' : 'bg-light'}) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "documents",
+                "sectionTitle": "Documents",
+                "linkActions": [
+                    {
+                        "text": "Edit Documents",
+                        "route": "admin_product_edit_documents",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/pages/products/dashboard/_todo_list.html.twig', {
+                    sectionRequirements: ['documentsSet'],
+                }) }}
+                {{ include('admin/components/_kv_table.html.twig', {
+                    tableId: "documents-checklist",
+                    valueDefaultStyle: "tw-font-mono",
+                    keyColumnWidth: 50,
+                    kv: {
+                        "Asset Logo": {
+                            value: sortedDocs.logo is empty ? "Missing" : "Found",
+                            indicator: sortedDocs.logo is empty ? "red" : "green",
+                        },
+                        "Articles of Association": {
+                            value: sortedDocs.articlesOfAssociation is empty ? "Missing" : "Found",
+                            indicator: sortedDocs.articlesOfAssociation is empty ? "red" : "green",
+                        },
+                        "Information Memorandum": {
+                            value: sortedDocs.informationMemorandum is empty ? "Missing" : "Found",
+                            indicator: sortedDocs.informationMemorandum is empty ? "red" : "green",
+                        },
+                        "Financial Summary": {
+                            value: sortedDocs.financialSummary is empty ? "Missing" : "Found",
+                            indicator: sortedDocs.financialSummary is empty ? "red" : "green",
+                        },
+                        "Property Photos": {
+                            value: sortedDocs.propertyPhotos is empty ? "Missing" : "Found (" ~ sortedDocs.propertyPhotos|length ~ ")",
+                            indicator: sortedDocs.propertyPhotos is empty ? "red" : "green",
+                        },
+                    }
+                }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "wallets",
+                "sectionTitle": "Wallets",
+                "linkActions": [
+                    {
+                        "text": "Edit Wallets",
+                        "route": "admin_product_edit_wallets",
+                        "params": {"id": asset.id},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "View Wallet Balances",
+                        "route": "admin_asset_wallets_manage",
+                        "params": {"asset": asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                {{ include('admin/pages/products/dashboard/_todo_list.html.twig', {
+                    sectionRequirements: ['walletsSet'],
+                }) }}
+                {{ include('admin/components/products/wallets_table.html.twig') }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        {# <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "status-log-records",
+                "sectionTitle": "Asset Status Log Records" ,
+            } %}
+                {% block sectionContent %}
+                    <div class="row g-3">
+                        {{ include('admin/components/stat.html.twig', {
+                            key: 'Current Status',
+                            value: asset.currentStatus.value|capitalize,
+                            className: "col-md-6",
+                        }) }}
+                    </div>
+                    {{ include('admin/components/_status_logs_table.html.twig', {
+                        mini: true,
+                        statusLogs: asset.statusLogs,
+                        statusToColor: assetStatusToColor
+                    }) }}
+                {% endblock %}
+            {% endembed %}
+        </div> #}
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "initial-trade-orders",
+                "sectionTitle": "Initial Trade Orders",
+                "linkActions": [
+                    {
+                        "text": "More Details",
+                        "route": "admin_product_trade_orders",
+                        "params": {
+                            "id": asset.id,
+                            "direction": [enum('App\\Entity\\Enum\\TradeDirection').Sell.value],
+                            "type": [enum('App\\Entity\\Enum\\TradeOrderType').Initial.value],
+                        },
+                        "style": "btn-outline-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "info",
+                        title: "First Party Listings",
+                        message: "First party listings are represented as Initial-type Sell-direction Trade Orders. Note that the seller does not need to be superadmin, but it's recommended to keep using superadmin to represent the platform user issuing the shares.",
+                    }) }}
+                    {{ include('admin/components/trade_orders/_list_table.html.twig', {
+                        showAsset: false,
+                        showUser: true,
+                        showMinShares: true,
+                        showMaxShares: true,
+                        objects: initialTradeOrders,
+                    }) }}
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+    </div>
+
+{% endblock dashboard_content %}

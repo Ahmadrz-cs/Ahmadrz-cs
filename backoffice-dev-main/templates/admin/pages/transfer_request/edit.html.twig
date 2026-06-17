@@ -1,0 +1,21 @@
+{% extends 'admin/pages/transfer_request/new.html.twig' %}
+
+{% set transferOrder = transferRequest.transferOrder %}
+
+{% set mainHeading = 'Edit Transfer in Order #' ~ transferOrder.id %}
+{% set htmlTitle = 'Edit Transfer' %}
+
+{% block notices %}
+    {% if not workflow_can(transferOrder, 'approve') %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "Editing is restricted outside draft mode",
+        }) }}
+    {% endif %}
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary"
+        href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_transfer_order_manage', { id: transferOrder.id }) }}">Discard Changes</a>
+{% endblock %}

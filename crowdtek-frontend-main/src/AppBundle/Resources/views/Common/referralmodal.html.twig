@@ -1,0 +1,186 @@
+{% set referral_link = userInfo.given_name|first ~ userInfo.family_name|split(' ')[0] ~ userInfo.id %}
+<div class="modal-content container container--narrow investbox">
+    <div class="modal-header flex-column border-0">
+        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+			<span aria-hidden="true">&times;</span>
+		</button>
+        <p class="investbox__title text-center w-100">Refer a Friend</p>
+        <div class="text-center mt20 w-100">
+            <a target="_blank" href="{{ asset('bundles/app/docs/Referral_Program_2021.pdf')}}">How the Yielders
+				referral program works
+				<span class="fa fa-download" aria-hidden="true"><img src="{{asset('bundles/app/svg/')}}download.svg" loading="lazy" alt=""></span>
+			</a>
+        </div>
+
+    </div>
+    <div class="row investbox__input">
+        <div class="col-md-12">
+            <input type="text" id="referral-link" class="fill-width small pointer px-2" value="{{ url('OBsign_up') }}?ref={{ referral_link }}" readonly="">
+            <p class="investbox__input-note hidden" id="copy-clipboard-note">
+                <small>Copied to clipboard</small>
+            </p>
+        </div>
+    </div>
+    <div class="text-center">
+        <button class="btn btn-primary rounded-pill px-2" id="share-action">Share</button>
+        <a class="btn  btn-outline-secondary rounded-pill" id="share-action-link">Copy Link</a>
+        <div id="share-links" class="hidden mt-2">
+            <a class="btn btn-outline-secondary rounded-pill px-2" href="mailto:?subject=Invest with Yielders&amp;body=Start investing with Yielders! You can sign-up with my link: {{ url('OBsign_up') }}?ref={{ referral_link }}" id="share-action-email">Email</a>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function copyText() {
+        var refLink = document.querySelector("#referral-link");
+        refLink.select();
+        document.execCommand("copy");
+        $("#copy-clipboard-note").removeClass("hidden");
+    }
+
+    function share() {
+        var refLink = document.querySelector("#referral-link").value;
+        if (navigator.share) {
+            navigator.share({
+                title: 'Invest with Yielders',
+                text: 'Start investing with Yielders! You can sign-up with my link: \n\n',
+                url: refLink
+            }).then(() => {
+                console.log('Thanks for sharing!');
+            }).catch(function(e) {
+                console.error(e);
+                // $("#share-links").removeClass("hidden");
+            });
+        } else { // copyText();
+            $("#share-links").removeClass("hidden");
+        }
+    }
+
+    document.querySelector("#share-action").addEventListener("click", share);
+    document.querySelector("#referral-link").addEventListener("click", copyText);
+    document.querySelector("#share-action-link").addEventListener("click", copyText);
+</script>
+<style>
+    .modal-content.investbox {
+        border-radius: 6px;
+        overflow: hidden;
+        padding: 32px 16px;
+    }
+    
+    .investbox p {
+        margin-bottom: 0;
+    }
+    
+    .investbox a:not(.btn) {
+        color: #337ab7;
+        text-decoration: none;
+    }
+    
+    .investbox a:hover {
+        text-decoration: underline;
+    }
+    
+    .investbox label,
+    .investbox i {
+        color: #2e2e2e;
+    }
+    
+    .investbox .modal-header {
+        padding: 8px 0;
+        text-align: left;
+    }
+    
+    .investbox .close {
+        margin-top: -12px;
+    }
+    
+    .investbox .investbox__title {
+        font-weight: bold;
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+    
+    .investbox .control,
+    .investbox .investbox__input {
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+    
+    .investbox .investbox__input {
+        text-align: center;
+    }
+    
+    .investbox .investbox__input input {
+        text-align: center;
+        height: 40px;
+        margin: 0 0 10px;
+        border: none;
+        border-bottom: solid thin #ccc;
+        font-size: 16px;
+        color: #2e2e2e;
+        max-width: 100%;
+    }
+    
+    .investbox .investbox__input input:read-only {
+        border: none;
+        border-radius: 20px;
+        background: #e4f6f4;
+        cursor: pointer;
+        padding: 0 12px;
+    }
+    
+    .investbox .investbox__input input:read-only:active {
+        box-shadow: inset 0 0 6px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .investbox .investbox__input input.small {
+        font-size: 12px;
+    }
+    
+    .investbox .investbox__input-label {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .investbox .investbox__input-note {
+        margin-bottom: 16px;
+    }
+    
+    .investbox .investbox__summary {
+        margin-top: 16px;
+        margin-bottom: 24px;
+        border: 2px solid #dadada;
+        background-color: #e4f6f4;
+    }
+    
+    .investbox .investbox__summary-row {
+        padding: 16px;
+    }
+    
+    .investbox .investbox__summary-row .row:not(:last-child) {
+        margin-bottom: 12px;
+    }
+    
+    .investbox .investbox__summary-total {
+        padding: 16px;
+        border-top: 2px solid #dadada;
+        font-weight: bold;
+    }
+    
+    .investbox .investbox__summary-value {
+        text-align: right;
+    }
+    
+    .investbox .investbox__input .fa {
+        font-size: 24px;
+        opacity: 0.4;
+    }
+    
+    .investbox .investbox__input .fa-plus-circle {
+        color: green;
+    }
+    
+    .hidden {
+        display: none !important;
+    }
+</style>

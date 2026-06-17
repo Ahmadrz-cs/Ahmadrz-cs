@@ -1,0 +1,232 @@
+{% extends 'admin/layouts/user_dashboard.html.twig' %}
+
+{% set mainHeading = 'KYC' %}
+
+{% set balanceLimit, payinLimit, transferLimit, payoutLimit  = '£0', '£0', '£0', '£0' %}
+{% set mangoStatus = kycState.mangopayStatus ?? 'N/A' %}
+{% if kycState.mangopayStatus == "REGULAR" %}
+    {% set balanceLimit, payinLimit, transferLimit, payoutLimit  = 'No limit', 'No limit', 'No limit', 'No limit' %}
+{% endif %}
+{% if kycState.mangopayStatus == "LIGHT" %}
+    {% set balanceLimit, payinLimit, transferLimit, payoutLimit  = '€250', 'no limit', 'no limit', '€250' %}
+{% endif %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-overview",
+        "sectionTitle": "KYC Overview",
+        "linkActions": [
+            {
+                "text": "Toggle Manual KYC Verification",
+                "route": "admin_user_toggle_kyc_verified",
+                "params": {
+                    id: user.id,
+                    redirectRoute: app.request.attributes.get('_route')
+                },
+                "style": "btn-outline-primary",
+                "roleRequired": "ROLE_OPERATIONS"
+            },
+            {
+                "text": "Edit Restrictions",
+                "route": "admin_user_dashboard_kyc_restrictions",
+                "params": {
+                    id: user.id,
+                },
+                "style": "btn-outline-secondary",
+                "roleRequired": "ROLE_OPERATIONS"
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/kyc/_kyc_profile.html.twig', {showPermissions: true}) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "mangopay-kyc",
+        "sectionTitle": "Mangopay",
+        "linkActions": [
+            {
+                "text": "About Mangopay Regulatory Status",
+                "url": "https://docs.mangopay.com/guides/users/blocked-users",
+                "style": "btn-outline-dark",
+                "newTab": true,
+            },
+            {
+                "text": "Select Doc for Mangopay KYC Check",
+                "route": 'admin_user_dashboard_documents',
+                "params": {id: user.id},
+                "style": "btn-outline-dark text-nowrap",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "mangopay-kyc-info",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Mangopay User Status": kycState.mangopayUserProfile.UserStatus|default('N/A'),
+                "KYC Level": mangoStatus,
+                "Person Type": kycState.mangopayPersonType|default('N/A'),
+                "User Category": kycState.mangopayUserCategory|default('N/A'),
+                "Terms Accepted": kycState.mangopayTermsAccepted ? 'Yes' : 'No',
+                "Regulatory Action Code": kycState.mangopayRegulatory.ActionCode|default('N/A'),
+                "Regulatory Blocked Inflows": kycState.mangopayRegulatory.ScopeBlocked.Inflows|default(false)  ? 'Yes' : 'No',
+                "Regulatory Blocked Outflows": kycState.mangopayRegulatory.ScopeBlocked.Outflows|default(false)  ? 'Yes' : 'No',
+            }
+        }) }}
+        <details class="bg-light rounded-2 p-3">
+            <summary class="fw-bold">Full Mangopay User Profile</summary>
+            <pre class="mb-0"><code>{{ kycState.mangopayUserProfile|json_encode(constant('JSON_PRETTY_PRINT')) }}</code></pre>
+        </details>
+        <details class="bg-light rounded-2 p-3">
+            <summary class="fw-bold">Full Mangopay Regulatory Status</summary>
+            <pre class="mb-0"><code>{{ kycState.mangopayRegulatory|json_encode(constant('JSON_PRETTY_PRINT')) }}</code></pre>
+        </details>
+        <div class="table-responsive">
+            <h4 class="fw-bold fs-5">Limits</h3>
+            <table class="table" id="mangopay-limits">
+                <thead>
+                    <tr>
+                        <th>Max User Balance</th>
+                        <th>Pay-ins (Wallet top-up)</th>
+                        <th>Transfers (Purchasing Shares)</th>
+                        <th>Cumulated Payout Per Calandar Month</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ balanceLimit }}</td>
+                        <td>{{ balanceLimit }}</td>
+                        <td>{{ transferLimit }}</td>
+                        <td>{{ payoutLimit }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-responsive">
+            <h4 class="fw-bold fs-5">Docs</h3>
+            <div class="d-flex gap-2">
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": "View All Mangopay KYC Documents",
+                        "route": "admin_kyc_mangopay_docs",
+                        "params": {user: user.id},
+                        "style": "btn-outline-dark",
+                    },
+                }) }}
+            </div>
+            <table class="table" id="mangopay-kyc-docs">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Flags</th>
+                        <th>Refused Reason</th>
+                        <th>Created On</th>
+                        <th>Processed On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for doc in kycState.mangopayDocs %}
+                    <tr>
+                        <td>{{ doc.Id }}</td>
+                        <td>{{ doc.Type }}</td>
+                        <td>{{ doc.Status }}</td>
+                        <td>{{ doc.Flags|join(',') }}</td>
+                        <td>{{ doc.RefusedReasonType }} - {{ doc.RefusedReasonMessage }}</td>
+                        <td>{{ doc.CreationDate|date() }}</td>
+                        <td>{{ doc.ProcessedDate ? doc.ProcessedDate|date() : 'N/A' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "contego-kyc",
+        "sectionTitle": "Contego",
+    } %}
+        {% block sectionContent %}
+        {% set mostRecentContegoLog = contegoLogs|first %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "contego-kyc-info",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "RAG": mostRecentContegoLog.RAG|default('N/A'),
+                "Score": mostRecentContegoLog.kycscore|default('N/A'),
+                "Contego Check Created At": mostRecentContegoLog.createdAt|default() is empty
+                    ? 'N/A'
+                    : mostRecentContegoLog.createdAt|date(),
+            }
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-reviews",
+        "sectionTitle": "KYC Reviews",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            <div class="table-responsive">
+                <table class="table datatable" id="kyc-reviews-list">
+                    <thead>
+                        <tr>
+                            <th>Actions</th>
+                            <th>Id</th>
+                            <th>Review Type</th>
+                            <th>Reviewed By</th>
+                            <th>Decision</th>
+                            <th>Status</th>
+                            <th>Completed At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for review in user.kycReviews %}
+                            <tr data-object-id="{{ review.id }}">
+                                <td>
+                                    <a class="btn btn-outline-primary mt-1" href="{{ path('admin_kyc_review_view', { id: review.id }) }}">View</a>
+                                </td>
+                                <td>{{ review.id }}</td>
+                                <td>{{ review.reviewType.value|capitalize }}</td>
+                                <td>{{ review.decision is null ? 'Pending Review' : review.reviewedBy.userIdentifier|default('System') }}</td>
+                                <td>{{ review.decision is null ? 'No Decision' : review.decision ? 'Pass' : 'Fail' }}</td>
+                                <td>{{ review.status.value|capitalize }}</td>
+                                <td>{{ review.completedAt ? review.completedAt|date("Y-m-d H:i:s") : '-' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-reports",
+        "sectionTitle": "KYC Reports",
+        "linkActions": [
+            {
+                "text": "Sync Mangopay KYC",
+                "route": "admin_kyc_report_sync_mangopay",
+                "params": {
+                    id: user.id,
+                    redirectRoute: app.request.attributes.get('_route'),
+                    redirectId: user.id,
+                },
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_OPERATIONS"
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/kyc/_reports_list.html.twig', {reports: user.kycReports}) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,66 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Plaform Configuration' %}
+{% set mainHeading = 'Legacy Email Templates' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "legacy-email-templates",
+        "sectionTitle": "All Legacy Email Templates",
+        "linkActions": [
+            {
+                "text": "Create New Email Template",
+                "route": "admin_email_templates_legacy_create",
+                "params": {},
+                "style": "btn-success",
+                "roleRequired": "ROLE_TECH_OPS",
+            },
+        ]
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+				list: results
+			}) }}
+			<div class="table-responsive">
+				<table class="table" id="email-templates-list">
+					<thead>
+						<tr>
+                            <th>Actions</th>
+							<th>Id</th>
+                            <th>Slug</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Last Updated</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for emailTemplate in results %}
+							<tr data-object-id="{{ emailTemplate.id }}">
+                                <td>
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "View and Edit",
+                                            "route": "admin_email_templates_legacy_edit",
+                                            "params": {
+                                                id: emailTemplate.id,
+                                            },
+                                            "style": "btn-outline-primary",
+                                        },
+                                    }) }}
+                                </td>
+								<td>{{ emailTemplate.id }}</td>
+                                <td>{{ emailTemplate.slug }}</td>
+                                <td>{{ emailTemplate.name }}</td>
+                                <td>{{ emailTemplate.subject }}</td>
+                                <td class="tw-tabular-nums">{{ emailTemplate.updatedAt|date('Y-m-d H:i:s') }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

@@ -1,0 +1,41 @@
+{% set amountRemaining = (originalTotal - completedTotal)|round(2) %}
+
+{% if walletBalance < amountRemaining %}
+    {% set amountRequired = (amountRemaining - walletBalance)|round(2) %}
+    
+    <div class="col-12">
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "wallet-balance-warning",
+            "sectionTitle": "Insufficient Wallet Balance",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+            "linkActions": linkActions|default([]),
+        } %}
+            {% block sectionContent %}
+
+            {% embed 'admin/components/_alert.html.twig' with {
+                variant: 'warning',
+            } %}
+                {% block message %}
+                    There is not enough money in the <code class="fw-bold">{{ walletName }}</code> wallet to complete the order! {% if helpText is defined %}{{ helpText }}{% endif %}
+                {% endblock message %}
+            {% endembed %}
+            
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Total Remaining',
+                    value: '£' ~ amountRemaining|number_format(2, '.', ','),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Debit Wallet Balance',
+                    value: '£' ~ walletBalance|number_format(2, '.', ','),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Additional Funds Required',
+                    value: '£' ~ amountRequired|number_format(2, '.', ','),
+                }) }}
+            </div>
+            {% endblock %}
+        {% endembed %}
+    </div>
+
+    {% endif %}

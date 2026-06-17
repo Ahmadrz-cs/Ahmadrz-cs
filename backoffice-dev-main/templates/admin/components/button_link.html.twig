@@ -1,0 +1,10 @@
+{#  if opening in new tab, provide a default icon, if none specified, to indicate this behaviour #}
+{%- if linkProps.newTab ?? false and linkProps.icon is not defined -%}
+    {% set linkProps = linkProps|merge({icon: "fa-arrow-up-right-from-square"}) %}
+{%- endif -%}
+
+<a class="btn tw-inline-flex tw-gap-1.5 tw-items-center {{ linkProps.style|default('btn-primary') }}"
+    href="{% if link.isRelative ?? false %}#{{ link.route }}{% elseif linkProps.url is defined %}{{ linkProps.url }}{% else %}{{ path(linkProps.route, linkProps.params ) }}{% endif %}"
+    {% if linkProps.newTab ?? false %}target="_blank"{% endif %}
+    {% if linkProps.dangerous ?? false %}onclick="return confirm('{{ linkProps.confirmText|default('Are you sure? There is no undo for this operation') }}')"{% endif %}
+>{%- if linkProps.iconStart ?? false -%}<i class="fa-solid fa-fw {{ linkProps.iconStart }}"></i>{%- endif -%}{{ linkProps.text }}{%- if linkProps.iconEnd ?? false -%}<i class="fa-solid fa-fw {{ linkProps.iconEnd }}"></i>{%- endif -%}</a>

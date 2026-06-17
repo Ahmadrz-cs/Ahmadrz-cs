@@ -1,0 +1,152 @@
+{% extends 'admin/layouts/filtered_list_dashboard.html.twig' %}
+
+{% set areaHeading = 'KYC' %}
+{% set mainHeading = 'KYC Reviews' %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'kyc' %}
+
+{% set statusToColor = statusToColor|default({
+    (constant('\\App\\Entity\\Enum\\KycReviewStatus::PendingSubjectAction').value): 'yellow',
+    (constant('\\App\\Entity\\Enum\\KycReviewStatus::Ready').value): 'blue',
+    (constant('\\App\\Entity\\Enum\\KycReviewStatus::Completed').value): 'green',
+    'N/A': 'gray',
+    'Pass': 'green',
+    'Fail': 'red',
+}) %}
+
+{% block createActions %}
+    {% if is_granted('ROLE_OPERATIONS', app.user) %}
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Create KYC Review",
+                "route": "admin_kyc_review_create",
+                "params": {},
+                "style": "btn-outline-success",
+            },
+        }) }}
+    {% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+{{ include('admin/components/button_link.html.twig', {
+    linkProps: {
+        "text": "Passed Only",
+        "route": app.request.attributes.get('_route'),
+        "params": { decision: [1]},
+        "style": "btn-light",
+    },
+}) }}
+{{ include('admin/components/button_link.html.twig', {
+    linkProps: {
+        "text": "Failed Only",
+        "route": app.request.attributes.get('_route'),
+        "params": { decision: [0]},
+        "style": "btn-light",
+    },
+}) }}
+{{ include('admin/components/button_link.html.twig', {
+    linkProps: {
+        "text": "Reviewed by System Only",
+        "route": app.request.attributes.get('_route'),
+        "params": { reviewedByType: false},
+        "style": "btn-light",
+    },
+}) }}
+{{ include('admin/components/button_link.html.twig', {
+    linkProps: {
+        "text": "Reviewed by Staff Only",
+        "route": app.request.attributes.get('_route'),
+        "params": { reviewedByType: true},
+        "style": "btn-light",
+    },
+}) }}
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.id) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.subjectId) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.subjectUsername) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.reviewedByType) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.reviewType} only %}
+</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.decision} only %}
+</div>
+<div class="col-sm-6 col-md-4 col-xl-3">
+    {% include 'admin/components/collapsible_field.html.twig' with {'formField': form.status} only %}
+</div>
+{% endblock %}
+
+{% block collapsibleFiltersRange %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.createdAt_lt) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.completedAt_gte) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.completedAt_lt) }}</div>
+{% endblock %}
+
+{% block table %}
+<div class="table-responsive">
+    <table class="table" id="kyc-reviews-list">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Id</th>
+                <th>Subject</th>
+                <th>Review Type</th>
+                <th>Reviewed By</th>
+                <th>Decision</th>
+                <th>Status</th>
+                <th>Completed At</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in objects %}
+                <tr data-object-id="{{ review.id }}">
+                    <td>
+                        <div class="d-flex gap-2">
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "View",
+                                "route": 'admin_kyc_review_view',
+                                "params": {id: review.id},
+                                "style": "btn-outline-primary text-nowrap",
+                            },
+                        }) }}
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Review",
+                                "route": 'admin_kyc_review_view',
+                                "params": {id: review.id, mode: 'review'},
+                                "style": "btn-outline-primary text-nowrap",
+                            },
+                        }) }}
+                        </div>
+                    </td>
+                    <td>{{ review.id }}</td>
+                    <td>
+                        <a class="ms-2" href="{{ path('admin_user_edit', { id: review.subject.id }) }}">{{ review.subject.username }}</a>
+                    </td>
+                    <td>{{ review.reviewType.value|capitalize }}</td>
+                    <td>{{ review.decision is null ? 'Pending Review' : review.reviewedBy.userIdentifier|default('System') }}</td>
+                    <td>
+                        {% set decision = review.decision is null ? 'N/A' : review.decision ? 'Pass' : 'Fail' %}
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[decision],
+                            value: decision
+                        }) }}
+                    </td>
+                    <td>
+                        {{ include('admin/components/_indicator_with_text.html.twig', {
+                            color: statusToColor[review.status.value]|default('gray'),
+                            value: review.status.value|replace({'_': ' '})|capitalize
+                        }) }}
+                    </td>
+                    <td>{{ review.completedAt ? review.completedAt|date("Y-m-d H:i:s") : '-' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+include:
+    - ../standardUsers.yaml
+    - investmentsRetailBen.yaml
+    - ../templates/basePayout.yaml
+
+App\Entity\Payout:
+    payout_ben_lodge1{0..3} (extends payout_base):
+        investment: "@investmentben_lodge1"
+        asset: "@assetlodge"
+        creditedUser: "@userben"
+        shareholding: "@investmentben_lodge1->share_amount"
+        payoutAmount: "<(6.02 * 11200 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_lodge2{0..1} (extends payout_base):
+        asset: "@assetlodge"
+        creditedUser: "@userben"
+        shareholding: "@investmentben_lodge2->share_amount"
+        payoutAmount: "<(6.02 * 800 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_royalway1{0..14} (extends payout_base):
+        asset: "@assetroyalway"
+        creditedUser: "@userben"
+        shareholding: "@investmentben_royalway1->share_amount"
+        payoutAmount: "<(5.87 * 1600 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_partingdale1{0..6} (extends payout_base):
+        asset: "@assetpartingdale"
+        creditedUser: "@userben"
+        shareholding: "@investmentben_partingdale1->share_amount"
+        payoutAmount: "<(5.91 * 2736 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_partingdale2{0..4} (extends payout_base):
+        asset: "@assetpartingdale"
+        creditedUser: "@userben"
+        shareholding: "@investmentben_partingdale2->share_amount"
+        payoutAmount: "<(5.91 * 144 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_sandfox1{1..12} (extends payout_base):
+        asset: "@assetsandfox"
+        creditedUser: "@userben"
+        shareholding: "@investmentben_sandfox1->share_amount"
+        payoutAmount: "<(6.32 * 600 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+    payout_ben_royalglade_dividend{1..12} (extends payout_base):
+        asset: "@assetroyalglade"
+        creditedUser: "@userben"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        payoutAmount: "<(5.17 * 11950 / 1200)>"
+        shareholding: "11950"

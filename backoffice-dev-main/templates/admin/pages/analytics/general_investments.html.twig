@@ -1,0 +1,136 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_analytics_dashboard' %}
+{% set areaHeading = 'Analytics' %}
+{% set mainHeading = 'General Investments' %}
+{% set maturityLabel = 'beta' %}
+
+{% block page_content %}
+    <section class="border rounded-2 p-4 my-3" id="platform-investments">
+        <h3 class="fw-bold mb-3">Platform Investments</h3>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "These stats only cover investments that are the \"normal\" type and settled. This acts as a proxy for investments processed through the platform. Note that days-on-sale includes the prefunding period!",
+        }) }}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The first party remainder is the difference between the asset value and the total first party investments processed. This represents either the investments processed offline or the amount still on sale.",
+        }) }}
+        <div class="row g-3">
+            {% set assetTotal = platformInvestmentsAsset
+                |reduce((carry, v) => carry + v.assetValue)
+                |default('0') %}
+            {% set firstPartyTotal = platformInvestmentsYear
+                |reduce((carry, v) => carry + v.firstPartyTotal)
+                |default('0') %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Asset Value',
+                value: '£' ~ assetTotal|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Platform Investments',
+                value: '£' ~ platformInvestmentsYear
+                    |reduce((carry, v) => carry + v.platformTotal)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'First Party',
+                value: '£' ~ firstPartyTotal|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Secondary Market',
+                value: '£' ~ platformInvestmentsYear
+                    |reduce((carry, v) => carry + v.secondaryMarketTotal)
+                    |default('0')
+                    |number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'First Party Remainder',
+                value: '£' ~ (assetTotal - firstPartyTotal)|number_format(2, '.', ','),
+            }) }}
+        </div>
+        <h4 class="fw-bold my-3">By Asset</h4>
+        <table class="table table-striped table-bordered mt-3 mb-0">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Asset Value (£)</th>
+                    <th>Total (£)</th>
+                    <th>First Party (£)</th>
+                    <th>Secondary Market (£)</th>
+                    <th>First Party Remainder (£)</th>
+                    <th>First Invested</th>
+                    <th>Last Invested Original</th>
+                    <th>Original Days on Sale</th>
+                    <th>Last Invested Secondary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in platformInvestmentsAsset %}
+                    <tr>
+                        <td>
+                            <a target="_blank" href="{{ path('admin_asset_edit', { id: item.assetId }) }}">#{{ item.assetId }}
+                                //
+                                {{ item.assetName }}
+                                ({{ item.assetSpvId|default('-') }})
+                            </a>
+                        </td>
+                        <td>{{ item.assetValue|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.platformTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.firstPartyTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.secondaryMarketTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ (item.assetValue - item.firstPartyTotal)|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.firstInvested }}</td>
+                        <td>{{ item.lastInvestedOriginal }}</td>
+                        <td>{{ date(item.lastInvestedOriginal).diff(date(item.firstInvested)).format('%a') }}</td>
+                        <td>{{ item.lastInvestedSecondary|default('N/A') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4 class="fw-bold my-3">By Year</h4>
+        <table class="table table-striped table-bordered mt-3 mb-0">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Total (£)</th>
+                    <th>First Party (£)</th>
+                    <th>Secondary Market (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in platformInvestmentsYear %}
+                    <tr>
+                        <td>{{ item.year }}</td>
+                        <td>{{ item.platformTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.firstPartyTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.secondaryMarketTotal|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4 class="fw-bold my-3">By Month</h4>
+        <table class="table table-striped table-bordered mt-3 mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total (£)</th>
+                    <th>First Party (£)</th>
+                    <th>Secondary Market (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in platformInvestmentsMonth %}
+                    <tr>
+                        <td>{{ (item.year ~ '-' ~ item.month)|date("Y-M") }}</td>
+                        <td>{{ item.platformTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.firstPartyTotal|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.secondaryMarketTotal|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+{% endblock %}

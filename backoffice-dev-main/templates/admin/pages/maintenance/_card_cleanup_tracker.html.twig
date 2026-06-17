@@ -1,0 +1,19 @@
+{{ include('admin/components/_kv_table.html.twig', {
+    tableId: "cleanup-tracker-info",
+    title: "Cleanup Tracker",
+    valueDefaultStyle: "tw-font-mono",
+    kv: {
+        "Status": taskTracker.tasks.cardCleanup.value|capitalize,
+        "Last User Id": taskTracker.metadata.lastUserId|default("N/A"),
+        "Last Run At": taskTracker.metadata.lastRunAt|default("N/A"),
+        "Async Job In Progress": taskTracker.metadata.jobInProgress ? "Yes" : "No",
+        "Last Run Cleanup Count": taskTracker.metadata.lastRunCleanupCount|default("N/A"),
+        "Current Round Cleanup Count": taskTracker.metadata.currentRoundCleanupCount|default("N/A"),
+        "Async Job Cleanup Count": taskTracker.metadata.currentJobCleanupCount|default("N/A"),
+        "Total Cleanup Count": taskTracker.metadata.totalCleanupCount|default("N/A"),
+        "All Metadata": {
+            value: taskTracker.metadata|default([]),
+            format: 'json',
+        },
+    }
+}) }}

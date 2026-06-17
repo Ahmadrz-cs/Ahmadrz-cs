@@ -1,0 +1,284 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Dashboard' %}
+{% set mainHeading = 'Action Centre' %}
+
+{% block page_content %}
+
+    
+    <div class="section-actions d-flex flex-wrap gap-2">
+        {{ include('admin/components/button_link.html.twig', {
+            linkProps: {
+                "text": "Refresh Todos",
+                "route": app.request.get("_route"),
+                "params": { refresh: 1 },
+                "style": "btn-outline-dark",
+            },
+        }) }}
+    </div>
+    <div class="row g-3">
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Todos Last Checked',
+            value: lastChecked|date('Y-m-d H:i:s O'),
+            className: "col-sm-6 col-md-4",
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Current Server Time',
+            value: date('now')|date('Y-m-d H:i:s O'),
+            className: "col-sm-6 col-md-4",
+        }) }}
+        {{ include('admin/components/stat.html.twig', {
+            key: 'Refresh Todos Every',
+            value: refreshTime / 60 ~ ' minutes',
+            className: "col-sm-6 col-md-4",
+        }) }}
+        
+    </div>
+
+	<div class="row g-3">
+
+		<div class="col-lg-6">
+			{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "monthend",
+                "sectionTitle": "Monthend",
+                "linkActions": [
+                    {
+                        "text": "Go to Monthend Hub",
+                        "route": "admin_monthend_index",
+                        "params": {},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Review Monthend Activity",
+                        "route": "admin_monthend_review",
+                        "params": {},
+                        "style": "btn-outline-secondary",
+                    },
+                ]
+            } %}
+				{% block sectionContent %}
+                    <div class="row g-3">
+						{{ include('admin/components/stat.html.twig', {
+                            key: "Investments to Settle",
+                            value: investmentsToSettle,
+                            className: "col-sm-6",
+                        }) }}
+					</div>
+                    <div class="d-flex flex-column gap-2">
+                        {{ include('admin/pages/monthend/_step_progress.html.twig', {
+                            tasks: monthendTasks,
+                            showLabels: true,
+                            showState: true,
+                        }) }}
+                    </div>
+				{% endblock %}
+			{% endembed %}
+		</div>
+
+        <div class="col-md-6 col-lg-3">
+			{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "secondary-market",
+                "sectionTitle": "Secondary Market Listings",
+                "linkActions": [
+                    {
+                        "text": "Show Pending Relistings",
+                        "route": "admin_trading_hub_sell_orders_pending",
+                        "params": {},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "View All Relistings",
+                        "route": "admin_trade_order_index",
+                        "params": { 
+                            direction: [enum('App\\Entity\\Enum\\TradeDirection').Sell.value],
+                            type: [
+                                enum('App\\Entity\\Enum\\TradeOrderType').Market.value,
+                                enum('App\\Entity\\Enum\\TradeOrderType').Limit.value,
+                                enum('App\\Entity\\Enum\\TradeOrderType').StopLoss.value,
+                            ],
+                        },
+                        "style": "btn-outline-dark",
+                    },
+                    {
+                        "text": "Review All Listings",
+                        "route": "admin_products_review_listings",
+                        "params": {},
+                        "style": "btn-outline-secondary",
+                    },
+                ]
+            } %}
+				{% block sectionContent %}
+					<div class="row g-3">
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Relistings Pending Approval",
+                        value: relistingsPending,
+                        className: "col-sm-6",
+                    }) }}
+					</div>
+				{% endblock %}
+			{% endembed %}
+		</div>
+
+        <div class="col-md-6 col-lg-3">
+			{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "bank-account-registrations",
+                "sectionTitle": "Bank Account Registrations",
+                "linkActions": [
+                    {
+                        "text": "Show Registrations to Review",
+                        "route": "admin_bank_account_index",
+                        "params": {status: [constant('App\\Entity\\Enum\\BankAccountStatus::Pending').value, constant('App\\Entity\\Enum\\BankAccountStatus::Validated').value]},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Show All Registrations",
+                        "route": "admin_bank_account_index",
+                        "params": {},
+                        "style": "btn-outline-secondary",
+                    },
+                ]
+            } %}
+				{% block sectionContent %}
+					<div class="row g-3">
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Registrations to Review",
+                        value: bankAccountRegistrations,
+                        className: "col-sm-6",
+                    }) }}
+					</div>
+				{% endblock %}
+			{% endembed %}
+		</div>
+
+		<div class="col-12">
+			{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "user-onboarding",
+                "sectionTitle": "User Onboarding",
+                "linkActions": [
+                    {
+                        "text": "Show Users Pending Review",
+                        "route": "admin_kyc_onboarding",
+                        "params": {},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Show Registered Users Without KYC Profile",
+                        "route": "admin_kyc_onboarding",
+                        "params": {
+                            ob_step: 5,
+                            hasKycProfile: 0,
+                            lifecycleStatus: [
+                                constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_EMAIL_VERIFIED'),
+                                constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_REGISTRATION_COMPLETE'),
+                                constant('\\App\\Entity\\Lifecycle\\UserLifecycle::STATE_APPROVED'),
+                            ]
+                        },
+                        "style": "btn-outline-secondary",
+                    },
+                ]
+            } %}
+				{% block sectionContent %}
+                    {% embed 'admin/components/_alert.html.twig' with {
+                        variant: "info",
+                        showIcon: false,
+                    } %}
+                        {% block message %}
+                            <p>"Users to Review in last 30 days" is all users who have finished their onboarding in the last 30 days irrespective of whether they have been manually KYC reviewed yet.</p>
+                            <p>"Pending Manual Review" are users who have finished their onboarding and are awaiting a manual KYC review by staff.</p>
+                            <p class="mb-0">"Registered without KYC Profile" are existing users that finished their onboarding before the new KYC tracking system was introduced. These users are labelled as "KYC Legacy/Unknown". You can retrospectively perform a manual KYC review on these users.</p>
+                        {% endblock message %}
+                    {% endembed %}
+					<div class="row g-3">
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Users to Review in last 30 days",
+                        value: usersToReviewLast30Days,
+                    }) }}
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Pending Manual Review",
+                        value: usersToManuallyReview,
+                    }) }}
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Registered without KYC Profile",
+                        value: usersWithoutKycProfile,
+                    }) }}
+					</div>
+				{% endblock %}
+			{% endembed %}
+		</div>
+
+        <div class="col-lg-6">
+			{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "assets",
+                "sectionTitle": "Assets",
+                "linkActions": [
+                    {
+                        "text": "Create New Asset",
+                        "route": "admin_product_create",
+                        "params": {},
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Show Prefunding Assets",
+                        "route": "admin_products_index",
+                        "params": { status: [
+                            enum('App\\Entity\\Enum\\AssetStatus').Acquiring.value
+                        ] },
+                        "style": "btn-outline-secondary",
+                    },
+                ]
+            } %}
+				{% block sectionContent %}
+					<div class="row g-3">
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Total Tracked Assets",
+                        value: trackedAssets,
+                        className: "col-sm-6",
+                    }) }}
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Assets Prefunding",
+                        value: prefundingCount,
+                        className: "col-sm-6",
+                    }) }}
+					</div>
+				{% endblock %}
+			{% endembed %}
+		</div>
+
+		<div class="col-lg-6">
+			{% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "top-yielders",
+                "sectionTitle": "Top Yielders",
+                "linkActions": [
+                    {
+                        "text": "Show Top Yielders",
+                        "route": "admin_user_index",
+                        "params": { "isVIP" : 1 },
+                        "style": "btn-outline-primary",
+                    },
+                    {
+                        "text": "Show Top Yielder Applications",
+                        "route": "admin_kyc_vip",
+                        "params": {},
+                        "style": "btn-outline-primary",
+                    },
+                ]
+            } %}
+				{% block sectionContent %}
+					<div class="row g-3">
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Current Top Yielders",
+                        value: topYielders,
+                        className: "col-sm-6",
+                    }) }}
+						{{ include('admin/components/stat.html.twig', {
+                        key: "Applications to Review",
+                        value: topYielderApplications,
+                        className: "col-sm-6",
+                    }) }}
+					</div>
+				{% endblock %}
+			{% endembed %}
+		</div>
+
+	</div>
+{% endblock page_content %}

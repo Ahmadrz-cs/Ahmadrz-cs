@@ -1,0 +1,25 @@
+league_oauth2_server:
+    authorization_server:
+        private_key: "%kernel.project_dir%/config/keys/oauth2/private.key"
+        private_key_passphrase: null
+        encryption_key: '%env(string:OAUTH2_ENCRYPTION_KEY)%'
+        encryption_key_type: "defuse"
+        access_token_ttl: PT1H # 1 hour
+        refresh_token_ttl: P1M # 1 month
+        auth_code_ttl: PT10M # 10 minutes
+        enable_client_credentials_grant: true
+        enable_password_grant: true
+        enable_refresh_token_grant: true
+        enable_auth_code_grant: true
+        require_code_challenge_for_public_clients: true
+        persist_access_token: true
+    resource_server:
+        public_key: "%kernel.project_dir%/config/keys/oauth2/public.key"
+    scopes:
+        available: "%oauth2.scopes%"
+        default: "%oauth2.scopes%"
+        # default: []
+    persistence:
+        doctrine:
+            entity_manager: default
+    role_prefix: ROLE_OAUTH2_

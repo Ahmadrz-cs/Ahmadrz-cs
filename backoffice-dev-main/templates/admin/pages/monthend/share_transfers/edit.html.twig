@@ -1,0 +1,16 @@
+{% extends 'admin/pages/monthend/share_transfers/create.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_share_transfers_manage' %}
+{% set backToRouteParams = { id: shareTransferOrder.id } %}
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Edit Share Transfer' %}
+{% set maturityLabel = 'beta' %}
+
+
+{% block formSubmit %}
+<button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+<a class="btn btn-outline-secondary" href="{{ path(
+	'admin_monthend_share_transfers_manage',
+	{ id:  shareTransferOrder.id }
+) }}">Discard Changes</a>
+{% endblock %}

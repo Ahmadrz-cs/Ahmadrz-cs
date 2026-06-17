@@ -1,0 +1,98 @@
+{% set statusToColor = {
+    'draft': 'gray',
+    'submitted': 'yellow',
+    'active': 'blue',
+    'completed': 'green',
+    'suspended': 'yellow',
+    'cancelled': 'red',
+} %}
+{% set progressToColor = {
+    0: 'gray',
+    1: 'green',
+    'partial': 'blue',
+    'over': 'red',
+} %}
+
+{% set miniView = miniView ?? false %}
+{% set showMinShares = showMinShares ?? true %}
+{% set showMaxShares = showMaxShares ?? true %}
+
+<div class="table-responsive">
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    {% if tradeSummary is defined %}
+    {{ include('admin/components/_kv_table.html.twig', {
+        title: null,
+        tableId: "trade-stats",
+        valueDefaultStyle: "tw-font-mono",
+        kv: {
+            'Total Count': objects|length|number_format,
+            'Total Quantity': objects|reduce((carry, b) => carry + b.numberOfShares)|number_format,
+            'Total Value': (objects|reduce((carry, b) => carry + (b.numberOfShares * b.pricePerShare), 0))|string|format_currency('GBP'),
+            'Active Orders': objects|filter(s => s.status == constant('App\\Entity\\Enum\\TradeOrderStatus::Active'))|length|number_format,
+            'Total Active Quantity': (objects|reduce((carry, b) => carry + b.numberOfShares) - tradeSummary.overall.buy.shares)|number_format,
+            'Total Active Value': ((objects|reduce((carry, b) => carry + (b.numberOfShares * b.pricePerShare), 0) - tradeSummary.overall.buy.value))|string|format_currency('GBP'),
+        }
+    }) }}
+    {% endif %}
+    <table class="table {{ tableStyle|default() }}" id="{{ tableId|default('trade-orders-list') }}">
+        <thead>
+            <tr>
+                <th>Id</th>
+                {% if not miniView %}<th>Type</th>{% endif %}
+                {% if not miniView %}{% if showDirection ?? true %}<th>Direction</th>{% endif %}{% endif %}
+                {% if not miniView %}{% if showAsset ?? true %}<th>Asset</th>{% endif %}{% endif %}
+                {% if not miniView %}{% if showUser ?? true %}<th>User</th>{% endif %}{% endif %}
+                <th class="text-end">Progress</th>
+                <th class="text-end">Quantity Available</th>
+                <th class="text-end">Quantity Traded</th>
+                <th class="text-end">Quantity Listed</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Derived Value</th>
+                {% if not miniView %}<th class="text-end">Fees</th>{% endif %}
+                {% if not miniView %}<th class="text-end">Taxes</th>{% endif %}
+                {% if not miniView or showMinShares %}<th class="text-end">Min Shares</th>{% endif %}
+                {% if not miniView or showMaxShares %}<th class="text-end">Max Shares</th>{% endif %}
+                <th>Status</th>
+                {% if not miniView %}<th>Created</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in objects %}
+            {% set progress = item.numberOfShares > 0 ? item.sharesTraded / item.numberOfShares : 0 %}
+            {% set progressState = progress %}
+            {% if progress > 0 and progress < 1 %}{% set progressState = 'partial' %}{% endif %}
+            {% if progress > 1 %}{% set progressState = 'over' %}{% endif %}
+            
+            <tr data-object-id="{{ item.id }}">
+                <td data-field="id" data-uuid="{{ item.uuid }}"><a href="{{ path('admin_trade_order_view', { id: item.id }) }}">{{ item.id }}</a></td>
+                {% if not miniView %}<td data-field="type" >{{ item.type.name }}</td>{% endif %}
+                {% if not miniView %}{% if showDirection ?? true %}<td data-field="direction">{{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: item.direction.name == 'Buy' ? 'yellow' : 'blue',
+                    value: item.direction.name }) }}</td>{% endif %}{% endif %}
+                {% if not miniView %}{% if showAsset ?? true %}
+                    <td data-field="asset"><a href="{{ path('admin_product_shareholders', { id: item.asset.id }) }}">#{{ item.asset.id }} // {{ item.asset.name }}</a></td>
+                {% endif %}{% endif %}
+                {% if not miniView %}{% if showUser ?? true %}<td data-field="user"><a href="{{ path('admin_user_dashboard_portfolio', { id: item.user.id }) }}">#{{ item.user.id }} // {{ item.user }}</a></td>{% endif %}{% endif %}
+                <td data-field="progress" class="tw-font-mono text-end">{{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: progressToColor[progressState],
+                    value: progress|format_number({max_fraction_digit: 3}, style: 'percent'),
+                    appendStyle: 'justify-content-end',
+                    indicatorPosition: 'right' }) }}</td>
+                <td data-field="quantity-traded" class="tw-font-mono text-end">{{ item.sharesAvailable|number_format }}</td>
+                <td data-field="quantity-traded" class="tw-font-mono text-end">{{ item.sharesTraded|number_format }}</td>
+                <td data-field="quantity-listed" class="tw-font-mono text-end">{{ item.numberOfShares|default(0)|number_format }}</td>
+                <td data-field="price" class="tw-font-mono text-end">{{ item.pricePerShare|default(0)|string|format_currency('GBP') }}</td>
+                <td data-field="derived-value" class="tw-font-mono text-end">{{ (item.pricePerShare * item.numberOfShares)|default(0)|string|format_currency('GBP') }}</td>
+                {% if not miniView %}<td data-field="fees" class="tw-font-mono text-end">{{ item.fees|default(0)|string|format_currency('GBP') }}</td>{% endif %}
+                {% if not miniView %}<td data-field="taxes" class="tw-font-mono text-end">{{ item.taxes|default(0)|string|format_currency('GBP') }}</td>{% endif %}
+                {% if not miniView or showMinShares %}<td data-field="min-shares" class="tw-font-mono text-end">{{ item.minimumShares is not null ? item.minimumShares|number_format : 'N/A' }}</td>{% endif %}
+                {% if not miniView or showMaxShares %}<td data-field="max-shares" class="tw-font-mono text-end">{{ item.maximumShares is not null ? item.maximumShares|number_format : 'N/A' }}</td>{% endif %}
+                <td data-field="status">{{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[item.status.value],
+                    value: item.status.value|capitalize }) }}</td>
+                {% if not miniView %}<td data-field="createdAt">{{ item.createdAt|date('Y-m-d H:i:s') }}</td>{% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

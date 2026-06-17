@@ -1,0 +1,58 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "question-" ~ question.id,
+        "sectionTitle": "Question and Choices",
+} %}
+    {% block sectionContent %}
+        {% set correctChoices = question.choices|filter(c => c.correct)|map(c => c.id) %}
+        {% set correctResponses = question.responses|filter(r => r.choice.id in correctChoices) %}
+        {% set correctnessDivisor = question.responses|length > 0 ? question.responses|length : 1 %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Question Id',
+                value: question.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Responses (correct/total)',
+                value: correctResponses|length ~ "/" ~ question.responses|length ~ " (" ~ (100 * correctResponses|length / correctnessDivisor)|round(2) ~ "%)",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assessment Area',
+                value: question.section.name|humanize,
+            }) }}
+            {% if questionsByArea is defined %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Active Questions in Area',
+                value: questionsByArea[question.section.value]|length,
+            }) }}
+            {% endif %}
+			{{ include('admin/components/stat.html.twig', {
+                key: 'Question',
+                value: question.content,
+                className: 'col-12',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+		</div>
+        <table class="table" id="choices-list">
+            <thead>
+                <tr>
+                    <th>Choice Id</th>
+                    <th>Choice content</th>
+                    <th>Active</th>
+                    <th>Correct</th>
+                    <th>Responses</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for choice in question.choices %}
+                    <tr class="{% if (choice.correct)|default(false) %}bg-success-subtle{% endif %}">
+                        <td data-field="id">{{ choice.id }}</td>
+                        <td data-field="content">{{ choice.content }}</td>
+                        <td data-field="active">{{ choice.active ? 'Yes' : 'No' }}</td>
+                        <td data-field="correct">{{ choice.correct ? 'Yes' : 'No' }}</td>
+                        <td data-field="responses">{{ choiceCounts[choice.id]|default('N/A') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endblock %}
+{% endembed %}

@@ -1,0 +1,49 @@
+{% set statusToColor = statusToColor|default({
+    'default': 'gray',
+}) %}
+{% set editRoute = editRoute|default(null) %}
+{% set mini = mini|default(false) %}
+
+<div {% if not mini %}class="table-responsive"{% endif %}>
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    <table class="table {{ tableStyle|default() }}" id="{{ tableId|default('status-logs') }}">
+        <thead>
+            <tr>
+                {% if editRoute and not mini %}<th>Actions</th>{% endif %}
+                <th>Id</th>
+                <th>Status</th>
+                {% if not mini %}<th>Notes</th>{% endif %}
+                {% if not mini %}<th>Transitioned By</th>{% endif %}
+                <th>OccuredAt</th>
+                {% if not mini %}<th>CreatedAt</th>{% endif %}
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for status_log in statusLogs|default([]) %}
+            {% if not mini %}<tr data-object-id="{{ status_log.id }}">
+                {% if editRoute %}
+                <td>{% if is_granted('ROLE_OPERATIONS') %}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Edit",
+                            "route": editRoute,
+                            "params": {id: status_log.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                {% endif %}</td>{% endif %}
+                {% endif %}
+                <td data-field-name="id">{{ status_log.id }}</td>
+                <td data-field-name="status">{{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[status_log.status.value],
+                    value: status_log.status.value|capitalize }) }}</td>
+                {% if not mini %}<td data-field-name="notes">{{ status_log.notes }}</td>{% endif %}
+                {% if not mini %}<td data-field-name="transitioned-by">{{ status_log.transitionedBy.userIdentifier|default('System') }}</td>{% endif %}
+                <td data-field-name="occured-at">{{ status_log.occuredAt|date('Y-m-d H:i:s') }}</td>
+                {% if not mini %}<td>{{ status_log.createdAt|date('Y-m-d H:i:s') }}</td>{% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

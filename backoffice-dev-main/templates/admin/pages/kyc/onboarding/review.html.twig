@@ -1,0 +1,71 @@
+{% extends 'admin/layouts/kyc_review.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_onboarding' %}
+{% set areaHeading = 'KYC - Onboarding' %}
+{% set mainHeading = 'KYC Review' %}
+{% set baseLayout = 'col_2' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block side_content %}
+
+    <div class="xl:tw-sticky xl:tw-top-20">
+        {{ include('admin/components/kyc/onboarding/_report_card.html.twig') }}
+    </div>
+
+{% endblock side_content %}
+
+{% block page_content %}
+
+    {{ include('admin/components/nav_menus/kyc_review_onboarding.html.twig') }}
+    
+    {% if user.obStep != 5 %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "User Not Ready for Review",
+            message: "This user has not completed their onboarding yet. You can still make a KYC review, but there will be insufficient information to conduct one properly.",
+        }) }}
+
+    {% endif %}
+
+    {% if user.kycProfile.lastReviewedAt is not empty and user.kycProfile.verified == true %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            title: "User has already been verified",
+            message: "This user has already passed a manual review. For subsequent KYC reviews, using the recurring KYC review tool is preferred. You can see who performed the most recent review in the user's KYC profile.",
+        }) }}
+
+    {% endif %}
+
+    <div class="tab-content">
+
+        {% set reviewSteps = {
+            "tab-supporting-info": "_supporting_info",
+            "tab-country": "onboarding/_step_country",
+            "tab-contego": "onboarding/_step_contego",
+            "tab-mangopay": "onboarding/_step_mangopay",
+        } %}
+        
+        {% for stepId, template in reviewSteps %}
+            <div class="tab-pane {% if loop.first %}active{% endif %}" id="{{ stepId }}" role="tabpanel">
+                <section class="d-flex flex-column gap-4">
+                    {% if loop.first %}
+                        {{ include('admin/components/kyc/_start_step.html.twig') }}
+                    {% elseif loop.last %}
+                        {{ include('admin/components/kyc/_end_step.html.twig') }}
+                    {% else %}
+                        {{ include('admin/components/kyc/_next_step.html.twig') }}
+                    {% endif %}
+                    {{ include('admin/components/kyc/' ~ template ~ '.html.twig') }}
+                </section>
+            </div>
+        {% endfor %}
+
+    </div>
+
+{% endblock page_content %}
+
+
+

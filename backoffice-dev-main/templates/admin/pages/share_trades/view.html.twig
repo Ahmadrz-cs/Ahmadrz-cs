@@ -1,0 +1,103 @@
+
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = backToRoute|default('admin_share_trade_index') %}
+{% set backToRouteParams = backToRouteParams|default({}) %}
+{% set areaHeading = 'Share Trades' %}
+{% set mainHeading = 'View Share Trade #' ~ shareTrade.id %}
+{% set maturityLabel = 'alpha' %}
+
+{% block page_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'share-trade-overview',
+        "sectionTitle": 'About This Share Trade',
+        "linkActions": [
+            {
+                "text": "Edit Share Trade",
+                "route": "admin_share_trade_edit",
+                "params": {id: shareTrade.id},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+            {
+                "text": "Update Status",
+                "route": "admin_share_trade_status_log_create",
+                "params": {id: shareTrade.id},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+            {
+                "text": "View Asset",
+                "route": "admin_product_share_trades",
+                "params": {id: shareTrade.sellOrder.asset.id},
+                "style": "btn-secondary",
+            },
+            {
+                "text": "View Seller",
+                "route": "admin_user_dashboard_share_trades",
+                "params": {id: shareTrade.sellOrder.user.id},
+                "style": "btn-secondary",
+            },
+            {
+                "text": "View Buyer",
+                "route": "admin_user_dashboard_share_trades",
+                "params": {id: shareTrade.buyOrder.user.id},
+                "style": "btn-secondary",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/pages/share_trades/_view_kv.html.twig', {
+                shareTrade: shareTrade
+            }) }}
+            {{ include('admin/components/_status_logs_table.html.twig', {
+                title: "Status Logs",
+                statusLogs: shareTrade.statusLogs,
+                editRoute: 'admin_share_trade_status_log_edit',
+                statusToColor: {
+                    'draft': 'gray',
+                    'reserved': 'yellow',
+                    'unsettled': 'blue',
+                    'settled': 'green',
+                    'suspended': 'yellow',
+                    'cancelled': 'red',
+                }
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'related-trade-orders',
+        "sectionTitle": 'Related Trade Orders',
+        "linkActions": [
+            {
+                "text": "View Sell Order",
+                "route": "admin_trade_order_view",
+                "params": {"id": shareTrade.sellOrder.id},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "View Buy Order",
+                "route": "admin_trade_order_view",
+                "params": {"id": shareTrade.buyOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="d-grid lg:tw-grid-cols-2 gap-3">
+                {{ include('admin/pages/trade_orders/_view_kv.html.twig', {
+                    title: "Sell Order",
+                    tableId: "sell-order-info",
+                    tradeOrder: shareTrade.sellOrder
+                }) }}
+                {{ include('admin/pages/trade_orders/_view_kv.html.twig', {
+                    title: "Buy Order",
+                    tableId: "buy-order-info",
+                    tradeOrder: shareTrade.buyOrder
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

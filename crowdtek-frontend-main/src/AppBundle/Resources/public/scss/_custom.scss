@@ -1,0 +1,80 @@
+/* customization of Bootstrap */
+
+// font family
+@font-face {
+    font-family: 'GothamMedium';
+    src: url('../webfont/GothamMedium.eot?#iefix') format('embedded-opentype'),  url('../webfont/GothamMedium.woff') format('woff'), url('../webfont/GothamMedium.ttf')  format('truetype'), url('../webfont/GothamMedium.svg#GothamMedium') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Gotham-Light';
+    src: url('../webfont/Gotham-Light.eot?#iefix') format('embedded-opentype'),  url('../webfont/Gotham-Light.otf')  format('opentype'),
+           url('../webfont/Gotham-Light.woff') format('woff'), url('../webfont/Gotham-Light.ttf')  format('truetype'), url('../webfont/Gotham-Light.svg#Gotham-Light') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+$font-body: "Gotham-Light", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" ;
+$font-heading: "GothamMedium", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" ;
+
+$font-family-sans-serif: $font-body;
+$font-family-hd: $font-heading;
+
+// colors
+$blue:    #6cbcb6;
+$black: rgba(0, 0, 0, 0.87);
+$red: #c93939;
+
+$secondary:    #b6dddb;
+$light:         #f7f7f7;
+$dark:          #35675e;
+$info:          #e6f4f4;
+
+// btn
+.btn {
+ font-family: $font-heading;}
+
+
+// typography
+$font-size-base: 1rem;
+$h1-font-size: $font-size-base * 3.5; /* 56 */
+$h2-font-size: $font-size-base * 3; /* 48 */
+$h3-font-size: $font-size-base * 1.875; /* 30 */
+$h4-font-size: $font-size-base * 1.5; /* 24 */
+$h5-font-size: $font-size-base * 1.25; /* 20 */
+$h6-font-size: $font-size-base * 1.125; /* 18 */
+
+// spacing
+$spacer: 1rem !default;
+$spacers: () !default;
+$spacers: map-merge(
+  (
+    0: 0,
+    1: ($spacer * 0.625), /* 10 */
+    2: ($spacer * 1.25), /* 20 */
+    3: ($spacer * 2.0625), /* 33 */
+    4: ($spacer * 2.8125), /* 45 */
+    5: ($spacer * 3.375), /* 54 */
+    6: ($spacer * 4.1875), /* 67 */
+    7: ($spacer * 4.625), /* 74 */
+    8: ($spacer * 5.625) /* 90 */
+  ),
+  $spacers
+);
+
+// cards
+$card-border-radius: 20px;
+$card-border-color:  rgba($black, .125) !default;
+
+// breadcrumb
+$breadcrumb-divider: quote("\203A");
+
+// forms
+$form-grid-gutter-width:  40px;
+$form-group-margin-bottom:  1.8rem;
+
+
+// spinner
+$spinner-border-width-sm: .1em;

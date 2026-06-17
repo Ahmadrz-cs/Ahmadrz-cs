@@ -1,0 +1,39 @@
+.idea
+
+###> SECRETS - never commit (added by safety check) ###
+.env
+.env.test
+.env.*.docker
+.devcontainer/.env
+.devcontainer/**/.env*
+/config/keys/
+*.pem
+*.key
+.DS_Store
+.vscode/
+###< SECRETS ###
+
+/node_modules/
+node_modules/
+
+/*.phar
+/*.cache
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+###> codeception/codeception ###
+/tests/_output/
+/tests/_support/_generated/
+###< codeception/codeception ###

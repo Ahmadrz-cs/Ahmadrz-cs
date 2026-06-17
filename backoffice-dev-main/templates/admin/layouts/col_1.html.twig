@@ -1,0 +1,16 @@
+{% extends 'admin/layouts/base.html.twig' %}
+
+{% block page_layout %}
+
+	<div class="{{ containerClass|default('container-xxl') }} d-grid gap-4 py-4">
+
+		{% block page_main %}
+			<main class="d-grid gap-4 tw-auto-rows-min">
+				{% block page_header %}{% endblock page_header %}
+				{% block page_content %}{% endblock page_content %}
+			</main>
+		{% endblock page_main %}
+
+	</div>
+
+{% endblock page_layout %}

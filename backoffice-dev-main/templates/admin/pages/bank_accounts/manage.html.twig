@@ -1,0 +1,261 @@
+{% extends 'admin/layouts/col_2_med_right.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_index' %}
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Bank Account Registration' %}
+{% set maturityLabel = 'alpha' %}
+
+{# {% form_theme form with ['bootstrap_5_layout.html.twig'] only %} #}
+
+{% set new_doc_recency = "10 days" %}
+
+{% block side_content %}
+
+    <div class="xl:tw-sticky xl:tw-top-20">
+        {# {{ include('admin/components/kyc/onboarding/_report_card.html.twig') }} #}
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": 'registration-status',
+            "sectionTitle": 'Registration Status',
+        } %}
+            {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: bankAccount.status.value|capitalize|replace({"_":" "}),
+                        className: 'col-12',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Approved By',
+                        value: bankAccount.approvedBy|default('-'),
+                        className: 'col-12',
+                    }) }}
+                </div>
+                {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Reopen').value) %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "warning",
+                        message: "For re-registering the same account, you should create a new bank acount registration. Only re-open if you need to undo a mistaken closure.",
+                    }) }}
+                {% endif %}
+                {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Enable').value) %}
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "warning",
+                        title: "SCA Verification Required",
+                        message: "Enabling and activating a bank account registration requires SCA verification. Enabling via CMS is primarily intended for system/admin bank accounts. Customers should active their registrations by themselves (on the frontend).",
+                    }) }}
+                {% endif %}
+                
+                {% if workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Approve').value) %}
+                    {{ form_start(form, {attr: {class:"d-flex flex-column gap-4"}}) }}
+                    <div class="d-flex flex-column gap-3">
+                        <header>
+                            <h4 class="fw-bold fs-5">Checklist</h4>
+                            {{ include('admin/components/_alert.html.twig', {
+                                variant: "notice",
+                                title: "All steps must be completed",
+                                message: "Ensure that the following criteria are met. Check with BizOps process documentation for further guidance.",
+                            }) }}
+                        </header>
+                        <div>
+                            {{ form_widget(form.bankStatement) }}
+                            {{ form_widget(form.accountHolderName) }}
+                            {{ form_widget(form.accountHolderAddress) }}
+                            {{ form_widget(form.accountNumber) }}
+                            {{ form_widget(form.bankId) }}
+                        </div>
+                        <div>
+                            <h5 class="fw-bold fs-6">Notification Options</h4>
+                            {{ form_widget(form.notifyUser) }}
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {{ form_widget(form.pass) }}
+                        {{ form_widget(form.fail) }}
+                    </div>
+                    {{ form_end(form) }}
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-2">
+                    {{ include('admin/pages/bank_accounts/_status_transitions.html.twig') }}
+                </div>
+            {% endblock %}
+        {% endembed %}
+    </div>
+
+{% endblock side_content %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'registration-info',
+        "sectionTitle": 'Registration Info',
+        "linkActions": [
+            {
+                "text": "Edit Configuration",
+                "route": "admin_bank_account_edit",
+                "params": { id: bankAccount.id },
+                "style": "btn-secondary",
+            },
+            {
+                "text": "Validate with Mangopay",
+                "route": "admin_bank_account_validate",
+                "params": { id: bankAccount.id },
+                "style": "btn-outline-primary",
+                "render": workflow_can(bankAccount, constant('App\\Entity\\Enum\\BankAccountTransition::Reject').value)
+            }, 
+            {
+                "text": "View Associated User",
+                "route": "admin_user_dashboard_overview",
+                "params": { id: bankAccount.user.id },
+                "style": "btn-outline-dark",
+            }, 
+            {
+                "text": "View Mangopay Recipient",
+                "route": "admin_bank_account_mangopay_recipient_view",
+                "params": { recipientId: bankAccount.providerId },
+                "style": "btn-outline-dark",
+                "newTab": true,
+                "render": bankAccount.providerId is not empty
+            }, 
+            {
+                "text": "Sync Status with Mangopay",
+                "route": "admin_bank_account_status_sync",
+                "params": { id: bankAccount.id },
+                "style": "btn-outline-primary",
+                "render": bankAccount.providerId is not empty
+            }, 
+        ]
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "bank-account-metadata",
+            title: "Metadata",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Registration Id": bankAccount.id,
+                "Registration Uuid": bankAccount.uuid,
+                "Associated User": "#" ~ bankAccount.user.id ~ " // " ~ bankAccount.user.username,
+                "Mangopay User Id": bankAccount.user.mangopayUserId,
+                "Mangopay Recipient Id": bankAccount.providerId|default("N/A"),
+                "Description and Notes": bankAccount.description|default("N/A"),
+            }
+        }) }}
+
+        <section class="d-flex flex-column gap-3" id="additional-metadata">
+            <h4 class="fw-bold fs-5">Additional Metadata</h4>
+            {% if bankAccount.metadata.actionRequests is defined and bankAccount.metadata.actionRequests is not empty %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    title: "Actions Requested From User",
+                    message: "There are still pending actions requested from the user and should wait for the actions to be completed. However, you CAN still approve the bank account even if there are still pending actions.",
+                }) }}
+            {% endif %}
+            <pre>{{ bankAccount.metadata|json_encode(constant('JSON_PRETTY_PRINT'))  }}</pre>
+        </section>
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            title: "Removal of bank account details",
+            message: "Active, Closed, and Rejected registrations will typically have their bank account number and bic/sort-code wiped so we are not storing them unnecessarily. Note that you can still find these details on Mangopay.
+                A fingerprint (created from the account country, number, bic) can be used to identify unique bank account details.
+                While the 'Display Name' is what can be shown to the user to help identify an account.",
+        }) }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "bank-account-info",
+            title: "Bank Account Info",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Account Number": bankAccount.accountNumber|default("N/A"),
+                "Bank Identifier Code": bankAccount.bankIdentifierCode|default("N/A"),
+                "Fingerprint": bankAccount.fingerprint|default("N/A"),
+                "Display Name": bankAccount.displayName|default("N/A"),
+                "Bank Account Country": bankAccount.country,
+                "Bank Account Currency": bankAccount.currency,
+                "Account Holder Type": bankAccount.accountHolderType.value|capitalize,
+                "Account Type": bankAccount.accountType.value,
+                "Account Holder Name": bankAccount.accountHolderName ?: bankAccount.user.firstName,
+                "Account Holder Last Name": bankAccount.accountHolderLastName ?: bankAccount.user.lastName,
+                "Account Holder Address": bankAccount.accountHolderAddress
+                    ? bankAccount.accountHolderAddress.formatWithLinebreak
+                    : bankAccount.user.getMainAddress.formatWithLinebreak|default('-'),
+            }
+        }) }}
+
+        {# {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            title: "Changes to address",
+            message: "If the address shown above does NOT match the bank statement. You can either add a custom address for this specific bank account registration (mainly for business bank accounts) or add a new address for the user.
+            Please check for a NEW proof of address in the document in the section below.",
+        }) }} #}
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+            title: "Different Address?",
+        } %}
+            {% block message %}
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <p class="mb-2">If the address shown above does NOT match the bank statement, please check for a NEW proof of address in the documents section. You can then either:</p>
+                        <ul>
+                            <li>Update the user address (usually by adding a new one)</li>
+                            <li>Set a custom address for this bank account registration</li>
+                        </ul>
+                    </div>
+                    <div class="section-actions d-flex flex-wrap gap-2">
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Update User Address",
+                                "route": 'admin_user_edit',
+                                "params": {id: bankAccount.user.id,},
+                                "style": "btn-outline-dark text-nowrap",
+                            },
+                        }) }}
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Set Custom Address",
+                                "route": 'admin_bank_account_edit',
+                                "params": {id: bankAccount.id,},
+                                "style": "btn-outline-dark text-nowrap",
+                            },
+                        }) }}
+                    </div>
+                </div>
+            {% endblock message %}
+        {% endembed %}
+
+        {{ include('admin/components/blame-timestamp.html.twig', {
+            object: bankAccount,
+        }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "documents",
+        "sectionTitle": "Documents",
+    } %}
+        {% block sectionContent %}
+
+        {% if bankAccount.user.documents|length == 0 %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "User has no documents.",
+            }) }}
+        {% else %}
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                title: "New Documents",
+                message: "Documents uploaded within the last " ~ new_doc_recency ~ " are marked as 'New'",
+            }) }}
+        {% endif %}
+
+
+
+        {{ include('admin/components/users/_doc_list.html.twig', {
+            userdocs: bankAccount.user.documents,
+            recency: new_doc_recency
+        }) }}
+        
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

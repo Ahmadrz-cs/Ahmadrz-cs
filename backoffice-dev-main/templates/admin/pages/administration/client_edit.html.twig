@@ -1,0 +1,84 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_administration_clients' %}
+{% set areaHeading = 'API Clients' %}
+{% set mainHeading = 'Edit OAuth2 Client' %}
+
+{% block page_content %}
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#main" data-bs-toggle="tab">Client Details</a>
+            </li>
+            {% if is_granted('ROLE_TECH_OPS', app.user) %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#delete" data-bs-toggle="tab">Deletion</a>
+                </li>
+            {% endif %}
+        </ul>
+        <div class="tab-content p-3">
+            <div class="tab-pane active" id="main">
+                {{ form_start(form) }}
+
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-xl-3 mb-3">
+                        <label class="card card-body bg-light shadow-none border">
+                            {{ form_widget(form.client.active) }}
+                            <small class="mt-2">Enable/Disable the OAuth2 Client</small>
+                        </label>
+                    </div>
+                </div>
+
+                {{ form_row( form.user ) }}
+                {{ form_row( form.alias ) }}
+                {{ form_row( form.description ) }}
+
+                {{ form_row( form.client.identifier ) }}
+                {{ form_row( form.client.redirectUris ) }}
+
+                <div class="row">
+                    <div class="col-sm-10 offset-sm-2 mb-3">
+                        {% embed 'admin/components/_alert.html.twig' with {
+                            variant: "info",
+                            showIcon: false,
+                        } %}
+                            {% block message %}
+                                <p>The Redirect URI is only used for the authorization code grant. It defines where the client or application wants the auth server to redirect after the authorization code has been issued.</p>
+                                <p class="fw-bold mb-0">If you need to configure more than one Redirect URI, separate them with a single space</p>
+                            {% endblock message %}
+                        {% endembed %}
+                    </div>
+                </div>
+                {{ form_row( form.client.grants ) }}
+                {{ form_row( form.client.scopes ) }}
+
+                {% if is_granted('ROLE_TECH_OPS', app.user) %}
+                    {{ form_widget( form.submit ) }}
+                    {{ form_end(form) }}
+                {% endif %}
+            </div>
+            {% if is_granted('ROLE_TECH_OPS', app.user) %}
+                <div class="tab-pane" id="delete">
+                    {{ include('admin/components/_alert.html.twig', {
+                        role: 'alert',
+                        variant: "danger",
+                        message: "Clients must be deactivated before they can be deleted. Deletions cannot be undone. If you need the client back, you must create a new client.",
+                    }) }}
+                    <div class="mt-2">
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Delete Client",
+                                "route": 'admin_administration_clients_delete',
+                                "params": {
+                                    identifier: userClient.client.identifier,
+                                },
+                                "style": "btn-danger text-nowrap",
+                                "dangerous": true,
+                            },
+                        }) }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock page_content %}

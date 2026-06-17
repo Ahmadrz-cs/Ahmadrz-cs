@@ -1,0 +1,56 @@
+
+<div class="col-md-3 left_section">
+    <div class="left_section_pdg">
+        <div class="logo_white logo_box">
+            <a href="{{ path('homepage') }}">
+                <img src="{{asset('bundles/app/img/')}}logo_wordmark_contained.svg" height="56" loading="lazy" alt="yielders" />
+            </a>
+        </div>
+
+        <h4 class="left_section_h4">registration &amp; compliance</h4>
+
+        <div class="form-progress">
+            <progress class="form-progress-bar" min="0" max="100" value="0" step="33" aria-labelledby="form-progress-completion"></progress>
+
+            <div class="form-progress-indicator othr  previoustab " id="step0">
+                <span>1</span>
+                <div class="text-bar" style="display:block;">SIGN UP</div>
+            </div>
+            <div class="form-progress-indicator othr one {% if userInfo.ob_step > 1 %}previoustab{% endif %} {% if userInfo.ob_step == 1 %}active{% endif %}" id="step1">
+                <span>2</span>
+                <div class="text-bar">Email verification</div>
+            </div>
+            <div class="form-progress-indicator othr two {% if userInfo.ob_step > 3 %}previoustab{% endif %} {% if (userInfo.ob_step == 2 or userInfo.ob_step == 3)  %}active{% endif %}" id="step2">
+                <span>3</span>
+                <div class="text-bar">self assessment</div>
+            </div>
+
+            <div class="form-progress-indicator othr sub_three_1 {% if userInfo.ob_step > 2 %}previoustab{% endif %} {% if (userInfo.ob_step == 2)  %}active{% endif %} mobile_step" id="step4">
+                <span></span>
+                <div class="text-bar_1">Investors declaration</div>
+            </div>
+            <div class="form-progress-indicator othr sub_three_2 {% if userInfo.ob_step > 3 %}previoustab{% endif %} {% if (userInfo.ob_step == 3)  %}active{% endif %} mobile_step" id="step5">
+                <span></span>
+                <div class="text-bar_1">Appropriateness Test</div>
+            </div>
+
+            <div class="form-progress-indicator othr three {% if userInfo.ob_step > 4 %}previoustab{% endif %} {% if userInfo.ob_step == 4 %}active{% endif %}" id="step6">
+                <span>4</span>
+                <div class="text-bar">compliance</div>
+            </div>
+
+            <div class="form-progress-indicator othr four {% if userInfo.ob_step > 4 %}previoustab{% endif %}" id="step7">
+                <span>5</span>
+                <div class="text-bar">Complete</div>
+            </div>
+            <p id="form-progress-completion" class="js-form-progress-completion sr-only" aria-live="polite">0% complete</p>
+        </div>
+    </div>
+    <span id="mob_text" class="mob_text-bar" style="color:#fff;padding:0 10px">
+    {% if userInfo.ob_step == 1 %} Email Verification {% endif %}
+    {% if userInfo.ob_step == 2 %} Self Assessment {% endif %}
+    {% if userInfo.ob_step == 3 %} Self Assessment {% endif %}
+    {% if userInfo.ob_step == 4 %} Compliance {% endif %}
+    {% if userInfo.ob_step > 4 %} Complete {% endif %}
+    </span>
+</div>

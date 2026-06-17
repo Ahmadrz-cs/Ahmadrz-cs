@@ -1,0 +1,55 @@
+# Fairly standard retail asset
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_partingdale_ben_1: 1900
+    shares_partingdale_ben_2: 100
+
+App\Entity\TradeOrder:
+    buy_order_partingdale_{ben_1} (extends trade_order_invest):
+        asset: "@assetpartingdale"
+        user: "@userben"
+        numberOfShares: 1900
+        pricePerShare: "@assetpartingdale->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -5 months', 'last thursday of -5 months')>"
+        createdBy: "$user"
+    buy_order_partingdale_{ben_2} (extends trade_order_invest):
+        asset: "@assetpartingdale"
+        user: "@userben"
+        numberOfShares: 100
+        pricePerShare: "@assetpartingdale->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -5 months', 'last thursday of -5 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_partingdale_{ben_1, ben_2}:
+        tradeOrder: "@buy_order_partingdale_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_partingdale_<current()>->createdAt"
+    buy_order_status_completed_partingdale_{ben_1, ben_2}:
+        tradeOrder: "@buy_order_partingdale_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_partingdale_<current()>->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_partingdale_{ben_1, ben_2}:
+        buyOrder: "@buy_order_partingdale_<current()>"
+        sellOrder: "@sell_order_initial_partingdale"
+        numberOfShares: "@buy_order_partingdale_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_partingdale_<current()>->pricePerShare"
+        createdAt: "@buy_order_partingdale_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_partingdale_{ben_1, ben_2}:
+        shareTrade: "@share_trade_partingdale_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_partingdale_<current()>->createdAt"
+    trade_status_settled_partingdale_{ben_1, ben_2}:
+        shareTrade: "@share_trade_partingdale_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -4 months 08:59:31'))>"

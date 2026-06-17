@@ -1,0 +1,179 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_trade_system_port_divestments' %}
+{% set areaHeading = 'Trade System Porting Tools' %}
+{% set mainHeading = 'Port Divestments' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "divestments-analysis",
+        "sectionTitle": "Divestments Analysis",
+    } %}
+        {% block sectionContent %}
+        {# {{ include('admin/pages/maintenance/porting/_compare_divestments_list.html.twig', {
+            divestments: divestments
+        }) }} #}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "Divestment Generations",
+        } %}
+            {% block message %}
+                <ul>
+                    <li>Generation 1 assets are those paid out before payment orders existed. These will be ported based on the investment and payout.</li>
+                    <li>Generation 2 assets are those paid out with payment orders. These will be ported based on the payment order.</li>
+                </ul>
+            {% endblock message %}
+        {% endembed %}
+
+        {# {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            title: "Buy Order Creation",
+            message: "If a buy order has not been found, one will be created",
+        }) }} #}
+
+        {% if sharesCirculating > 0 %}
+            {{ form_start(form) }}
+            {{ form_row(form.port) }}
+            {{ form_end(form) }}
+        {% endif %}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "aggregate-info",
+            title: "Aggregate Summary",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Asset Id": asset.id,
+                "Asset Name": asset.name,
+                "Asset SPV": asset.companyNumber,
+                "Shares Circulating": sharesCirculating|number_format,
+                "Shareholders Paid": divestmentsPaid|length|number_format,
+                "Payments Made": divestmentsPaid|reduce((carry, v) => carry + v.payouts)|number_format,
+                "Total Paid": divestmentsPaid|reduce((carry, v) => carry + v.value)|format_currency('GBP'),
+                "Payout Shares": divestmentsPaid|reduce((carry, v) => carry + v.shares)|number_format,
+                "Investment Count": divestmentsPaid|reduce((carry, v) => carry + v.investmentCount)|number_format,
+                "Investment Shares": divestmentsPaid|reduce((carry, v) => carry + v.investmentShares)|number_format,
+                "Divestment Count": divestmentsPaid|reduce((carry, v) => carry + v.orderCount)|number_format,
+                "Divestments Paid": divestmentsPaid|reduce((carry, v) => carry + v.orderValue)|format_currency('GBP'),
+                "Divestment Shares": divestmentsPaid|reduce((carry, v) => carry + v.orderShares)|number_format,
+                "Buyback Count": divestmentBuyBacks|reduce((carry, v) => carry + v.count)|number_format,
+                "Buybacks Paid": divestmentBuyBacks|reduce((carry, v) => carry + v.value)|format_currency('GBP'),
+                "Buyback Shares": divestmentBuyBacks|reduce((carry, v) => carry + v.shares)|number_format,
+            }
+        }) }}
+
+        {{ include('admin/components/trade_orders/_list_table.html.twig', {
+            tableId: "buy-orders-list",
+            title: "Buy Orders List",
+            showAsset: false,
+            showDirection: true,
+            objects: buyOrders,
+        }) }}
+
+        {{ include('admin/components/trade_orders/_list_table.html.twig', {
+            tableId: "sell-orders-list",
+            title: "Sell Orders List",
+            showAsset: false,
+            showDirection: true,
+            objects: sellOrders|sort((a, b) => b.numberOfShares <=> a.numberOfShares),
+        }) }}
+
+        <div class="d-flex flex-wrap gap-2">
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Sort Default (user id)",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {id: asset.id},
+                    "style": "btn-outline-dark text-nowrap",
+                },
+            }) }}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "Sort By Largest Shareholder First",
+                    "route": app.request.attributes.get('_route'),
+                    "params": {id: asset.id, sort: 'largest_first'},
+                    "style": "btn-outline-dark text-nowrap",
+                },
+            }) }}
+        </div>
+
+        {% if (app.request.query.all.sort ?? false) == 'largest_first' %}
+            {% set divestmentsPaid = divestmentsPaid|sort((a, b) => b.value <=> a.value) %}
+        {% endif %}
+        
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "notice",
+            title: "Objective",
+            message: "Get shares circulating (based on trades) to zero. And ensure the buy back info matches the payout info.",
+        }) }}
+
+        <table class="table table-bordered table-striped-columns" id="divestment-user-list">
+            <thead>
+                <tr>
+                    <th colspan="2" title="asset-info" class="text-center">User Info</th>
+                    <th colspan="3" title="payout-info" class="text-center">Payout Info</th>
+                    {% if generation == 1 %}
+                    <th colspan="3" title="investment-info" class="text-center">Investment Info (Gen 1)</th>
+                    {% else %}
+                    <th colspan="3" title="order-info" class="text-center">Divestment Order Info (Gen 2)</th>
+                    {% endif %}
+                    <th colspan="3" title="buyback-info" class="text-center">Buy Back Info</th>
+                </tr>
+                <tr>
+                    <th>Id</th>
+                    <th class="text-end">Circulating</th>
+
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Shares</th>
+                    
+                    {% if generation == 1 %}
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Invested</th>
+                    <th class="text-end">Shares</th>
+                    {% else %}
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Shares</th>
+                    {% endif %}
+
+                    <th class="text-end">Count</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Shares</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in divestmentsPaid %}
+                <tr>
+                    <td><a href="{{ path('admin_user_dashboard_portfolio', { id: item.userid }) }}">{{ item.userid }}</a></td>
+                    <td class="tw-font-mono text-end">{{ tradeHoldings[item.userid].shares|number_format }}</td>
+                    
+                    <td class="tw-font-mono text-end">{{ item.payouts|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.value|string|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ item.shares|number_format }}</td>
+
+                    {% if generation == 1 %}
+                    <td class="tw-font-mono text-end">{{ item.investmentCount|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.investmentValue|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ item.investmentShares|number_format }}</td>
+                    {% else %}
+                    <td class="tw-font-mono text-end">{{ item.orderCount|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ item.orderValue|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ item.orderShares|number_format }}</td>
+                    {% endif %}
+
+                    <td class="tw-font-mono text-end">{{ (item.userid in divestmentBuyBacks|keys ? divestmentBuyBacks[item.userid].count : 0)|number_format }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.userid in divestmentBuyBacks|keys ? divestmentBuyBacks[item.userid].value : 0)|string|format_currency('GBP') }}</td>
+                    <td class="tw-font-mono text-end">{{ (item.userid in divestmentBuyBacks|keys ? divestmentBuyBacks[item.userid].shares : 0)|number_format  }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

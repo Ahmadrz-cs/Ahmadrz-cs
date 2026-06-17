@@ -1,0 +1,49 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "kyc-review-report-card",
+    "sectionTitle": "KYC Review Report Card",
+} %}
+    {% block sectionContent %}
+        {{ form_start(form, {attr: {class:"d-flex flex-column gap-4"}}) }}
+        <div class="d-flex flex-column gap-3">
+            <header>
+                <h4 class="fw-bold fs-5">Checklist</h4>
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "notice",
+                    title: "All steps must be completed",
+                    message: "This is to ensure the review for each step has been performed, not whether the user has passed or failed that step.",
+                }) }}
+            </header>
+            <div>
+                {{ form_widget(form.sourceOfFunds) }}
+            </div>
+        </div>
+        {% if user.isVip == true %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "warning",
+                message: "This user is already a Top Yielder. You can revoke their Top Yielder status by choosing 'Reject'.",
+            }) }}
+
+        {% else %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "If you approve this Top Yielder application, the user will be sent a notification email.",
+            }) }}
+
+        {% endif %}
+        <div class="d-flex flex-column gap-2">
+            <h4 class="fw-bold fs-5">Comments</h4>
+            {{ form_widget(form.notes) }}
+            {{ form_help(form.notes) }}
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {{ form_widget(form.pass) }}
+            {{ form_widget(form.fail) }}
+        </div>
+        {{ form_rest(form) }}
+        {{ form_end(form) }}
+    
+    {% endblock sectionContent %}
+{% endembed %}
+

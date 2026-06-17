@@ -1,0 +1,51 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set backToRoute = 'admin_kyc_review_view' %}
+{% set backToRouteParams = { id: kycReview.id } %}
+{% set areaHeading = 'KYC' %}
+{% set mainHeading = 'Edit KYC Review #' ~ kycReview.id %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "kyc-review-configuration",
+        "sectionTitle": "KYC Review Configuration",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            {{ form_start(form, {attr: {class:"d-flex flex-column gap-4"}}) }}
+                <div class="row">
+                    <div class="col-md-4">{{ form_row(form.reviewType) }}</div>
+                    <div class="col-md-4">{{ form_row(form.status) }}</div>
+                    <div class="col-12">{{ form_row(form.subject, {attr: {'class': 'searchable'}}) }}</div>
+                    <div class="col-12">{{ form_row(form.notes) }}</div>
+                </div>
+                <section class="d-flex flex-column gap-3">
+                    <h5 class="fw-bold fs-5 mb-0">Review Actions</h5>
+                    {{ include('admin/components/_alert.html.twig', {
+                        variant: "info",
+                        message: "Select all the actions that you plan to do for this KYC review",
+                    }) }}
+                    <div class="d-grid lg:tw-grid-cols-2">
+                        {{ form_row(form.identityReview) }}
+                        {{ form_row(form.addressReview) }}
+                        {{ form_row(form.countryReview) }}
+                        {{ form_row(form.kycProviderReview) }}
+                        {{ form_row(form.dueDiligenceLevelReview) }}
+                        {# {{ form_row(form.kycSurveyReview) }} #}
+                        {{ form_row(form.transactionsReview) }}
+                    </div>
+                </section>
+                <div
+                    class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary text-nowrap" id="submit" type="submit">Save Changes</button>
+                    <a class="btn btn-outline-secondary text-nowrap" href="{{ path(backToRoute, backToRouteParams) }}">Cancel</a>
+                </div>
+            {{ form_rest(form) }}
+            {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+{% endblock %}

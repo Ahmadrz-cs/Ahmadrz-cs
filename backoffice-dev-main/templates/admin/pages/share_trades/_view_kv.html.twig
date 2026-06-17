@@ -1,0 +1,21 @@
+{{ include('admin/components/_kv_table.html.twig', {
+    title: title|default(null),
+    tableId: tableId|default("share-trade-info"),
+    valueDefaultStyle: "tw-font-mono",
+    kv: {
+        "Id": shareTrade.id,
+        "Uuid": shareTrade.uuid,
+        "Status": shareTrade.status.value|capitalize,
+        "Asset": "#" ~ shareTrade.sellOrder.asset.id ~ " // " ~ shareTrade.sellOrder.asset.name,
+        "Buyer": "#" ~ shareTrade.buyOrder.user.id ~ " // " ~ shareTrade.buyOrder.user.username,
+        "Seller": "#" ~ shareTrade.sellOrder.user.id ~ " // " ~ shareTrade.sellOrder.user.username,
+        "Share Quantity": shareTrade.numberOfShares|default(0)|number_format,
+        "Share Price": shareTrade.pricePerShare|default(0)|string|format_currency('GBP', {fraction_digit: 6}),
+        "Trade Value": shareTrade.tradeValue|default(0)|string|format_currency('GBP'),
+        "Derived Trade Value": shareTrade.derived ? 'Yes' : 'No',
+        "Created At": shareTrade.createdAt ? shareTrade.createdAt|date('Y-m-d H:i:s') : 'N/A',
+        "Created By": shareTrade.createdBy|default('N/A'),
+        "Updated At": shareTrade.updatedAt ? shareTrade.createdAt|date('Y-m-d H:i:s') : 'N/A',
+        "Updated By": shareTrade.updatedBy|default('N/A'),
+    }
+}) }}

@@ -1,0 +1,177 @@
+include:
+    - ../templates/basePaymentOrder.yaml
+
+App\Entity\PaymentOrder:
+    paymentOrder_glade{0} (extends paymentOrder_base):
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        asset: "@assetroyalglade"
+    paymentOrder_glade{1} (extends paymentOrder_base):
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        asset: "@assetroyalglade"
+        status: "abandoned"
+    paymentOrder_glade{2} (extends paymentOrder_base):
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        asset: "@assetroyalglade"
+        status: "closed"
+    paymentOrder_glade{3} (extends paymentOrder_base):
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        asset: "@assetroyalglade"
+        status: "approved"
+    paymentOrder_glade{zero} (extends paymentOrder_base):
+        scheduledFor: "<(new DateTime('first day of this month'))>"
+        asset: "@assetroyalglade"
+        status: "approved"
+        description: "SingleZeroPaymentRequest"
+    paymentOrder_lodge_{completed} (extends paymentOrder_base):
+        asset: "@assetlodge"
+        status: "<current()>"
+        createdBy: "@useradmin"
+        paymentType: "Dividend"
+        description:
+        scheduledFor: "<(new DateTime('first day of -1 month'))>"
+    paymentOrder_lodge_{in_progress} (extends paymentOrder_base):
+        asset: "@assetlodge"
+        status: "<current()>"
+        createdBy: "@userfinops"
+        paymentType: "Repayment"
+        description:
+    paymentOrder_fill_{neptunis, saturna, solaris, nova, partingdale, kolness, royalway} (extends paymentOrder_base):
+        asset: "@asset<current()>"
+        createdBy: "@userfinops"
+        description:
+        scheduledFor: "<(new DateTime('first day of -1 month'))>"
+    paymentOrder_type_{Dividend, Repayment, Divestment, Investment_Exit} (extends paymentOrder_base):
+        asset: "@assetlodge"
+        createdBy: "@userfinops"
+        paymentType: "<str_replace('_', ' ', $current)>"
+        description:
+    paymentOrder_completed_type_{Dividend, Repayment, Divestment, Investment_Exit} (extends paymentOrder_base):
+        asset: "@assetclarence"
+        createdBy: "@userfinops"
+        paymentType: "<str_replace('_', ' ', $current)>"
+        description:
+        status: "completed"
+    paymentOrder_eystar (extends paymentOrder_base):
+        # Deliberately no shareholders in this asset
+        scheduledFor: "<(new DateTime('first day of -1 month'))>"
+        asset: "@asseteystar"
+        description: No shareholders to pay
+    # Years+ worth of dividend payment orders
+    paymentOrder_glade_dividend{0} (extends paymentOrder_base):
+        asset: "@assetroyalglade"
+        description:
+        paymentType: "Dividend"
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        status: "draft"
+    paymentOrder_glade_dividend{1..12} (extends paymentOrder_base):
+        asset: "@assetroyalglade"
+        description:
+        paymentType: "Dividend"
+        scheduledFor: "<(new DateTime('first day of -' . $current . 'month'))>"
+        status: "completed"
+
+App\Entity\PaymentRequest:
+    paymentRequest_glade_ben{0..3} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade<current()>"
+        payee: "@userben"
+        shareholding: 10700
+    paymentRequest_glade_freya{0..3, 2} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade<current()>"
+        payee: "@userfreya"
+        shareholding: 5398
+    paymentRequest_glade_holly{1..3} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade<current()>"
+        payee: "@userholly"
+        shareholding: 4833
+    paymentRequest_glade_jim{2..3} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade<current()>"
+        payee: "@userjim"
+        shareholding: 791
+    paymentRequest_glade_lorna{0, 2, 3} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade<current()>"
+        payee: "@userlorna"
+        shareholding: 1028
+    paymentRequest_glade_holly_paid{1} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade<current()>"
+        payee: "@userholly"
+        shareholding: 4833
+        status: "paid"
+
+    # approve order with just a 0 value payment
+    paymentRequest_glade{zero} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_gladezero"
+        payee: "@userholly"
+        shareholding: 4833
+        amount: 0
+
+    # Completed order, but no payout records
+    paymentRequest_lodge_completed{freya, lorna, ben, holly} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_lodge_completed"
+        payee: "@user<current()>"
+        status: "paid"
+
+    # Partially complete order
+    paymentRequest_lodge_in_progress{freya, lorna, ben} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_lodge_in_progress"
+        payee: "@user<current()>"
+    paymentRequest_lodge_in_progress{holly} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_lodge_in_progress"
+        payee: "@user<current()>"
+        status: "paid"
+        payout: "@payout_holly_lodge10"
+        amount: "@payout_holly_lodge10->payoutAmount"
+        shareholding: "@payout_holly_lodge10->shareholding"
+
+    # Current month dividend not yet paid
+    paymentRequest_glade_dividend_pending_{ben, freya, holly, jim, lorna} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade_dividend0"
+        payee: "@user<current()>"
+        status: "pending"
+        # Alice issue trying to using current() in the middle of references
+        # amount: "@payout_<current()>_royalglade_dividend1->payoutAmount"
+        # shareholding: "@payout_<current()>_royalglade_dividend1->shareholding"
+        amount: 0
+        shareholding: 0
+        createdAt: "@paymentOrder_glade_dividend0->scheduledFor"
+
+    # Glades years worth of dividends
+    paymentRequest_glade_dividend_ben{1..12} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade_dividend<current()>"
+        payee: "@userben"
+        status: "paid"
+        payout: "@payout_ben_royalglade_dividend<current()>"
+        amount: "@payout_ben_royalglade_dividend<current()>->payoutAmount"
+        shareholding: "@payout_ben_royalglade_dividend<current()>->shareholding"
+        createdAt: "@paymentOrder_glade_dividend<current()>->scheduledFor"
+    paymentRequest_glade_dividend_freya{1..12} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade_dividend<current()>"
+        payee: "@userfreya"
+        status: "paid"
+        payout: "@payout_freya_royalglade_dividend<current()>"
+        amount: "@payout_freya_royalglade_dividend<current()>->payoutAmount"
+        shareholding: "@payout_freya_royalglade_dividend<current()>->shareholding"
+        createdAt: "@paymentOrder_glade_dividend<current()>->scheduledFor"
+    paymentRequest_glade_dividend_holly{1..12} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade_dividend<current()>"
+        payee: "@userholly"
+        status: "paid"
+        payout: "@payout_holly_royalglade_dividend<current()>"
+        amount: "@payout_holly_royalglade_dividend<current()>->payoutAmount"
+        shareholding: "@payout_holly_royalglade_dividend<current()>->shareholding"
+        createdAt: "@paymentOrder_glade_dividend<current()>->scheduledFor"
+    paymentRequest_glade_dividend_jim{1..12} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade_dividend<current()>"
+        payee: "@userjim"
+        status: "paid"
+        payout: "@payout_jim_royalglade_dividend<current()>"
+        amount: "@payout_jim_royalglade_dividend<current()>->payoutAmount"
+        shareholding: "@payout_jim_royalglade_dividend<current()>->shareholding"
+        createdAt: "@paymentOrder_glade_dividend<current()>->scheduledFor"
+    paymentRequest_glade_dividend_lorna{1..12} (extends paymentRequest_base):
+        paymentOrder: "@paymentOrder_glade_dividend<current()>"
+        payee: "@userlorna"
+        status: "paid"
+        payout: "@payout_lorna_royalglade_dividend<current()>"
+        amount: "@payout_lorna_royalglade_dividend<current()>->payoutAmount"
+        shareholding: "@payout_lorna_royalglade_dividend<current()>->shareholding"
+        createdAt: "@paymentOrder_glade_dividend<current()>->scheduledFor"

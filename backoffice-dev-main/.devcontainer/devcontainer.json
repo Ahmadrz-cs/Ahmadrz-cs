@@ -1,0 +1,56 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.217.1/containers/php-mariadb
+// Update the VARIANT arg in compose.yaml to pick a PHP version
+{
+    "name": "Backoffice Development",
+    "dockerComposeFile": [
+        // https://code.visualstudio.com/docs/remote/create-dev-container#_extend-your-docker-compose-file-for-development
+        "compose.yaml",
+        "compose.development.yaml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "remoteUser": "vscode",
+    "features": {
+        // View other available options with the "Configure Container Features" command (F1 to open)
+        // Note that NodeJS via nvm is installed in the Dockerfile (e use the default LTS version)
+        // NodeJS is used for JS development with webpack encore
+        // "git": "latest",
+        "ghcr.io/devcontainers/features/node:1": {
+            "nodeGypDependencies": true,
+            "version": "lts",
+            "nvmVersion": "latest"
+        }
+    },
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html",
+    "postCreateCommand": "bash .devcontainer/dev/setup-dotenv.sh && bash .devcontainer/dev/setup-project.sh -d",
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Set *default* container specific settings.json values on container create.
+            "settings": {
+                // Set *default* container specific settings.json values on container create.
+                // Note that settings will otherwise be inherited from your regular vscode workspace
+                "intelephense.files.exclude": [
+                    "**/var/cache/**"
+                ]
+            },
+            "extensions": [
+                "christian-kohler.npm-intellisense",
+                "redhat.vscode-yaml",
+                "redhat.vscode-xml",
+                "eamodio.gitlens",
+                "mikestead.dotenv",
+                "esbenp.prettier-vscode",
+                "mblode.twig-language-2",
+                "DEVSENSE.phptools-vscode",
+                "jkillian.custom-local-formatters"
+            ]
+        }
+    }
+    // Note that the "forwardPorts" option is for Github Codespaces
+    // which is Microsoft's cloud-hosted development environments
+    // For local development, the port configuration in docker-compose works as you'd expect
+    // "forwardPorts": [8080, 3306],
+}

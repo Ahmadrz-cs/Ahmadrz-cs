@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="notification_important-24px" width="30" height="30" viewBox="0 0 30 30">
+    <defs>
+        <style>
+            .cls-1{fill:#0C6953}.cls-2{fill:none}
+        </style>
+    </defs>
+    <path id="Path_1084" d="M23.25 20.154v-6.539c0-4.015-2.25-7.375-6.187-8.264v-.889a2.065 2.065 0 0 0-4.125 0v.889C8.991 6.24 6.75 9.588 6.75 13.615v6.538L4 22.769v1.308h22v-1.308zm-6.875 0h-2.75v-2.616h2.75zm0-5.231h-2.75V9.692h2.75zM15 28a2.693 2.693 0 0 0 2.75-2.615h-5.5A2.684 2.684 0 0 0 15 28z" class="cls-1" data-name="Path 1084"/>
+    <path id="Path_1085" d="M0 0h30v30H0z" class="cls-2" data-name="Path 1085"/>
+</svg>

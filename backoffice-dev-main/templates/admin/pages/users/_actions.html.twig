@@ -1,0 +1,76 @@
+<div class="btn-group border">
+    <a class="btn btn-light" type="button" href="{{ path('admin_user_edit', { id: user.id }) }}" title="Edit User">
+        <i class="fa fa-pen"></i>
+    </a>
+    <a class="btn btn-light" type="button" href="{{ path('admin_investment_index', { userId: user.id }) }}"
+        title="User Investments">
+        <i class="fa fa-coins"></i>
+    </a>
+    {# <a class="btn btn-light" type="button" href="{{ path('admin_holding_current', { userId: user.id }) }}"
+        title="User Shareholdings">
+        <i class="fa fa-atlas"></i>
+    </a> #}
+    <a class="btn btn-light" type="button" href="{{ path('admin_user_dashboard_overview', { id: user.id }) }}" title="View User">
+        <i class="fa fa-gauge-high"></i>
+    </a>
+    <div class="btn-group dropdown">
+        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" data-display="static"
+            title="More Actions">
+            <i class="fa fa-bars"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end p-2 tw-text-sm">
+
+            {% if user.status.isApproved %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_approve', { id: user.id} ) }}"><i
+                    class="fa fa-ban fa-fw me-2"></i> Revoke Approve</a>
+            {% else %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_approve', { id: user.id} ) }}"><i
+                    class="fa fa-ban fa-fw me-2"></i> Approve</a>
+            {% endif %}
+
+            {% if user.status.isRegCompleted %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_registercomplete', { id: user.id} ) }}"><i
+                    class="fa fa-ban fa-fw me-2"></i> MarkRegistration Incomplete</a>
+            {% else %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_registercomplete', { id: user.id} ) }}"><i
+                    class="fa fa-ban fa-fw me-2"></i> MarkRegistration Complete</a>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <a class="dropdown-item rounded" href="{{ path('admin_user_toggle_kyc_verified', { id: user.id} ) }}">
+                <i class="fa fa-check fa-fw me-2"></i>Toggle Manual KYC Verification
+            </a>
+            <li><hr class="dropdown-divider"></li>
+            <a class="dropdown-item rounded" href="{{ path('admin_user_toggle_company_approved', { id: user.id} ) }}">
+                <i class="fa fa-building fa-fw me-2"></i>Toggle Company Approved
+            </a>
+            <li><hr class="dropdown-divider"></li>
+
+            {% if user.isvip %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_vip', { id: user.id} ) }}"><i
+                    class="fa fa-ban fa-fw me-2"></i> Remove VIP status</a>
+            {% else %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_vip', { id: user.id } ) }}"><i
+                    class="fa fa-star-o fa-fw me-2"></i> Make User VIP</a>
+            {% endif %}
+
+            <li><hr class="dropdown-divider"></li>
+
+            {% if user.enabled %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_block', { id: user.id} ) }}"><i
+                    class="fa fa-ban fa-fw me-2"></i> Block User</a>
+            {% else %}
+            <a class="dropdown-item rounded" href="{{ path('admin_user_block', { id: user.id } ) }}"><i
+                    class="fa fa-check fa-fw me-2"></i> UnBlock User</a>
+            {% endif %}
+
+            {% if
+            user.findCustomFieldValue(constant('App\\Entity\\CUST_FIELDS_CONSTANT::CF_Q_PASSED')) == 0
+            and user.findCustomFieldValue(constant('App\\Entity\\CUST_FIELDS_CONSTANT::CF_Q_ATTEMPS')) == 2
+            %}
+            <li><hr class="dropdown-divider"></li>
+            <a class="dropdown-item rounded" href="{{ path('admin_user_questionreset', { id: user.id} ) }}"><i
+                    class="fa fa-refresh fa-fw me-2"></i> Reset Questionanire</a>
+            {% endif %}
+        </div>
+    </div>
+</div>

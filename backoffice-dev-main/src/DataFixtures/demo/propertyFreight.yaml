@@ -1,0 +1,58 @@
+# This is in-progress
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{freight} (extends asset_base):
+        name: The Freight Building - Wembley
+        briefDescription: A 3-bedroom flat in a block recently renovated under Brent Council's 'Alperton Master Plan’ which outlines various regeneration projects in the area. Currently, this flat is being tenanted by a housing charity under an HMO license and 15 year FRI lease.
+        pricePerShare: 4.74
+        amountOfShares: 100000
+        companyNumber: SPVDM00024
+        investmentTerm: 36
+        netProjectedYield: '0.0439'
+        netProjectedIncome: '20824'
+        featured: 10
+        termStart: "@self->createdAt"
+        createdAt: "<dateTimeBetween('-12 months', '-11 months')>"
+
+App\Entity\AssetAddress:
+    assetaddress{freight} (extends assetaddress_base):
+        address1: 	Flat 4, The Freight Building
+        address2: Wembley
+        city: London
+        postCode: HA0 1TX
+        longitude: -0.2900812
+        latitude: 51.5409573
+
+App\Entity\AssetMember:
+    assetmember{freight} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc_freight_{AoA, IM, Cover, Financials, photo1, photo2, photo3, photo4}:
+        asset: "@assetfreight"
+        document: "@doc_freight_<current()>"
+
+App\Entity\Document:
+    doc_freight_{AoA} (extends doc_aoa):
+        filename: "<('SPVY00024_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_freight_{IM} (extends doc_im):
+        filename: "<('SPVY00024_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_freight_{Cover} (extends doc_logo):
+        filename: "<('SPVY00024_' . $current . '.jpg')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_freight_{Financials} (extends doc_calculations):
+        filename: "<('SPVY00024_' . $current . '.pdf')>"
+        documentUrl: "<('demo/' . $filename)>"
+    doc_freight_{photo1, photo2, photo3, photo4} (extends doc_property_photo):
+        filename: "<('SPVY00024_' . $current . '.jpg')>"
+        documentUrl: "<('demo/' . $filename)>"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{freight} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Active)>
+        occuredAt: "@asset<current()>->termStart"

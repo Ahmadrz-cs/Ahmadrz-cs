@@ -1,0 +1,72 @@
+# Sibling asset to Neptunis, Saturna
+# Unique trait - Small prefunding
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{nixis} (extends asset_base):
+        name: Nixis Plutona - Bristol
+        alternateName: Bristol Wharf Apts. A
+        briefDescription: Compact studio flats befitting the Plutonian moon Nix
+        pricePerShare: 1.76
+        amountOfShares: 12500
+        companyNumber: SPVAF00012
+        visibility: 2
+        netProjectedYield: '0.0571'
+        netProjectedIncome: '1256'
+        createdAt: "<dateTimeBetween('-3 months', '-2 months')>"
+        termStart: "@self->createdAt"
+
+App\Entity\AssetAddress:
+    assetaddress{nixis} (extends assetaddress_base):
+        address1: Bristol Harbour
+        address2: 46 Wharf Tides
+        city: Bristol
+        postCode: BR2 9TS
+        longitude: -2.607590
+        latitude: 51.450352
+
+App\Entity\AssetMember:
+    assetmember{nixis} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{nixis_aoa, nixis_im}:
+        asset: "@assetnixis"
+        document: "@doc<current()>"
+    assetdoc{nixis_logo}:
+        asset: "@assetnixis"
+        document: "@doc<current()>"
+    assetdoc{nixis_calc}:
+        asset: "@assetnixis"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{nixis} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 5.71
+        grossProjectReturn: 29.43
+        offeringType: "prefunding"
+        visibility: 2
+
+App\Entity\OfferingDocuments:
+    offeringdoc{nixis_calc}:
+        offering: "@offeringnixis"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{nixis_aoa} (extends doc_aoa):
+    doc{nixis_im} (extends doc_im):
+    doc{nixis_logo} (extends doc_logo):
+        description: "Quayside apartment showcase"
+        filename: "quaysidestock.jpg"
+    doc{nixis_calc} (extends doc_calculations):
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{nixis} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Acquiring)>

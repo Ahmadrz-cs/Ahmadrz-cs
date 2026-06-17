@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Form;
+
+use App\Message\CardCleanupBatchRun;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\LessThanOrEqual;
+
+class JobCardCleanupType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder->add('jobSize', IntegerType::class, [
+            'constraints' => [
+                new LessThanOrEqual(CardCleanupBatchRun::JOB_LIMIT),
+            ],
+            'help' => 'Maximum number of cards to deactivate in the job (max. 50). If jobSize > batchSize, the job will enable autoContinue.',
+            'required' => true,
+        ])->add('batchSize', ChoiceType::class, [
+            'choices' => range(1, CardCleanupBatchRun::BATCH_LIMIT),
+            'choice_label' => function ($choice, $key, $value) {
+                return $value;
+            },
+            'help' => 'Defaults to 10. Number of cards to deactivate in one run. If jobSize < batchSize, batchSize will be set to jobSize.',
+            'preferred_choices' => [10],
+            'required' => true,
+        ])->add('submit', SubmitType::class, ['label' => 'Submit Job']);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([]);
+    }
+}

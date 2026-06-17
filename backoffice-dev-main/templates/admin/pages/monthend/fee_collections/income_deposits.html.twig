@@ -1,0 +1,89 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_setup' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Fee Collection' %}
+{% set mainHeading = 'Setup Transfers' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "collect-from-order-choice",
+        "sectionTitle": "Choose a Transfer Order",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+        <p class="mb-0">This tool takes an income disaggregation order (which allocates gross income for each asset) and creates a new transfer that will take a cut of that asset's gross income. Select a suitable order below by pressing the "Preview Fee Collections" button.</p>
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "info",
+            title: "Transfer Order Requirements",
+        } %}
+            {% block message %}
+                <p>The following list only shows transfer orders that meet the following requirements:</p>
+                <ul>
+                    <li>Must be an <span class="fw-bold">income disaggregation</span> order</li>
+                    <li>Must be in the same scheduled monthend</li>
+                    <li>Must be completed</li>
+                </ul>
+                <p class="mt-3 mb-0">If no income disaggregation orders are shown below, then there are none that meet the above requirements. If you still want to collect fees, you can still manually configure transfers with alternative tools.</p>
+            {% endblock message %}
+        {% endembed %}
+
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Suitable Transfer Orders',
+                value: suitableOrders|length,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled Monthend',
+                value: transferOrder.scheduledFor|date('Y-m'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Covering Period Between',
+                value: transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                    ~ ' - ' 
+                    ~ transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                className: 'col-md-6',
+            }) }}
+        </div>
+
+        <table class="table table-striped datatable" id="suitable-orders-list">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Description</th>
+                    <th>Number of Transfers</th>
+                    <th>Total Value Transfered (£)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in suitableOrders|default([]) %}
+                    <tr data-object-id="{{ order.id }}">
+                        <td data-field="orderId">{{ order.id }}</td>
+                        <td data-field="description">{{ order.description }}</td>
+                        <td data-field="transferCount">{{ order.transfers|length }}</td>
+                        <td data-field="transferValue">{{ order.transfers|reduce((carry, v) => carry + v.amount)|number_format(2, '.', ',') }}</td>
+                        <td>
+                            {{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Preview Fee Collections",
+                                    "route": "admin_monthend_fee_collection_income_deposit_collect",
+                                    "params": { 
+                                        id: transferOrder.id,
+                                        collectFromOrder: order.id,
+                                    },
+                                    "style": "btn-dark text-nowrap",
+                                },
+                            }) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

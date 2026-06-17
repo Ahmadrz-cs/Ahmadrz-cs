@@ -1,0 +1,41 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-6 offset-md-3 text-center">
+                    <h3>Investor Appropriateness Test</h3>
+                    <p>If you would like more information about how Yielders works, <b><a href="https://help.yielders.co.uk/en" target="_blank">please visit the help centre</a></b>.</p>
+                    {{ form_start(form, {attr:{class:"text-left"}}) }}
+                        {{ form_rest(form) }}
+                        <div class="d-flex justify-content-center" style="gap: 0.5rem;">
+                            <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">I'll do this later</a>
+                            <button type="submit" id="submit" class="btn btn-primary rounded-pill px-1 px-sm-2">Submit Answers</button>
+                        </div> 
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

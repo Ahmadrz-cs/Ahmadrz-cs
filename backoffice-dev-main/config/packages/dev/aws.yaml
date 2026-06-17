@@ -1,0 +1,9 @@
+aws:
+    # https://github.com/aws/aws-sdk-php-symfony#configuration
+    # If AWS_MERGE_CONFIG env-var is not set and active, config merging isn't enabled
+    # You will need to manually configure the version and region (uncomment below)
+    # version: latest
+    # region: eu-west-2
+    credentials:
+        key: "%env(AWS_KEY)%"
+        secret: "%env(AWS_SECRET)%"

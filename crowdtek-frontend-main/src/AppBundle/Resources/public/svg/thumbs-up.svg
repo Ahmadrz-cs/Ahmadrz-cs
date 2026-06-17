@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" viewBox="0 0 70 70">
+    <defs>
+        <style>
+            .cls-1{fill:#0C6953}.cls-2{clip-path:url(#clip-path)}.cls-3{fill:none}
+        </style>
+        <clipPath id="clip-path">
+            <circle id="Oval_Copy_5" cx="35" cy="35" r="35" class="cls-1" data-name="Oval Copy 5" transform="translate(735 3674)"/>
+        </clipPath>
+    </defs>
+    <g id="Mask_Group_10" class="cls-2" data-name="Mask Group 10" transform="translate(-735 -3674)">
+        <g id="thumb_up_alt-24px" transform="translate(735 3674)">
+            <path id="Path_171" d="M70 70H0V0h70z" class="cls-3" data-name="Path 171"/>
+            <path id="Path_172" d="M5.833 58.333h5.833a2.925 2.925 0 0 0 2.917-2.917V29.167a2.925 2.925 0 0 0-2.917-2.917H5.833zm57.838-20.766a5.775 5.775 0 0 0 .5-2.333v-3.15a5.85 5.85 0 0 0-5.833-5.833H42.292l2.683-13.562a2.923 2.923 0 0 0-.233-1.925A14 14 0 0 0 42.175 7.2l-1.342-1.367-18.7 18.7a5.851 5.851 0 0 0-1.721 4.142v22.863a6.828 6.828 0 0 0 6.825 6.8H50.9a5.874 5.874 0 0 0 5.013-2.838z" class="cls-1" data-name="Path 172"/>
+        </g>
+    </g>
+</svg>

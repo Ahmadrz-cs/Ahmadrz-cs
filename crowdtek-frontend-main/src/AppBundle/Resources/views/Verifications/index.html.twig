@@ -1,0 +1,39 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-6 offset-md-3 text-center">
+                    <h3>Please confirm your details</h3>
+                    <p>As a regulated financial institution, we need to ensure information we hold on you is up to date and accurate.</p>
+                    <p>Certain site functionality (such as investments and withdrawals) may be unavailable or not work until this verification is complete.</p>
+                    <p>If you want to do this later, you can start this process from your profile.</p>
+                    <div class="d-flex justify-content-center p-2" style="gap: 0.5rem;">
+                        <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Verify Later</a>
+                        <a class="btn btn-primary rounded-pill px-1 px-sm-2" href={{ path('verification_identity') }} role="button">Start Verification</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

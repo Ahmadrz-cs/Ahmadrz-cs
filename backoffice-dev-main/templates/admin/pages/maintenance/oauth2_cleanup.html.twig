@@ -1,0 +1,50 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'OAuth2 Artifact Cleanup' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "clear-expired-artifacs",
+        "sectionTitle": "Clear Expired Artifacts",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "The cleanup process will in future be automated as a background process. But until then, you can manually clear all expired artifacts with this tool.",
+        }) }}
+        <div class="overflow-auto">
+            <table class="table" id="oauth2-artifacts">
+                <thead>
+                    <tr>
+                        <th>Artifact Type</th>
+                        <th>Total Count</th>
+                        <th>Expired Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for artifactType, counts in artifactSummary|default([]) %}
+                    <tr>
+                        <td data-field-name="subject">{{ artifactType|humanize }}</td>
+                        <td data-field-name="count">{{ counts.total }}</td>
+                        <td data-field-name="expiredCount">{{ counts.expired }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {{ form_start(form, { attr: {class: "d-flex flex-column gap-2"} }) }}
+        {{ form_row(form.confirmation) }}
+        {{ form_row(form.submit, { attr: {class: "btn btn-danger"} }) }}
+		{{ form_rest(form) }}
+	    {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

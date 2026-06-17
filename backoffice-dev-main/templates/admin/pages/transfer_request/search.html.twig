@@ -1,0 +1,84 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = exitRoute ?? 'admin_transfer_order_manage' %}
+{% set backToRouteParams = { id: transferRequest.transferOrder.id } %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = 'Link Mangopay Transfer' %}
+{% set htmlTitle = 'Link Transfer' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "supporting-info",
+        "sectionTitle": "Supporting Information",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Order Id',
+                value: transferRequest.transferOrder.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Request Id',
+                value: transferRequest.id,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Type',
+                value: transferRequest.transferOrder.transferType.value|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Scheduled Monthend',
+                value: transferRequest.transferOrder.scheduledFor|date('Y-m'),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Covering Period Between',
+                value: transferRequest.transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                    ~ ' - ' 
+                    ~ transferRequest.transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                className: 'col-md-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Amount',
+                value: '£' ~ transferRequest.amount|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfer Status',
+                value: transferRequest.status|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Debit Wallet',
+                value: transferRequest.debitWalletId,
+                className: 'col-md-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Credit Wallet',
+                value: transferRequest.creditWalletId,
+                className: 'col-md-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Description',
+                value: transferRequest.description,
+                className: 'col-12',
+                valueClassName: 'bg-light rounded-2 p-3'
+            }) }}
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+    {{ form_start(form) }}
+        <div class="row">
+            <div class="col-12">{{ form_row(form.transferId) }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {{ form_widget(form.submit) }}
+            <a class="btn btn-outline-secondary" href="{{ path(exitRoute ?? 'admin_transfer_order_manage', {
+                id: transferRequest.transferOrder.id
+            }) }}">Cancel</a>
+        </div>
+        {{ form_rest(form) }}
+    {{ form_end(form) }}
+
+{% endblock page_content %}

@@ -1,0 +1,79 @@
+services:
+  # fluentd:
+  #   build: 
+  #     context: ./fluentd
+  #     dockerfile: Dockerfile
+  #     args:
+  #       FLUENTD_VERSION: "${FLUENTD_VERSION:-v1.15-1}"
+  #   volumes:
+  #     - ./fluentd/conf:/fluentd/etc
+  #     - ../var/log:/var/log/symfony
+  #   networks:
+  #     - elasticsearch
+  #   ports:
+  #     - "24224:24224"
+  #     - "24224:24224/udp"
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${ELASTIC_VERSION:-8}
+    # user: root
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+    # Turn off strict permissions
+    # so it doesn't complain about config file
+    # https://www.elastic.co/guide/en/beats/libbeat/current/config-file-permissions.html
+    command: ["--strict.perms=false"] 
+    volumes:
+      # https://www.elastic.co/guide/en/beats/filebeat/current/directory-layout.html#_docker
+      - ./elastic/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro,Z
+      # Optional - for access to docker related logs
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount to /var/log/symfony so it's distinct from other system level logs
+      - ../var/log:/var/log/symfony
+    networks:
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:${ELASTIC_VERSION:-8}
+    volumes:
+      - ./elastic/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
+      - elasticsearch:/usr/share/elasticsearch/data:z
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      # Bootstrap password.
+      # Used to initialize the keystore during the initial startup of
+      # Elasticsearch. Ignored on subsequent runs.
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+      discovery.type: single-node
+      bootstrap.memory_lock: true
+      xpack.security.enabled: false
+    networks:
+      - elasticsearch
+
+  kibana:
+    image: kibana:${ELASTIC_VERSION:-8}
+    volumes:
+      - ./elastic/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    ports:
+      - "5601:5601"
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      # Configure the integrations with elasticsearch so it appears in the dashboard
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    networks:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+
+networks:
+  elasticsearch:
+
+volumes:
+  elasticsearch:

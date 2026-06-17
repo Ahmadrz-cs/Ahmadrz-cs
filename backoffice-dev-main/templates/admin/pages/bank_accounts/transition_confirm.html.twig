@@ -1,0 +1,72 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_manage' %}
+{% set backToRouteParams = {id: bankAccount.id} %}
+{% set areaHeading = 'Bank Account' %}
+{% set mainHeading = 'Confirm Bank Account ' ~ transition|capitalize %}
+{% set baseTemplate = 'ops' %}
+
+{# Configure page blocks #}
+{% block objectMeta %}
+    <section class="border rounded-2 p-4">
+        <h2 class="fw-bold mb-3">Bank Account
+            {{ '#' ~ bankAccount.id|default() }}</h2>
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Status',
+                value: bankAccount.status.value|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Account Type',
+                value: bankAccount.accountType.value,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Account Holder Type',
+                value: bankAccount.accountHolderType.value|capitalize,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Mangopay Bank Account Id',
+                value: bankAccount.providerId ? bankAccount.providerId : 'N/A',
+                className: 'col-md-6',
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Account Number',
+                value: bankAccount.accountNumber,
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Bank Identifier Code',
+                value: bankAccount.bankIdentifierCode,
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Approved By',
+                value: bankAccount.approvedBy ? bankAccount.approvedBy.userIdentifier : 'N/A',
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Bank Account Country',
+                value: bankAccount.country,
+            }) }}
+            {{ include('admin/components/blame-timestamp.html.twig', {
+                object: bankAccount,
+            }) }}
+        </div>
+    </section>
+{% endblock %}
+{% block formContents %}
+    <section class="row">
+        <div class="col-12">{{ form_row(form.reason) }}</div>
+    </section>
+    <div class="mb-4">
+        <h5 class="fw-bold fs-6">Notification Options</h4>
+        {{ form_widget(form.notifyUser) }}
+    </div>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-danger" id="submit" type="submit">{{ transition|capitalize }}
+        Bank Account</button>
+    <a class="btn btn-outline-secondary"
+        href="{{ path(app.request.query.get('redirectRoute') ?? 'admin_bank_account_manage', { id: bankAccount.id }) }}">Discard Changes</a>
+{% endblock %}

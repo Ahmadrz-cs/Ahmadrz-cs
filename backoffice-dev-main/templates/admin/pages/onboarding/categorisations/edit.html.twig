@@ -1,0 +1,11 @@
+{% extends 'admin/pages/onboarding/categorisations/new.html.twig' %}
+
+{% set user = categorisation.profile.user %}
+
+{% set mainHeading = 'Edit Categorisation #' ~ categorisation.id|default() %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary" href="{{ path('admin_onboarding_profile', { id:  user.id }) }}">Discard
+        Changes</a>
+{% endblock %}

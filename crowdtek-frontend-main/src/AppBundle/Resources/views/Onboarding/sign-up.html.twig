@@ -1,0 +1,125 @@
+{% extends "@AppBundle/base-lite.html.twig" %}
+
+{% block title %}Sign Up - Yielders{% endblock %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block body %}
+    <main role="main" class="container mb-4">
+        <nav class="row justify-content-between mt-2">
+            <div class="col">
+                <a href="{{ path('homepage') }}">
+                    <img class="logo-nav mb-2" src="{{asset('bundles/app/img/')}}logo_wordmark_contained.svg" height="40" loading="lazy" alt="yielders logo">
+                </a>
+            </div>
+            <div class="col-auto">
+                <a href="{{ path('login')}}" class="btn btn-light rounded-pill text-sm-right py-1 px-2">Login</a>
+            </div>
+        </nav>
+        <section class="row justify-content-center mt-2 mt-sm-4">
+            <div class="col-md-12 col-lg-10 col-xl-8">
+                {% if flow.getCurrentStepNumber() == 1 %}
+                    <h3 >{{ flow.getCurrentStepLabel() | trans }}</h3>
+                {% endif %}
+
+                {# <form class="row" role="form" id="form_sign_up"> #}
+                {{ form_start(form, {'attr': {'id': 'sign-up-form'}}) }}
+                {{ form_errors(form) }}
+
+                {% if flow.getCurrentStepNumber() == 1 %}
+                    <p>By signing up, you are requesting to see our full offering of investment opportunities and the ability to invest on our platform.</p>
+                    <div class="row">
+                        <div class="form-group mb-2 col-sm-6">
+                            {{ form_label(form.firstname, null, {label_attr:{id:"lblfname"}}) }}
+                            {{ form_widget(form.firstname, { attr: {class:"form-control"}}) }}
+                        </div>
+                        <div class="form-group mb-2 col-sm-6">
+                            {{ form_label(form.lastname, null, {label_attr:{id:"lblsname"}}) }}
+                            {{ form_widget(form.lastname, { attr: {class:"form-control"}}) }}
+                        </div>
+                        <div class="form-group mb-2 col-12">
+                            {{ form_label(form.email, null, {label_attr:{id:"lblemail"}}) }}
+                            {{ form_widget(form.email, { attr: {class:"form-control"}}) }}
+                            <div style="color:red;">
+                                {{ form_errors(form.email) }}
+                            </div>
+                        </div>
+                        <div class="form-group mb-2 col-12">
+                            {{ form_label(form.password.first, null, {label_attr:{class:"required"}}) }}
+                            {{ form_widget(form.password.first, { attr: {class:"form-control"}}) }}
+                            <i class="pw-eye pw-hide position-absolute" id="toggle_1" aria-hidden="true"></i>
+                        </div>
+                        <section class="row col-12 mb-1 ml-0" id="pswd_info">
+                            <div class="col-sm-6 mb-1 font-medium small" id="capital">At least 1 uppercase character</div>
+                            <div class="col-sm-6 mb-1 font-medium small" id="letter">At least 1 lowercase character</div>
+                            <div class="col-sm-6 mb-1 font-medium small" id="number">At least 1 number</div>
+                            <div class="col-sm-6 mb-1 font-medium small" id="length">8 characters minimum</div>
+                        </section>
+                        <div class="form-group col-12">
+                            {{ form_label(form.password.second, null, {label_attr:{class:"required"}}) }}
+                            {{ form_widget(form.password.second, { attr: {class:"form-control"}}) }}
+                            <i class="pw-eye pw-hide position-absolute" id="toggle_2" aria-hidden="true"></i>
+                        </div>
+
+                        <section class="col-12"> 
+                            <div class="col-sm mb-2 font-medium small hidden" role="alert" id="noMatch">
+                                Passwords must match
+                            </div>
+                        </section>
+
+                    </div>
+
+                    <div class="text-center mb-2">
+                        <div class="g-recaptcha-outer">
+                            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}" style="display: inline-block"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <input id="btn_continue" type="submit" class="btn btn-primary rounded-pill btn-lg btn-block" value="Continue" onclick="return validateForm();">
+                    </div>
+                        <input id="Text1" name="Text1" type="hidden" />
+                        <input id="hdlength" name="hdlength" type="hidden" />
+
+                  </div>
+
+                {% endif %}
+
+                {% if flow.getCurrentStepNumber() == 2 %}
+                    <h3 >{{ flow.getCurrentStepLabel() | trans }}</h3>
+
+                    <p>Please read and scroll down to accept</p>
+
+                    {% include '@AppBundle/Onboarding/sign-up-terms.html.twig'%}
+
+                    <div class="pl-0 mb-2">
+                        {{ form_widget(form.term_service_accepted) }}
+                        <label for="signUpUser_term_service_accepted">
+                            I Agree to the above <a href="https://yielders.co.uk/terms-conditions" target="_blank"><strong>Terms &amp; Conditions</strong></a> and <a href="https://yielders.co.uk/privacy-policy" target="_blank"><strong>Privacy Policy</strong></a>
+                        </label>
+                    </div>
+
+                    <section class="my-3">
+                        <h5>Before you can invest</h5>
+                        <p>By clicking continue, you are starting the signing up process. During this process, we will ask you to answer some questions about the type of investor you are, investing through Yielders, and finally to provide information about yourself.</p>
+                        <p>You will not be able to invest during the first 24 hours after starting the signing up process. This is to provide a period of time for you to decide whether the investments we offer are right for you. However, you will still be able to browse investment opportunities during this time.</p>
+                    </section>
+
+                    <button type="submit" id="btn_continue" class="btn btn-secondary rounded-pill btn-lg btn-block" onclick="return chkform();">
+                        Continue
+                    </button>
+
+                {% endif %}
+
+                {{ form_end(form) }}
+
+            </div>
+        </section>
+    </main>
+
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('bundles/app/js/onboarding/Signup_load.js') }}"></script>
+{% endblock %}

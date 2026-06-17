@@ -1,0 +1,196 @@
+{# Remove any links that the logged in user lacks permissions for - default to any staff (permissive) #}
+{% set linkActions = linkActions|default([])|filter(v => is_granted(v.roleRequired|default('ROLE_ANALYST'), app.user)) %}
+
+{% set layoutStyles = "d-flex flex-column" %}
+
+{% if layout|default("standard") == "wide" %}
+    {% set layoutStyles = "tw-grid md:tw-grid-cols-2" %}
+{% endif %}
+
+{% set viewBtnStyle = "tw-bg-gray-50 tw-border-gray-100 hover:tw-bg-gray-100 tw-text-xs tw-py-1.5 tw-px-2.5 focus:tw-bg-gray-100 focus-visible:tw-bg-gray-100 active:!tw-bg-gray-200 active:!tw-border-gray-300" %}
+
+<article class="{{ layoutStyles }} tw-gap-6 tw-outline-solid tw-outline-gray-100 tw-outline hover:tw-outline-4 rounded-4 p-4" data-order-id="{{ order.id }}">
+    <section class="d-flex flex-column gap-2">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            {# <span class="text-muted tw-text-xs">Asset</span> #}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "View Asset",
+                    "route": "admin_product_trade_orders",
+                    "params": { id: order.asset.id},
+                    "styleWith": "tw",
+                    "style": viewBtnStyle,
+                    "iconEnd": "fa-arrow-right",
+                },
+            }) }}
+        </div>
+        <div class="tw-font-bold" data-field-name="asset-name">{{ order.asset.name }}</div>
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'ID#' ~ order.asset.id,
+                color: "gray",
+                fieldName: "asset-id",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.asset.companyNumber|default('N/A'),
+                color: "gray",
+                fieldName: "asset-spv",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.asset.currentStatus.name,
+                color: tw_assetStatusColor[order.asset.currentStatus.value],
+                showIndicator: true,
+                fieldName: "asset-status",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'Trading: ' ~ order.asset.tradingStatus,
+                color: tw_tradingStatusColor[order.asset.tradingStatus],
+                showIndicator: true,
+                fieldName: "asset-trading-status",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'Min Investment: ' ~ (order.asset.minimumInvestment ?? '100')|string|format_currency('GBP'),
+                color: "gray",
+                variant: "outline",
+                fieldName: "asset-min-invest",
+            }) }}
+            {% if order.asset.featured %}
+                {{ include('admin/components/_badge.html.twig', {
+                    text: "Featured (" ~ order.asset.featured ~ ")",
+                    color: "yellow",
+                    fieldName: "asset-featured",
+                    icon: "fa-star",
+                }) }}
+            {% endif %}
+        </div>
+    </section>
+    <section class="d-flex flex-column gap-2">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            {# <span class="text-muted tw-text-xs">User ({{ order.direction.name }}er)</span> #}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "View User",
+                    "route": "admin_user_dashboard_trade_orders",
+                    "params": { id: order.user.id},
+                    "style": viewBtnStyle,
+                    "iconEnd": "fa-arrow-right",
+                },
+            }) }}
+        </div>
+        <div class="tw-font-bold" data-field-name="username">{{ order.user.userIdentifier }}</div>
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'ID#' ~ order.user.id,
+                color: "gray",
+                fieldName: "user-id",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'Account: ' ~ order.user.currentStatus.name,
+                color: tw_userStatusColor[order.user.currentStatus.value],
+                showIndicator: true,
+                fieldName: "user-account-status",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.user.lifecycleStatus|capitalize,
+                color: tw_userLifecycleColor[order.user.lifecycleStatus],
+                showIndicator: true,
+                fieldName: "user-lifecycle-status",
+            }) }}
+            {% if order.user.isVip %}
+                {{ include('admin/components/_badge.html.twig', {
+                    text: "VIP",
+                    color: "yellow",
+                    fieldName: "vip",
+                    icon: "fa-star",
+                }) }}
+            {% endif %}
+        </div>
+    </section>
+    <section class="d-flex flex-column gap-2 md:tw-col-span-2">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            {# <span class="text-muted tw-text-xs">Trade Order</span> #}
+            {{ include('admin/components/button_link.html.twig', {
+                linkProps: {
+                    "text": "View Order",
+                    "route": "admin_trade_order_view",
+                    "params": { id: order.id},
+                    "style": viewBtnStyle,
+                    "iconEnd": "fa-arrow-right",
+                },
+            }) }}
+        </div>
+        <div class="d-flex flex-column gap-1">
+            <div class="tw-font-bold" data-field-name="order-value">{{ (order.pricePerShare * order.numberOfShares)|string|format_currency('GBP') }}</div>
+            <div class="d-flex gap-4 align-items-center tw-text-gray-600 tw-text-sm">
+                <div>
+                    <span data-field-name="order-quantity">{{ order.numberOfShares|number_format }}</span> shares @
+                    <span data-field-name="order-price">{{ order.pricePerShare|string|format_currency('GBP') }}</span>
+                </div>
+                <div>Fees: <span data-field-name="order-fees">{{ order.fees|string|format_currency('GBP') }}</span></div>
+                <div>Taxes: <span data-field-name="order-taxes">{{ order.taxes|string|format_currency('GBP') }}</span></div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'ID#' ~ order.id,
+                color: "gray",
+                fieldName: "order-id",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.type.name ~ ' ' ~ order.direction.name,
+                color: "blue",
+                variant: "fillOutline",
+                showIndicator: true,
+                fieldName: "order-type",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.status.name,
+                color: tw_tradeOrderStatusColor[order.status.value],
+                showIndicator: true,
+                variant: "fillOutline",
+                fieldName: "order-status",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.createdAt|date('Y-m-d H:i:s'),
+                color: "gray",
+                variant: "outline",
+                fieldName: "order-created-at",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: 'Min Shares: ' ~ (order.minimumShares ? order.minimumShares|number_format : 'N/A'),
+                color: "gray",
+                variant: "outline",
+                fieldName: "order-min-shares",
+            }) }}
+            {{ include('admin/components/_badge.html.twig', {
+                text: order.uuid,
+                color: "gray",
+                appendStyle: "tw-text-nowrap",
+                fieldName: "order-uuid",
+            }) }}
+        </div>
+    </section>
+    {% if linkActions is not empty %}
+        <section class="d-flex flex-column gap-3 md:tw-col-span-2 mt-auto">
+            {% if order.direction == enum('App\\Entity\\Enum\\TradeDirection').Sell 
+                and order.fees|string > 0
+                and order.status == enum('App\\Entity\\Enum\\TradeOrderStatus').Draft %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "warning",
+                    title: "Check if fee has been paid",
+                    message: "Sell orders in 'Draft' state should usually be cancelled.
+                    Most commonly caused by relistings where the relisting fee could not be successfully taken.",
+                }) }}
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2">
+                {% for link in linkActions %}
+                    {% if link.render is defined and link.render == true or link.render is not defined %}
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: link,
+                        }) }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</article>

@@ -1,0 +1,70 @@
+<div class="btn-group border">
+	{% if is_granted('CAN_UPDATE_ASSET', app.user) %}
+    <a href="{{ path('admin_asset_edit', { id: asset.id }) }}" type="button" class="btn btn-light"><i class="fa fa-pen"></i></a>
+	{% endif %}
+	<a href="{{ path('admin_offering_index', { assetId: asset.id }) }}" type="button" class="btn btn-light"><i class="fa fa-chart-line"></i></a>
+	{% if not is_granted('CAN_UPDATE_ASSET', app.user)  %}
+		<a href="{{ path('admin_asset_edit', { id: asset.id }) }}" type="button" class="btn btn-light"><i>View Asset</i></a>
+	{% endif %}
+	{% if is_granted('CAN_UPDATE_ASSET', app.user) %}
+    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" data-display="static"><i class="fa fa-bars"></i></button>
+	<div class="dropdown-menu dropdown-menu-end p-2 tw-text-sm" style="right: 0; left: auto;">
+
+		<!-- Added here for #565 -->
+
+		{% if asset.lifecycleStatus == constant('\\App\\Entity\\Lifecycle\\AssetLifecycle::STATE_DRAFT')%}
+		<!-- Life Cycle permitted for Draft -->
+        <a class="dropdown-item rounded" href="{{ path('admin_asset_draftarchive', { id: asset.id} ) }}"><i class="fa fa-archive fa-fw me-2"></i>Archive</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_draftsubmit', { id: asset.id} ) }}"><i class="fa fa-arrow-right fa-fw me-2"></i>Submit</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_draftcancel', { id: asset.id} ) }}"><i class="fa fa-ban fa-fw me-2"></i>Cancel</a>
+		<!-- draft ends here -->
+		{% endif %}
+		
+		{% if asset.lifecycleStatus == constant('\\App\\Entity\\Lifecycle\\AssetLifecycle::STATE_SUBMITTED')%}
+		<!-- Life Cycle permitted for Submit -->
+        <a class="dropdown-item rounded" href="{{ path('admin_asset_submitarchive', { id: asset.id} ) }}"><i class="fa fa-archive fa-fw me-2"></i>Archive</a>
+        <a class="dropdown-item rounded" href="{{ path('admin_asset_submitreject', { id: asset.id} ) }}"><i class="fa fa-thumbs-down fa-fw me-2"></i>Reject</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_submitcancel', { id: asset.id} ) }}"><i class="fa fa-ban fa-fw me-2"></i>Cancel</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_submitapprove', { id: asset.id} ) }}"><i class="fa fa-thumbs-up fa-fw me-2"></i>Approve</a>
+		<!-- submit ends here -->
+		{% endif %}
+		
+		{% if asset.lifecycleStatus == constant('\\App\\Entity\\Lifecycle\\AssetLifecycle::STATE_APPROVED')%}
+		<!-- Life Cycle permitted for Approved -->
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_approvearchive', { id: asset.id} ) }}"><i class="fa fa-archive fa-fw me-2"></i>Archive</a>
+        <a class="dropdown-item rounded" href="{{ path('admin_asset_approvereject', { id: asset.id} ) }}"><i class="fa fa-thumbs-down fa-fw me-2"></i>Reject</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_approvecancel', { id: asset.id} ) }}"><i class="fa fa-ban fa-fw me-2"></i>Cancel</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_approvepublish', { id: asset.id} ) }}"><i class="fa fa-thumbs-up fa-fw me-2"></i>Publish</a>
+		<!-- Approved ends here -->
+		{% endif %}
+		
+		{% if asset.lifecycleStatus == constant('\\App\\Entity\\Lifecycle\\AssetLifecycle::STATE_PUBLISHED')%}
+		<!-- Life Cycle permitted for Published -->
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_publisharchive', { id: asset.id} ) }}"><i class="fa fa-archive fa-fw me-2"></i>Archive</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_publishcancel', { id: asset.id} ) }}"><i class="fa fa-ban fa-fw me-2"></i>Cancel</a>
+		<!-- Published ends here -->
+		{% endif %}
+
+		{% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO')%}
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') } ) }}"><i class="fa fa-user-lock fa-fw me-2"></i>Set visibility admin</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') } ) }}"><i class="fa fa-user-check fa-fw me-2"></i>Set visibility VIP</a>
+		{% endif %}
+		{% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN')%}
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') } ) }}"><i class="fa fa-user fa-fw me-2"></i>Set visibility auto/default</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_VIP') } ) }}"><i class="fa fa-user-check fa-fw me-2"></i>Set visibility VIP</a>
+		{% endif %}
+		{% if asset.visibility == constant('App\\Entity\\BaseEntity::VISIBILITY_VIP')%}
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') } ) }}"><i class="fa fa-user fa-fw me-2"></i>Set visibility auto/default</a>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_ADMIN') } ) }}"><i class="fa fa-user-lock fa-fw me-2"></i>Set visibility admin</a>
+		{% endif %}
+		{% if asset.visibility in [constant('App\\Entity\\BaseEntity::VISIBILITY_NORMAL'), constant('App\\Entity\\BaseEntity::VISIBILITY_ALL')]%}
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_visibility', { id: asset.id, 'visibility': constant('App\\Entity\\BaseEntity::VISIBILITY_AUTO') } ) }}"><i class="fa fa-user fa-fw me-2"></i>Set visibility auto/default</a>
+		{% endif %}
+
+		<div><hr class="dropdown-divider"></div>
+		<a class="dropdown-item rounded" href="{{ path('admin_asset_view', { id: asset.id } ) }}#timeline"><i class="fa fa-file-alt fa-fw me-2"></i> Change Log</a>
+    </div>
+	{% endif %}
+
+
+</div>

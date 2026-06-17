@@ -1,0 +1,27 @@
+<div class="row g-3">
+    {{ include('admin/components/stat.html.twig', {
+        key: 'Data Cleanup Allowed',
+        value: retentionLevel != constant('App\\Entity\\Enum\\AccountRetentionLevel::Full') ? "Yes" : "No",
+        className: "col-6",
+    }) }}
+    {{ include('admin/components/stat.html.twig', {
+        key: 'Retention Level',
+        value: retentionLevel.name,
+        className: "col-6",
+    }) }}
+    {{ include('admin/components/stat.html.twig', {
+        key: 'Legacy Status',
+        value: user.lifecycleStatus|capitalize,
+        className: "col-6",
+    }) }}
+    {{ include('admin/components/stat.html.twig', {
+        key: 'Account Status',
+        value: user.currentStatus.value|capitalize,
+        className: "col-6",
+    }) }}
+    {{ include('admin/components/stat.html.twig', {
+        key: 'Is Blocked?',
+        value: user.enabled ? "No" : "Yes",
+        className: "col-6",
+    }) }}
+</div>

@@ -1,0 +1,89 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Share Certificate Uploader' %}
+{% set maturityLabel = 'legacy' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{{ include('admin/components/_alert.html.twig', {
+		variant: "warning",
+		title: "No replacement after switch to share trade system",
+		message: "Investments are deprecated as part of the switch to the share trade system. No replacement for investment documents has been implemented. Users can no longer access their share certificates from their portfolio.",
+	}) }}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": 'upload-for-investment',
+		"sectionTitle": 'Upload Certificate for Investment',
+	} %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<section class="row">
+				<div class="col-md-6">{{ form_row(form.investment, {attr: {'class': 'searchable'}}) }}</div>
+				<div class="col-md-6">{{ form_row(form.document.file) }}</div>
+				<div class="col-12">{{ form_row(form.submit) }}</div>
+			</section>
+			{{ form_rest(form) }}
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": 'investments-remaining',
+		"sectionTitle": 'Investments Remaining',
+	} %}
+		{% block sectionContent %}
+			{% embed 'admin/components/_alert.html.twig' with {
+				variant: "notice",
+			} %}
+				{% block message %}
+					<p><b>Settled</b> investments <b>without any documents</b> are shown in the table below and theinvestment dropdown above.</p>
+					<p class="mb-0">Don't see an investment? It's either not settled yet, or it already has a document(not necessarily a share certificate).</p>
+				{% endblock message %}
+			{% endembed %}
+			{{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+                list: objects
+            }) }}
+			<div class="table-responsive">
+				<table class="table table-striped" id="investlist">
+					<thead>
+						<tr>
+							<th>Inv Id</th>
+							<th>Asset Name</th>
+							<th>SPV Id</th>
+							<th>Investor username</th>
+							<th>Investor Name</th>
+							<th>Created (d/m/Y)</th>
+							<th>Type</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for investment in objects %}
+							<tr>
+								<td>
+									<a href="{{ path('admin_investment_edit', { id: investment.id }) }}">{{ investment.id }}</a>
+								</td>
+								<td>
+									<a href="{{ path('admin_asset_edit', { id: investment.offering.asset.id }) }}">{{
+                            investment.offering.asset.name }}</a>
+								</td>
+								<td>{{ investment.offering.asset.companyNumber }}</td>
+								<td>
+									<a href="{{ path('admin_user_edit', { id: investment.user.id }) }}">{{ investment.user }}</a>
+								</td>
+								<td>{{ investment.user.fullname }}</td>
+								<td>{{ investment.createdAt|date("d/m/Y", false) }}</td>
+								<td>{{ investment.type|capitalize }}</td>
+								<td>{% include 'admin/pages/investments/_status.html.twig' %}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

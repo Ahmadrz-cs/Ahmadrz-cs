@@ -1,0 +1,41 @@
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+
+
+{% block body %}
+    <main class="my-6 pt-6 pt-md-8" role="main">
+        <div class="container py-4 d-flex flex-column justify-content-center" style="min-height: 67vh;">
+            <div class="row">
+                <div class="col-12 col-md-6 offset-md-3 text-center">
+                    <h3>Please update your investor profile</h3>
+                    <p>As part of our regulatory requirements, we need to ensure our products are still suitable for you. You will not be able to invest until your investor profile has been updated.</p>
+                    <p>If you want to update later, you can start this process from your profile.</p>
+                    {{ form_start(form) }}
+                    <div class="d-flex justify-content-center p-4" style="gap: 0.5rem;">
+                        <a class="btn btn-light rounded-pill px-1 px-sm-2" href={{ path('homepage') }} role="button">Update Later</a>
+                        {{ form_widget(form.submit, {attr: {class:"btn btn-primary rounded-pill px-1 px-sm-2 "}}) }}
+                    </div>
+                    {{ form_rest(form) }}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

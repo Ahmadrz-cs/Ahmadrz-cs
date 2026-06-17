@@ -1,0 +1,430 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_asset_dashboard' %}
+{% set backToRouteParams = { id: transferOrder.asset.id } %}
+{% set areaHeading = 'Monthend - Share Trade Settlement' %}
+{% set mainHeading = transferOrder.asset.name %}
+
+{% set transfersList = transferOrder.transfers %}
+{% set transfersCompletedList = transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE')) %}
+{% set originalTotal = transfersList|reduce((carry, v) => carry + v.amount) %}
+{% set completedTotal = transfersCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+{% block page_content %}
+
+    {{ include('admin/pages/monthend/order_actions.html.twig', {
+        order: transferOrder,
+        originalTotal: originalTotal
+    }) }}
+
+    {{ include('admin/pages/monthend/_wallet_balance_warning.html.twig', {
+        walletBalance: holdWalletBalance,
+        walletName: 'hold',
+    }) }}
+
+    {% if settlementSummary.tradesToSettle|length != settlementSummary.tradeCount %}
+    
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "transfer-mismatch-warning",
+            "sectionTitle": "Settlement Transfer Mismatch",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+        } %}
+            {% block sectionContent %}
+
+            {% embed 'admin/components/_alert.html.twig' with {
+                variant: 'warning',
+            } %}
+                {% block message %}
+                    <p class="">"Share Trades being settled" does not match the number of "Settlement Transfers". This could be caused by:</p>
+                    <ul class="mb-0">
+                        <li>Duplicate settlement transfers for an share trade</li>
+                        <li>Orphaned stamp duty transfers</li>
+                        <li>Issue with the generator (contact the tech team if you suspect this is the case)</li>
+                        <li>Custom transfer descriptions that are neither "Settle share trade" or "Stamp duty"</li>
+                    </ul>
+                {% endblock message %}
+            {% endembed %}
+
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Share Trades being Settled',
+                    value: settlementSummary.tradesToSettle|length|number_format(0, '.', ','),
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Settlement Transfers',
+                    value: settlementSummary.tradeCount|number_format(0, '.', ','),
+                    className: 'col-md-6',
+                }) }}
+            </div>
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+        
+    <div class="row g-3">
+        <div class="col-lg-6 col-xxl-3">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-transfer",
+                "sectionTitle": "About Transfer Order",
+                "linkActions": [
+                    {
+                        "text": "Edit Order",
+                        "route": "admin_monthend_settlement_edit",
+                        "params": {id: transferOrder.id},
+                        "style": "btn-outline-secondary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Order Id',
+                        value: transferOrder.id,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Scheduled Monthend',
+                        value: transferOrder.scheduledFor|date('Y-m'),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Covering Period Between',
+                        value: transferOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                            ~ ' - ' 
+                            ~ transferOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                        className: 'col-12',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Transferring out of Wallet',
+                        value: 'Hold (' ~ transferOrder.asset.holdWalletId ~ ')',
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Description',
+                        value: transferOrder.description|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        
+        <div class="col-lg-6 col-xxl-3">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-asset",
+                "sectionTitle": "About Asset",
+                "linkActions": [
+                    {
+                        "text": "View Asset Product",
+                        "route": "admin_product_dashboard",
+                        "params": {id: transferOrder.asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                    {
+                        "text": "View Wallet Balances",
+                        "route": "admin_asset_wallets_manage",
+                        "params": {asset: transferOrder.asset.id},
+                        "style": "btn-outline-dark",
+
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'SPV Company Number',
+                        value: transferOrder.asset.companyNumber,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Valuation',
+                        value: '£' ~ transferOrder.asset.fundingGoal|number_format(2, '.', ','),
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6 col-xxl-3">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "settlement-summary",
+                "sectionTitle": "Settlement Summary",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Share Trades being Settled',
+                        value: settlementSummary.tradesToSettle|length|number_format(0, '.', ','),
+                        className: 'col-md-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shares being Settled',
+                        value: settlementSummary.tradeSharesTotal|string|number_format(0, '.', ','),
+                        className: 'col-md-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Settlement Transfers',
+                        value: settlementSummary.tradeCount|number_format(0, '.', ','),
+                        className: 'col-md-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Value of Settlement',
+                        value: '£' ~ settlementSummary.tradeValueTotal|string|number_format(2, '.', ','),
+                        className: 'col-md-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Stamp Duty Transfers',
+                        value: settlementSummary.stampDutyCount|number_format(0, '.', ','),
+                        className: 'col-md-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Stamp Duty to Transfer',
+                        value: '£' ~ settlementSummary.stampDutyValue|number_format(2, '.', ','),
+                        className: 'col-md-6',
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        <div class="col-lg-6 col-xxl-3">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "order-status",
+                "sectionTitle": "Order Status",
+                "linkActions": []
+            } %}
+                {% block customLinkActions %}
+                    {{ include('admin/pages/transfer_order/_status_transitions.html.twig', {
+                        additionalParams: { redirectRoute: 'admin_monthend_settlement_manage' }
+                    }) }}
+                {% endblock customLinkActions %}
+                
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: transferOrder.status|capitalize|replace({'_':'-'}),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Approved By',
+                        value: transferOrder.approvedBy|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                    {{ include('admin/components/blame-timestamp.html.twig', {
+                        object: transferOrder,
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+    
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfers",
+        "sectionTitle": "Transfers",
+        "linkActions": [
+            {
+                "text": "Setup Settlement Transfers",
+                "route": "admin_monthend_settlement_generate",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": transferOrder.status == 'draft' and transferOrder.asset is not null,
+            },
+            {
+                "text": "Setup Stamp Duty Transfers",
+                "route": "admin_monthend_settlement_generate_stamp_duty",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": transferOrder.status == 'draft' and transferOrder.asset is not null,
+            },
+            {
+                "text": "Clear All Transfers",
+                "route": "admin_transfer_order_clear_transfers",
+                "params": {
+                    id: transferOrder.id,
+                    redirectRoute: 'admin_monthend_settlement_manage'
+                },
+                "style": "btn-outline-danger",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": transferOrder.status == 'draft',
+            },
+            {
+                "text": "Export Transfers List",
+                "route": "admin_transfer_order_transfers_export",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            },
+            {
+                "text": "Manage Email Notifications",
+                "route": "admin_monthend_settlement_notifications",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Wallet Balance (£)',
+                value: holdWalletBalance|number_format(2, '.', ',')
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Transfers Completed',
+                value: transfersCompletedList|length
+                    ~ '/' ~ transferOrder.transfers|length
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Total Transferred (£)',
+                value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+            }) }}
+            {% set lastTransfer = transfersCompletedList|sort((a, b) => a.updatedAt <=>
+            b.updatedAt)|last %}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Most Recently Completed',
+                value: lastTransfer is empty ? "-" : lastTransfer.updatedAt|date('Y-m-d H:i:s (P)'),
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped datatable " id="transfers-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Trade Id</th>
+                        <th>Mode</th>
+                        <th class="text-end">Amount (£)</th>
+                        <th class="text-end">Proportion (%)</th>
+                        <th>Status</th>
+                        <th>Transfer From</th>
+                        <th>Transfer To</th>
+                        <th>Sell Order</th>
+                        <th>Buy Order</th>
+                        <th>Seller</th>
+                        <th>Buyer</th>
+                        <th>Description</th>
+                        <th>Updated</th>
+                        <th>Transaction Reference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferRequest in transferOrder.transfers|default([]) %}
+                        {% set sellOrder = transferRequest.shareTrade.sellOrder %}
+                        {% set buyOrder = transferRequest.shareTrade.buyOrder %}
+                        {% set seller = sellOrder.user %}
+                        {% set buyer = buyOrder.user %}
+                        <tr data-object-id="{{ transferRequest.id }}">
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% if is_granted('ROLE_FINANCIAL_OPS')
+                                        and workflow_can(transferRequest, constant('App\\Entity\\TransferRequest::TRANSITION_TRANSFER'))
+                                        and workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN'))
+                                    %}
+                                        {{ include('admin/components/button_link.html.twig', {
+                                            linkProps: {
+                                                "text": "Transfer Single",
+                                                "route": 'admin_transfer_request_run',
+                                                "params": {
+                                                        id: transferRequest.id,
+                                                        redirectRoute: 'admin_monthend_settlement_manage',
+                                                    },
+                                                "style": "btn-primary text-nowrap",
+                                            },
+                                        }) }}
+                                    {% endif %}
+                                    {% if is_granted('ROLE_OPERATIONS') %}
+                                        {{ include('admin/components/button_link.html.twig', {
+                                            linkProps: {
+                                                "text": "Edit",
+                                                "route": 'admin_monthend_edit_settlement',
+                                                "params": {id: transferRequest.id},
+                                                "style": "btn-outline-primary text-nowrap",
+                                            },
+                                        }) }}
+
+                                        {% if workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE')) %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "Delete",
+                                                    "route": 'admin_transfer_request_delete',
+                                                    "params": {
+                                                        id: transferRequest.id,
+                                                        redirectRoute: 'admin_monthend_settlement_manage',
+                                                    },
+                                                    "style": "btn-outline-danger text-nowrap",
+                                                    "dangerous": true,
+                                                },
+                                            }) }}
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if transferRequest.transaction is not null %}
+                                        {{ include('admin/components/button_link.html.twig', {
+                                            linkProps: {
+                                                "text": "View Transaction",
+                                                "route": 'admin_transactions_view',
+                                                "params": {id: transferRequest.transaction.id},
+                                                "style": "btn-outline-dark text-nowrap",
+                                            },
+                                        }) }}
+                                    {% endif %}
+                                    {% if transferRequest.shareTrade is not null %}
+                                        {{ include('admin/components/button_link.html.twig', {
+                                            linkProps: {
+                                                "text": "View Share Trade",
+                                                "route": 'admin_share_trade_view',
+                                                "params": {id: transferRequest.shareTrade.id},
+                                                "style": "btn-outline-dark text-nowrap",
+                                                "newTab": true,
+                                            },
+                                        }) }}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td data-field="shareTradeId">
+                                <a class="text-primary me-3"
+                                    href="{{ path('admin_share_trade_view', {
+                                        id: transferRequest.shareTrade.id,
+                                    }) }}">{{ transferRequest.shareTrade.id }}</a>
+                            </td>
+                            <td data-field="mode">{{ transferRequest.mode.name|humanize }}</td>
+                            <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                            <td class="text-end tw-tabular-nums">{{ (transferRequest.amount * 100 / max(originalTotal, 0.01))|number_format(3, '.', ',') }}</td>
+                            <td>{{ transferRequest.status|capitalize }}{% if transferRequest.statusInfo %} ({{ transferRequest.statusInfo }}){% endif %}</td>
+                            <td class="tw-text-sm tw-font-mono" data-field="debitWalletId">{{ walletIdMap[transferRequest.debitWalletId]|capitalize }}
+                                <br>({{ transferRequest.debitWalletId }})</td>
+                            <td class="tw-text-sm tw-font-mono" data-field="creditWalletId">{{ walletIdMap[transferRequest.creditWalletId]|default('Relisting Seller')|capitalize }}
+                                <br>({{ transferRequest.creditWalletId }})</td>
+                            <td data-field="sellOrder"><a href="{{ path('admin_trade_order_view', { id: sellOrder.id }) }}">#{{ sellOrder.id }}</a> ({{ sellOrder.type.value }})</td>
+                            <td data-field="buyOrder"><a href="{{ path('admin_trade_order_view', { id: buyOrder.id }) }}">#{{ buyOrder.id }}</a> ({{ buyOrder.type.value }})</td>
+                            <td data-field="seller">
+                                
+                                <a class="tw-text-sm"
+                                    href="{{ path('admin_user_dashboard_overview', {
+                                        id: seller.id,
+                                    }) }}">#{{ seller.id }} // {{ seller.userIdentifier }}</a>
+                            </td>
+                            <td data-field="buyer">
+                                <a class="tw-text-sm"
+                                    href="{{ path('admin_user_dashboard_overview', {
+                                        id: buyer.id,
+                                    }) }}">#{{ buyer.id }} // {{ buyer.userIdentifier }}</a>
+                            </td>
+                            <td data-field="description">{{ transferRequest.description }}</td>
+                            <td>{{ transferRequest.updatedAt|date('Y-m-d H:i:s') }}</td>
+                            <td class="tw-text-sm tw-font-mono">{{ transferRequest.transaction.externalId|default('N/A') }}</td>
+                            
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock %}

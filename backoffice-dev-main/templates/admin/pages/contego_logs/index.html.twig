@@ -1,0 +1,54 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set areaHeading = 'CMS' %}
+{% set mainHeading = 'Contego Logs' %}
+{% set maturityLabel = 'legacy' %}
+
+{% block page_content %}
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+		"sectionId": 'contego-logs',
+		"sectionTitle": 'All Contego Logs',
+		"linkActions": [
+			{
+                "text": "Go to KYC Hub",
+                "route": "admin_kyc_index",
+                "params": {},
+                "style": "btn-outline-dark",
+            },
+        ]
+	} %}
+		{% block sectionContent %}
+			{{ include('admin/components/pagerfanta_meta_slim.html.twig', {
+				list: results
+			}) }}
+			<div class="table-responsive">
+				<table class="table table-striped datatable " id="contegolist">
+					<thead>
+						<tr>
+							<th>Submitted On</th>
+							<th>Profile Name</th>
+							<th>Rag</th>
+							<th>kyc Score</th>
+							<th>kyc type</th>
+							<th>ext reference id</th>
+							<th>User</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for contegoLog in results %}
+							<tr>
+								<td>{{ contegoLog.createdAt|date("d/m/Y H:m:s", false) }}</td>
+								<td>{{ contegoLog.profilename }}</td>
+								<td>{{ contegoLog.rag }}</td>
+								<td>{{ contegoLog.kycscore }}</td>
+								<td>{{ contegoLog.kyctype }}</td>
+								<td>{{ contegoLog.extreferenceid}}</td>
+								<td>{{ contegoLog.user}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+{% endblock page_content %}

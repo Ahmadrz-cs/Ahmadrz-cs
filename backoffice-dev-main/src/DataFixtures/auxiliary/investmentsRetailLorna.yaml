@@ -1,0 +1,29 @@
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseInvestment.yaml
+
+App\Entity\Investment:
+    investment{lorna_lodge1} (extends investment_base):
+        user: "@userlorna"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 43103
+        type: "prefunding"
+        createdAt: "<(new DateTime('first tuesday of -2 month'))>"
+    investment{lorna_royalglade1} (extends investment_base):
+        user: "@userlorna"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 1028
+
+App\Entity\InvestmentStatus:
+    investmentstatuslorna_{lodge1, royalglade1} (extends investmentstatus_base):
+
+App\Entity\InvestmentDocuments:
+    idoc_lorna_lodge{1}:
+        investment: "@investmentlorna_lodge<current()>"
+        document: "@sharecert_lorna_lodge<current()>"
+
+App\Entity\Document:
+    sharecert_lorna_lodge{1} (extends doc_certificate):

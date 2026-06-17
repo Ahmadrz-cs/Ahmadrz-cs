@@ -1,0 +1,41 @@
+ <!-- hero banner -->
+        <section id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
+            <h1 class="sr-only">Page Head</h1>
+            <div class="hero-banner portfolio banner-medium bg-fixed bg-overlay">
+                <div class="container pt-6 pt-md-8 position-relative layer-z-1">
+
+                    <!-- breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <h3 class="sr-only">Breadcrumb</h3>
+                        <ol class="breadcrumb text-sm bg-transparent px-0">
+                            <li class="breadcrumb-item"><a href="/">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('my_portfolio') }}">My Portfolio</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{  pageinfo|default('') }}</li>
+                        </ol>
+                    </nav>
+
+                    <div class="hero-banner-content pr-2 py-1 text-center">
+                        <div class="row">
+                            <div class="col-lg-9 mx-auto">
+                                <h2 class="h1 hero-banner-hd text-light mb-3">
+                                    My Portfolio
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        {# {% if  userInfo.is_vip|default() %}
+		{% else %}
+        <!-- page alert -->
+        <div class="alert alert-secondary alert-dismissible text-center fade show" role="alert">
+            <p class="text-dark-87 font-medium mb-0">Get access to unique investment opportunities by investing 50k+. <span class="d-block d-md-none"></span> <a
+                    href="{{ path('apply-top-yielder') }}" class="btn-underline btn-long invert">Apply to become a Top Yielder today.</a></p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endif %} #}

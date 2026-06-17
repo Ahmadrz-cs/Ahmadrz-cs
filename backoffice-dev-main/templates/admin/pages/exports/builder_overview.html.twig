@@ -1,0 +1,130 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Reports and Exports Hub' %}
+{% set mainHeading = 'Available Reports' %}
+
+{% block page_content %}
+	<div class="d-flex gap-2">
+		{{ include('admin/components/button_link.html.twig', {
+			linkProps: {
+				"text": "Mangopay Reports Browser",
+				"route": "admin_reports_mangopay_index",
+				"params": {},
+				"style": "btn-outline-dark",
+			},
+		}) }}
+		{{ include('admin/components/button_link.html.twig', {
+			linkProps: {
+				"text": "Mangopay Reports Merger",
+				"route": "admin_reports_mangopay_merger",
+				"params": {},
+				"style": "btn-outline-dark",
+			},
+		}) }}
+	</div>
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "filtered-list-reports",
+        "sectionTitle": "Filtered List Reports",
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_alert.html.twig', {
+				variant: "info",
+				title: "New (Filtered List) vs Legacy Reports",
+				message: "New reports are based on the same querying method as all the filtered list views in the CMS, rather than being based on a SQL view",
+			}) }}
+			<div class="table-responsive">
+				<table class="table table-bordered">
+					<colgroup>
+						<col span="1" style="width: 50%;">
+						<col span="1" style="width: 50%;">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>Export Type</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for ormReport in enum('App\\Entity\\Enum\\ExportReportType').cases() %}
+						
+							<tr>
+								<td>{{ ormReport.value|replace({'_': ' '})|title }}</td>
+								<td>
+									<div class="d-flex gap-2">
+										<a class="btn btn-light" id="customise-{{ ormReport.value|replace({'_': '-'}) }}" href="{{ path('admin_export_report_orm_builder', {report: ormReport.value} ) }}">
+											<i class="fas fa-pen me-2"></i>Customise Report
+										</a>
+									</div>
+								</td>
+							</tr>
+							
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "legacy-reports",
+        "sectionTitle": "Legacy Reports",
+    } %}
+		{% block sectionContent %}
+			{% embed 'admin/components/_alert.html.twig' with {
+				variant: "notice",
+				title: "Deprecated Records",
+			} %}
+				{% block message %}
+					<p>The following record types are being replaced by the share trade order system:</p>
+					<ul>
+						<li>Offerings - replaced by trade orders (sell)</li>
+						<li>Investments - replaced by trade orders (buy) and share trades</li>
+					</ul>
+					<p class="mt-3">The means the following report types that use deprecated records will be out of date and/or incomplete:</p>
+					<ul>
+						<li>Offerings</li>
+						<li>Investments</li>
+						<li>Shareholdings - based on investments and offerings</li>
+						<li>Extended Shareholdings - based on investments and offerings</li>
+						<li>(Legacy) Share Trades - based on investments and offerings</li>
+						<li>Share Register - based on investments</li>
+						<li>Share Register with wallet ids - based on investments</li>
+					</ul>
+				{% endblock message %}
+			{% endembed %}
+			<div class="table-responsive">
+				<table class="table table-bordered">
+					<colgroup>
+						<col span="1" style="width: 50%;">
+						<col span="1" style="width: 50%;">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>Export Type</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+
+						{% for reportName, isCustomisable in reportsAvailable %}
+						
+							<tr>
+								<td>{{ reportName|replace({'_': ' '})|title }}</td>
+								<td>
+									<div class="d-flex gap-2">
+										<a class="btn btn-light" id="customise-{{ reportName|replace({'_': '-'}) }}" href="{{ path('admin_export_report_builder', {report: reportName} ) }}">
+											<i class="fas fa-pen me-2"></i>Customise Report
+										</a>
+									</div>
+								</td>
+							</tr>
+							
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

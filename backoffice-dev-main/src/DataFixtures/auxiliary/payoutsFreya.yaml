@@ -1,0 +1,24 @@
+include:
+    - ../standardUsers.yaml
+    - investmentsRetailFreya.yaml
+    - ../templates/basePayout.yaml
+
+App\Entity\Payout:
+    payout_freya_neptunis{0..3} (extends payout_base):
+        payoutAmount: "<(4.56 * 105600 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        creditedUser: "@userfreya"
+        asset: "@assetneptunis"
+        shareholding: "75000"
+    payout_freya_lodge{0..6} (extends payout_base):
+        payoutAmount: "<(6.02 * 70640 / 1200)>"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        creditedUser: "@userfreya"
+        asset: "@assetlodge"
+        shareholding: "56897"
+    payout_freya_royalglade_dividend{1..12} (extends payout_base):
+        asset: "@assetroyalglade"
+        creditedUser: "@userfreya"
+        dueDate: "<(new DateTime('first day of -' . $current . 'month'))>"
+        payoutAmount: "<(5.17 * 6100 / 1200)>"
+        shareholding: "5398"

@@ -1,0 +1,73 @@
+
+// table
+
+$table-cell-padd: 25px;
+
+.table {
+
+    // invert
+    &-invert {
+        th {
+            font-weight: normal;
+            color: $white;
+            padding: $table-cell-padd;
+            @extend .font-medium;
+            @extend .align-top;
+            @extend .position-relative;
+        }
+        td {
+            background: $white;
+            padding: $table-cell-padd;
+            @extend .align-middle;
+            @include transition-ease;           
+            
+            &:first-child {
+                border-top-left-radius: 3px;
+                border-bottom-left-radius: 3px;
+            }
+            &:last-child {
+                border-top-right-radius: 3px;
+                border-bottom-right-radius: 3px;
+            }
+        }
+        tr {
+            &:hover {               
+                td {
+                    background: $info;
+                }
+            }
+            
+        }
+        .separator {
+            td {
+                height: 10px;
+                @extend .p-0;
+                @extend .bg-transparent;
+            }
+
+        }
+
+        .table-sorting {
+            top: 30px;
+        }
+    }
+
+    // sorting
+    &-sorting {
+        height: 12px;
+        width: 12px;
+        display: inline-block;
+        @extend .position-absolute;
+        top: 18px;
+        right: 0;
+        background: url(../svg/solidarrowdark-d.svg) no-repeat center;
+
+        &.light {
+            background: url(../svg/solidarrowlight-d.svg) no-repeat center;
+        }
+    
+        &.descending {
+            transform: rotate(180deg);
+        }
+    }
+}

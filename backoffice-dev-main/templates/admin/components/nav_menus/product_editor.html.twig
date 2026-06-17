@@ -1,0 +1,59 @@
+{% if app.request.query.get('setup') %}
+    {% set additionalParams = {'setup': 1} %}
+{% else %}
+    {% set additionalParams = {} %}
+{% endif %}
+
+{% set navLinks = [
+    {
+        route: "admin_product_edit_about",
+        text: "About",
+        params: {'id': asset.id}|merge(additionalParams),
+    },
+    {
+        route: "admin_product_edit_location",
+        text: "Location",
+        params: {'id': asset.id}|merge(additionalParams),
+    },
+    {
+        route: "admin_product_edit_financials",
+        text: "Financials",
+        params: {'id': asset.id}|merge(additionalParams),
+    },
+    
+    {
+        route: "admin_product_edit_wallets",
+        text: "Wallets",
+        params: {'id': asset.id}|merge(additionalParams),
+    },
+    {
+        route: "admin_product_edit_documents",
+        text: "Documents",
+        params: {'id': asset.id}|merge(additionalParams),
+    },
+] %}
+{# 
+{
+        route: "admin_product_edit_investment_rules",
+        text: "Rules",
+        params: {'id': asset.id}|merge(additionalParams),
+    }, #}
+
+{% if app.request.query.get('setup') is empty %}
+    {% set navLinks = navLinks|merge([
+        {
+            text: "Status",
+            route: "admin_product_edit_status",
+            params: {'id': asset.id}|merge(additionalParams),
+        },
+    ]) %}
+{% endif %}
+
+{% set menuLinks = [
+    {"linkDefinitions": navLinks}
+] %}
+
+{{ include('admin/components/_horizontal_nav.html.twig', {
+    navId: 'productEditorNav',
+    links: menuLinks,
+}) }}

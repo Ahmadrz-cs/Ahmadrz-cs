@@ -1,0 +1,191 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_settlement_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Setup Stamp Duty Transfers' %}
+{% set mainHeading = transferOrder.asset.name %}
+{% set htmlTitle = 'Setup Stamp Duty Transfers' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{# {% set settlementTotal = tradesToSettle|reduce((carry, v) => carry + v.investmentValue) %} #}
+{# {% set settlementShares = tradesToSettle|reduce((carry, v) => carry + v.numberOfShares) %} #}
+{% set matchedStampDutyTransfers = transferOrder.transfers|filter(t => t.creditWalletId == stampDutyWalletId) %}
+{% set matchedStampDutyUserIds = matchedStampDutyTransfers|map(t => t.shareTrade.buyOrder.user.id) %}
+
+{% set displayAll = app.request.query.all.displayMode is defined and app.request.query.all.displayMode == 'all' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "investor-stamp-duty",
+        "sectionTitle": "Review and Generate Stamp Duty Transfers",
+        "linkActions": [
+            {
+                "text": "Back to Settlement Setup",
+                "route": "admin_monthend_settlement_generate",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            }
+        ]
+    } %}
+        {% block sectionContent %}
+
+        <p class="mb-0">Stamp duty is collected on a per user basis rather than per investment. The expected stamp duty due is based on the sum of all their share trades being settle in this order. You should complete the setup for settlement transfers before using this tool.</p>
+
+        {{ form_start(form, {attr: {class: "d-grid sm:tw-grid-cols-2 gap-4"}}) }}
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-1">
+                <h4 class="fw-bold fs-5">Step 1: Review Expected Stamp Duty Transfers</h4>
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Checklist Mode (default) will hide any users with an existing stamp duty transfer. You can toggle to 'Show All' if you are reviewing per-user stamp duty amounts.",
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Display Mode',
+                    value: displayAll ? 'All' : 'Checklist',
+                    className: 'col-12',
+                }) }}
+                <div class="d-flex flex-wrap gap-2 mt-auto">
+                    {% if displayAll %}
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Switch To Checklist Mode",
+                                "route": app.request.attributes.get('_route'),
+                                "params": {id: transferOrder.id},
+                                "style": "btn-outline-dark text-nowrap",
+                            },
+                        }) }}
+                    {% else %}
+                        {{ include('admin/components/button_link.html.twig', {
+                            linkProps: {
+                                "text": "Show All Expected Stamp Duty Transfers",
+                                "route": app.request.attributes.get('_route'),
+                                "params": {id: transferOrder.id, displayMode: 'all'},
+                                "style": "btn-outline-dark text-nowrap",
+                            },
+                        }) }}
+                    {% endif %}
+                    
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Cancel",
+                            "route": 'admin_monthend_settlement_manage',
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-secondary text-nowrap",
+                        },
+                    }) }}
+                </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3 border rounded-3 p-3 p-lg-4" id="setup-step-2">
+                <h4 class="fw-bold fs-5">Step 2: Generate Stamp Duty Transfers</h4>
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "info",
+                    message: "Generated transfers will go from the asset's hold wallet to the stamp duty wallet.",
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Stamp Duty Wallet',
+                    value: stampDutyWalletId,
+                    className: 'col-12',
+                }) }}
+                <div class="d-flex flex-wrap gap-2 mt-auto">
+                    {% if settlementSummary.stampDutyCount > 0 %}
+                        {{ include('admin/components/_alert.html.twig', {
+                            variant: "warning",
+                            message: "There are already existing stamp duty transfers. Using 'Generate All Transfers' will result in some duplicate transfers.",
+                        }) }}
+                    {% endif %}
+                    {{ form_widget( form.generate, { 'attr': {'class': 'btn-success'} } ) }}
+                    {{ include('admin/components/button_link.html.twig', {
+                        linkProps: {
+                            "text": "Finish and Review",
+                            "route": 'admin_monthend_settlement_manage',
+                            "params": {id: transferOrder.id},
+                            "style": "btn-outline-dark text-nowrap",
+                        },
+                    }) }}
+                </div>
+            </section>
+
+            {{ form_rest(form) }}
+        {{ form_end(form) }}
+
+        <div class="row g-3">
+            <h4 class="fw-bold fs-5">Expected Stamp Duty Transfers</h4>
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Stamp Duty Transfers',
+                value: settlementSummary.stampDutyCount,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expected Stamp Duty Transfers',
+                value: stampDutySummary.stampDutyCount,
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Current Stamp Duty Total',
+                value: '£' ~ settlementSummary.stampDutyValue|string|number_format(2, '.', ','),
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Expected Stamp Duty Total',
+                value: '£' ~ stampDutySummary.stampDutyValue|string|number_format(2, '.', ','),
+            }) }}
+        </div>
+
+        {% if settlementSummary.stampDutyCount > stampDutySummary.stampDutyCount %}
+        
+        {{ include('admin/components/_alert.html.twig', {
+			variant: "warning",
+			message: "There are more stamp duty transfers in this order than expected. If you are unsure what is wrong, you should clear all transfers and go through the setup again.",
+		}) }}
+
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="table" id="investor-stamp-duty-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>User</th>
+                        <th>Share Trades being Settled</th>
+                        <th class="text-end">Total being Settled (£)</th>
+                        <th class="text-end">Stamp Duty Due (£)</th>
+                        <th>Has Existing Stamp Duty Transfer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for userId, summary in stampDutySummary.userSummary|filter(summary => summary.stampDutyDue > 0) %}
+                    
+                    {% if userId not in matchedStampDutyUserIds or displayAll %}
+                    <tr>
+                        <td>
+                            {{ include('admin/components/button_link.html.twig', {
+                                linkProps: {
+                                    "text": "Generate for User",
+                                    "route": 'admin_monthend_settlement_generate_stamp_duty_single',
+                                    "params": {
+                                        transferOrder: transferOrder.id,
+                                        user: userId
+                                    },
+                                    "style": "btn-outline-primary text-nowrap",
+                                },
+                            }) }}
+                        </td>
+                        <td data-user-id={{ userId }}><a href="{{ path('admin_user_edit', {
+                                id: userId
+                            }) }}">#{{ userId }} // {{ (groupedSettlements[userId]|first).buyOrder.user }}</a>
+                        </td>
+                        <td>{{ groupedSettlements[userId]|length }}</td>
+                        <td class="text-end tw-tabular-nums">{{ summary.settlementValueTotal|string|number_format(2, '.', ',') }}</td>
+                        <td class="text-end tw-tabular-nums">{{ summary.stampDutyDue|string|number_format(2, '.', ',') }}</td>
+                        <td>{{ userId in matchedStampDutyUserIds ? 'Yes' : 'No' }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

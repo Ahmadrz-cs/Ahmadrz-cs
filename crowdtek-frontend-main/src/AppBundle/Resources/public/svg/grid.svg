@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="grid_on-24px" width="29.833" height="29.833" viewBox="0 0 29.833 29.833">
+    <defs>
+        <style>
+            .cls-1{fill:none}
+        </style>
+    </defs>
+    <path id="Path_184" d="M0 0h29.833v29.833H0z" class="cls-1" data-name="Path 184"/>
+    <path id="Path_185" d="M24.375 2H4.486A2.493 2.493 0 0 0 2 4.486v19.889a2.493 2.493 0 0 0 2.486 2.486h19.889a2.493 2.493 0 0 0 2.486-2.486V4.486A2.493 2.493 0 0 0 24.375 2zM9.458 24.375H4.486V19.4h4.972zm0-7.458H4.486v-4.973h4.972zm0-7.458H4.486V4.486h4.972zm7.458 14.917h-4.972V19.4h4.972zm0-7.458h-4.972v-4.974h4.972zm0-7.458h-4.972V4.486h4.972zm7.458 14.917H19.4V19.4h4.972zm0-7.458H19.4v-4.975h4.972zm0-7.458H19.4V4.486h4.972z" data-name="Path 185" transform="translate(.486 .486)"/>
+</svg>

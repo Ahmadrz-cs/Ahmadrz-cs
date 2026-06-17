@@ -1,0 +1,15 @@
+# Investments include
+# - Investment
+# - Investment Documents
+# - Relisted Offering
+
+include:
+    - auxiliary/investmentsRetailBen.yaml
+    - auxiliary/investmentsRetailHolly.yaml
+    - auxiliary/investmentsRetailJim.yaml
+    - auxiliary/investmentsRetailFreya.yaml
+    - auxiliary/investmentsRetailLorna.yaml
+    - auxiliary/investmentsRetailAnne.yaml
+    - auxiliary/investmentsRelistedHolly.yaml
+    # - auxiliary/investmentsRelistedBen.yaml
+    # - auxiliary/investmentsRelistedJim.yaml

@@ -1,0 +1,687 @@
+{% extends "@AppBundle/onboarding-base.html.twig" %}
+
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('bundles/app/build/css/intlTelInput.css') }}">
+{% endblock %}
+
+{% block bodystyle %} 
+class="section_wrap_2" 
+{% endblock %}
+
+{% block body %}
+
+    <section class="wrap">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            {% include '@AppBundle/Onboarding/errorflash.html.twig' %}
+            <div style="padding:10px 0; border-bottom:solid thin #333; text-transform:uppercase; font-weight:700; ">
+                <h4>COMPLIANCE</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-offset-2 col-md-8">
+
+                    {{ form_start(form, {attr:{onsubmit:"attachCountryCode(event);"}}) }}
+                    {{ form_errors(form) }}
+
+                    {% if flow.getCurrentStepNumber() == 1 %}
+                        <div class="pdg_20">
+                            <div class="successfull">
+                                <img src="{{ asset('bundles/app/images/onboarding/icons/sml.png') }}" loading="lazy" alt="success indicator">
+                                <h3>Congratulations!</h3>
+                                <p>You have successfully passed the appropriateness test</p>
+
+                            </div>
+
+                            <div class="btn_1">
+                                {% include '@CraueFormFlow/FormFlow/buttons.html.twig' with {
+                                    craue_formflow_button_label_next : 'Next',
+                                    craue_formflow_button_class_next: 'btn_grdnt',
+                                    craue_formflow_button_render_reset: false
+                                } %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if flow.getCurrentStepNumber() == 2 %}
+                        <div class="panel-group" id="accordion">
+                            <div class="panel panel-default" style=" border-bottom:solid thin #bababa; padding:10px 0; ">
+                                <div class="panel-heading" id="headingOne">
+                                    <h4 class="panel-title">
+                                        <span class="complient_h" id="complient1">1</span>
+                                        Personal Information
+                                        <a class="hide" id="step_1" style="cursor:pointer;float:right" onclick="return View_Tab(1);">+</a>
+                                    </h4>
+                                </div>
+                                <div id="accordion1">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="group col-md-6">
+                                                <br/>
+                                                <div style="padding-left:0px;color:#999;">
+                                                    Title
+                                                </div>
+                                                {{ form_widget(form.honorific_prefix, {attr:{ onchange:"chkddlvali('userInformation_honorific_prefix')", 'class':'custom-dropdown__select custom-dropdown__select--red', 'style':'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0'}}) }}
+                                            </div>
+                                            <div class="group col-md-6">
+                                                <br/>
+                                                <div style="padding-left:0px;color:#999;">
+                                                    Gender
+                                                </div>
+                                                {{ form_widget(form.gender, {attr:{ onchange:"chkddlvali('userInformation_gender')", 'class':'custom-dropdown__select custom-dropdown__select--red', 'style':'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0'}}) }}
+                                            </div>
+                                        </div>
+                                        <div class="group" style="margin-top:25px;">
+                                            {{ form_widget(form.firstname, {attr:{onchange:'chkemptyval();','onkeypress':'return onlyAlphabets(event,this);',value:userInfo.given_name}}) }}
+                                            {{ form_label(form.firstname, null, {label_attr:{id:"lbluserInformation_firstname"}}) }}
+                                        </div>
+                                        <div class="group">
+                                            {{ form_widget(form.lastname, {attr:{onchange:'chkemptyval();','onkeypress':'return onlyAlphabets(event,this);',value:userInfo.family_name}}) }}
+                                            {{ form_label(form.lastname, null, {label_attr:{id:"lbluserInformation_lastname"}}) }}
+                                        </div>
+                                        <div class="group" {#id="dob_desktop"#}>
+                                            <div class="col-md-12" style="padding-left:0px;color:#999;">
+                                                Date of Birth
+                                            </div>
+                                            <div class="col-md-3 pl0_mob_spaced" style="padding-left:0px">
+                                            {{ form_widget(form.birthDate.day, {attr:{class:'custom-dropdown__select custom-dropdown__select--red', style:'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0;', onchange:"chkdobdd('userInformation_birthDate_day')"}}) }}
+                                            </div>
+                                            <div class="col-md-3 pl0_mob_spaced">
+                                            {{ form_widget(form.birthDate.month, {attr:{class:'custom-dropdown__select custom-dropdown__select--red', style:'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0;', onchange:"chkdobmm('userInformation_birthDate_month')"}}) }}
+                                            </div>
+                                            <div class="col-md-3 pl0_mob_spaced">
+                                            {{ form_widget(form.birthDate.year, {attr:{class:'custom-dropdown__select custom-dropdown__select--red', style:'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0;', onchange:"chkdobyy('userInformation_birthDate_year')"}}) }}
+                                            </div>
+                                        </div>
+                                        <div style="clear:both"></div>
+                                        <div class="group">
+                                            <br/>
+                                            <div class="col-md-12" style="padding-left:0px;color:#999;">
+                                                Nationality
+                                            </div>
+                                            {{ form_widget(form.nationality, {attr:{ onchange:"chkddlvali('userInformation_nationality')", 'class':'custom-dropdown__select custom-dropdown__select--red', 'style':'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0'}}) }}
+                                        </div>
+
+                                        <label class="control control--checkbox" style="font-size:14px; color:#000; letter-spacing:1px;">
+                                            Investing through a limited company
+                                            {{ form_widget(form.info.corporate_investor, {attr:{ 'onclick':'add_business()'}}) }}
+                                            <div class="control__indicator"></div>
+                                        </label>
+
+                                        <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+                                            <a class="btntest" onclick="return View_Tab(2);">NEXT</a>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default" style=" border-bottom:solid thin #bababa; padding:10px 0;">
+                                <div class="panel-heading" role="tab" id="headingTwo">
+                                    <h4 class="panel-title">
+                                        <span class="complient_next" id="complient2">2</span>Address
+                                        <a class="hide" id="step_2" style="cursor:pointer;float:right" onclick="return View_Tab(2);">+</a>
+                                    </h4>
+                                </div>
+                                <div id="accordion2" class="hide">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class=" col-md-12">
+                                                <div class="group" style="margin-top:25px;">
+                                                    <div style="color:#999;">Country</div>
+                                                    {{ form_widget(form.address.country, { attr:{ onchange:"chkcountry();",'class':'custom-dropdown__select custom-dropdown__select--red', 'style':'width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0'}}) }}
+                                                </div>
+
+                                                <div class="group">
+                                                <div class="hidden" id="postcode_lookup"></div>
+                                                </div>
+
+                                                <div class="group">
+                                                    {{ form_widget(form.address.address1) }}
+                                                    {{ form_label(form.address.address1, null, {label_attr:{id:"lbluserInformation_address_address1"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.address.address2) }}
+                                                    {{ form_label(form.address.address2, null, {label_attr:{id:"lbluserInformation_address_address2"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.address.address3) }}
+                                                    {{ form_label(form.address.address3, null, {label_attr:{id:"lbluserInformation_address_address3"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.address.city) }}
+                                                    {{ form_label(form.address.city, null, {label_attr:{id:"lbluserInformation_address_city"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.address.postal_code) }}
+                                                    {{ form_label(form.address.postal_code, null, {label_attr:{id:"lbluserInformation_address_postal_code"}}) }}
+                                                </div>
+
+                                                {{ form_row(form.address.region) }}
+
+                                                <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+                                                    <a class="btntest" onclick="return View_Tab(3);">NEXT</a>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default hide" id="businessaddress" style=" border-bottom:solid thin #bababa; padding:10px 0;">
+                                <div class="panel-heading" role="tab" id="headingThree">
+                                    <h4 class="panel-title">
+                                        <span class="complient_next" id="complient3">3</span>Business Address
+                                        <a class="hide" id="step_3" style="cursor:pointer;float:right" onclick="return View_Tab(3);">+</a>
+                                    </h4>
+                                </div>
+                                <div id="accordion3" class="hide">
+                                    <div class="panel-body">
+
+                                        <div class="row">
+                                            <div class=" col-md-12">
+                                                <div class="group" style="margin-top:25px;">
+                                                    {{ form_widget(form.info.company_name) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_name, null, {label_attr:{id:"lbluserInformation_info_company_name", style:"top: -15px;"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.info.company_registered_number) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_registered_number, null, {label_attr:{id:"lbluserInformation_info_company_registered_number", style:"top: -15px;"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.info.company_nature_of_business) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_nature_of_business, null, {label_attr:{id:"lbluserInformation_info_company_nature_of_business", style:"top: -15px;"}}) }}
+                                                </div>
+                                                <div class="group" id="business-phone-number">
+                                                    <span style=" color:#aaa;">Business Phone Number</span>
+                                                    {{ form_widget(form.info.company_telephone, {attr:{class:"phone", onblur:"extractNumber(this,3,true);", onkeypress:"return blockNonNumbers(this, event, true, true);"}}) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                </div>
+
+                                                <h4 style="margin-top: 25px;font-size:20px;margin-bottom:29px;">Directors of the company</h4>
+                                                <div class="group" id="company_director_names" data-prototype="
+                                                {% apply escape %}
+                                                {{ include('@AppBundle/Onboarding/beneficial-owners-proto.html.twig',{ 'form': form.info.company_directors.vars.prototype }) }}
+                                                {% endapply %}">
+
+                                                </div>
+
+                                                <div class="group" style="margin-top:25px;">
+                                                    {{ form_widget(form.info.company_directors) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {#{{ form_label(form.info.company_directors) }}#}
+                                                </div>
+
+                                                <br>
+                                                <h4 style="margin-top: 40px;font-size:20px;margin-bottom:29px;">Beneficial owner of 25% or more institutions</h4>
+
+                                                <div class="group" id="company_beneficial_owners_names" data-prototype="
+                                                {% apply escape %}
+                                                {{ include('@AppBundle/Onboarding/beneficial-owners-proto.html.twig',{ 'form': form.info.company_beneficial_owners.vars.prototype }) }}
+                                                {% endapply %}">
+
+                                                </div>
+                                                <div class="group" style="margin-top:25px;">
+                                                    {{ form_widget(form.info.company_beneficial_owners) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {#{{ form_label(form.info.company_beneficial_owners) }}#}
+                                                </div>
+
+                                                <div class="spacer"></div>
+
+                                                <div class="group">
+                                                    {{ form_widget(form.info.company_website) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_website, null, {label_attr:{id:"lbluserInformation_info_company_website"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    <span style=" color:#aaa;">Incorporation country</span>
+                                                    {{ form_widget(form.info.company_registration_country, {attr:{onchange:"chkddlvali('ddlincountry')",   class:"custom-dropdown__select custom-dropdown__select--red", style:"width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0;"}}) }}
+                                                </div>
+
+                                                <div class="group">
+                                                    <div class="hidden" id="company_reg_postcode_lookup"></div>
+                                                </div>
+
+                                                <div class="group">
+                                                    {{ form_widget(form.info.company_registered_address_1) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_registered_address_1, null, {label_attr:{id:"lbluserInformation_info_company_registered_address_1", style:"top: -15px;"}}) }}
+                                                </div>
+                                                <div class="group" style="margin-top: 16px;">
+                                                    {{ form_widget(form.info.company_registered_address_2) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_registered_address_2, null, {label_attr:{id:"lbluserInformation_info_company_registered_address_2", style:"top: -15px;"}}) }}
+                                                </div>
+                                                <div class="group" style="margin-top: 16px;">
+                                                    {{ form_widget(form.info.company_registered_address_3) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_registered_address_3, null, {label_attr:{id:"lbluserInformation_info_company_registered_address_3", style:"top: -15px;"}}) }}
+                                                </div>
+                                                <div class="group">
+                                                    {{ form_widget(form.info.company_postcode) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.company_postcode, null, {label_attr:{id:"lbluserInformation_info_company_postcode"}}) }}
+                                                </div>
+
+                                                <div class="label-container group">
+                                                    <label class="control control--checkbox" style="font-size:14px; color:#000;">
+                                                        Operating address same as Registered Address
+                                                        <input type="checkbox" id="operating-address-same" onclick="add_newfield()" checked="checked" />
+                                                        <div class="control__indicator"></div>
+                                                    </label>
+                                                </div>
+
+                                                <div class="group hide" id="company-operating-address">
+                                                    {{ form_widget(form.info.operating_address) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.operating_address) }}
+                                                </div>
+                                                <div class="group hide" id="company-operating-postcode">
+                                                    {{ form_widget(form.info.operating_postcode) }}
+                                                    <span class="highlight"></span>
+                                                    <span class="bar"></span>
+                                                    {{ form_label(form.info.operating_postcode) }}
+                                                </div>
+
+                                                <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+                                                    <a class="btntest" onclick="return View_Tab(4);">NEXT</a>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default" style=" border-bottom:solid thin #bababa; padding:10px 0;">
+                                <div class="panel-heading" role="tab" id="headingThree">
+                                    <h4 class="panel-title">
+                                        <span class="complient_next" id="complient4">4</span>Contact Details
+                                        <a class="hide" id="step_4" style="cursor:pointer;float:right" onclick="return View_Tab(4);">+</a>
+                                    </h4>
+                                </div>
+                                <div id="accordion4" class="hide">
+                                    <div class="panel-body">
+                                        <div class="group" id="user-phone-number" style="margin-top:25px;">
+                                            <span style=" color:#aaa;">Mobile Number </span>
+                                            {{ form_widget(form.phone1, {attr:{class:"phone", onblur:"extractNumber(this,3,true);", onkeypress:"return blockNonNumbers(this, event, true, true);"}}) }}
+                                            <span class="highlight"></span>
+                                            <span class="bar"></span>
+                                        </div>
+                                        <div class="group" id="user-mobile-number" style="margin-top:25px;">
+                                            <span style=" color:#aaa;">Home Number (Optional)</span>
+                                            {{ form_widget(form.phone2, {attr:{class:"phone", onblur:"extractNumber(this,3,true);", onkeypress:"return blockNonNumbers(this, event, true, true);"}}) }}
+                                            <span class="highlight"></span>
+                                            <span class="bar"></span>
+                                        </div>
+
+                                        {% if has_valid_ref %}
+                                            {% do form.info.referral.setRendered() %}
+                                            <input class="hidden" id="{{ form.info.referral.vars.id }}" name="{{ form.info.referral.vars.full_name }}" value="Other">
+                                        {% else %}
+                                            <div class="group">
+                                                <div style="color:#999;">How did you hear about us?</div>
+                                                {{ form_widget(form.info.referral, {attr:{class:"custom-dropdown__select custom-dropdown__select--red", style:"width:100%; border-bottom:solid thin #e5e5e5; width:100%; border-radius:0;" }}) }}
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="btn_1" style="float:left; padding-top:0; margin:0;">
+                                            <a class="btntest" onclick="return View_Tab(5);">NEXT</a>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-default" style=" border-bottom:solid 0 #bababa; padding:10px 0;">
+                                <div class="panel-heading" role="tab" id="headingFour">
+                                    <h4 class="panel-title">
+                                        <span class="complient_next" id="complient5">5</span>
+                                        Documents
+                                        <a class="hide" id="step_5" style="cursor:pointer;float:right" onclick="return View_Tab(5);">+</a>
+                                    </h4>
+                                </div>
+                                <div id="accordion5" class="hide">
+                                    <div class="panel-body">
+                                    <div class="row">
+                                            <div class="col-md-12">
+                                                <p>Please ensure that any text in your files is clearly legible. We recommend documents with a file size of at least 100KB.</p>
+                                                <p><b>Using a photo from an iPhone?</b> Please note the default "High Efficiency" (HEIF) format is <u>not</u> supported. HEIF photos must be converted to JPEG or retaken with the "Most Compatible" (JPEG) option selected in iOS camera format settings.</p>
+                                                <hr/>
+                                                <p>*For non-UK residents please <a href="http://help.yielders.co.uk/en/articles/3436549-documents-required" target="_blank" rel="noopener noreferrer" style="font-weight: bold;">read our document requirements</a> for accepted forms of identification and proof of address.</p>
+                                            </div>
+                                    </div>        
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+
+                                                <div style="min-height:70px; margin-top:10px;">
+                                                    <p style="line-height:20px;">
+                                                        <span class="fileupload_start" id="file_1"></span>
+                                                        Proof of ID
+                                                        <br>
+                                                        <span style="font-size:13px;">Passport/Driving licence (*non-UK citizens <a href="http://help.yielders.co.uk/en/articles/3436549-documents-required" target="_blank" rel="noopener noreferrer" style="font-weight: bold;">read our document requirements</a>)</span>
+                                                    </p>
+
+                                                </div>
+
+                                                <div style=" background-color:#e6f6f4; border:solid thin #CCC; border-radius:5px;">
+                                                    <div class="file-upload">
+                                                        <div style="background-image:url({{ asset('bundles/app/images/onboarding/bg_bttn.png') }}); width:100%;">
+                                                            <button class="file-upload-btn" type="button" onclick="$('#userInformation_document_proof_of_id').trigger( 'click' )">Choose file</button>
+                                                        </div>
+                                                        <div class="image-upload-wrap" id="uploadwrap1">
+                                                            {{ form_widget(form.document.proof_of_id, {attr: {class:"file-upload-input", id:"fileup1", onchange:"readURL(this,1);"}} ) }}
+                                                            <div class="drag-text">
+                                                                <img src="{{ asset('bundles/app/images/onboarding/icons/upload1.jpg') }}" loading="lazy" alt="passport icon">
+                                                            </div>
+                                                            <p id="sizeWarning1" class="image-upload-warning">The file you chose was too large.</p>
+                                                            <p id="typeWarning1" class="image-upload-warning">The file you chose was not in a supported format.</p>
+                                                            <p id="tryother1" class="image-upload-warning">Please try a different one.</p>
+                                                        </div>
+                                                        <div class="file-upload-content" id="imgcontent1">
+                                                            <img class="file-upload-image" id="pre1" src="#" loading="lazy" alt="your image"/>
+                                                            <div class="image-title-wrap">
+                                                                <button type="button" onclick="removeUpload(1)" class="remove-image">Remove
+                                                                    <span class="image-title" id="imgtitle1">Uploaded Image</span></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="padding:10px 0;">
+                                                    <div style=" font-size:12px; line-height:18px; color:#ccc; text-align: left; text-decoration:underline;">File size: 40KB minimum, 4MB maximum</div>
+                                                    <div style=" font-size:12px; line-height:18px; color:#ccc; text-align: left; text-decoration:underline;">Format : PDF JPEG PNG</div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="col-md-4">
+
+                                                <div style="min-height:70px; margin-top:10px;">
+                                                    <p style="line-height:20px;">
+                                                        <span class="fileupload_start" id="file_2"></span>
+                                                        Proof of Address
+                                                        <br>
+                                                        <span style="font-size:13px;">Utility bill, Bank statement, Council tax <b>(dated within the last 3 calendar months)</b></span>
+                                                    </p>
+
+                                                </div>
+
+                                                <div style=" background-color:#e6f6f4; border:solid thin #CCC; border-radius:5px;">
+                                                    <div class="file-upload">
+                                                        <div style="background-image:url({{ asset('bundles/app/images/onboarding/bg_bttn.png') }}); width:100%;">
+                                                            <button class="file-upload-btn" type="button" onclick="$('#userInformation_document_proof_of_address').trigger( 'click' )">Choose file</button>
+                                                        </div>
+                                                        <div class="image-upload-wrap" id="uploadwrap2">
+                                                            {{ form_widget(form.document.proof_of_address, {attr: {class:"file-upload-input", id:"fileup2", onchange:"readURL(this,2);"}} ) }}
+                                                            <div class="drag-text">
+                                                                <img src="{{ asset('bundles/app/images/onboarding/icons/upload2.jpg') }}" loading="lazy" alt="financial bill icon">
+                                                            </div>
+                                                            <p id="sizeWarning2" class="image-upload-warning">The file you chose was too large.</p>
+                                                            <p id="typeWarning2" class="image-upload-warning">The file you chose was not in a supported format.</p>
+                                                            <p id="tryother2" class="image-upload-warning">Please try a different one.</p>
+                                                        </div>
+                                                        <div class="file-upload-content" id="imgcontent2">
+                                                            <img class="file-upload-image" id="pre2" src="#" loading="lazy" alt="your image"/>
+                                                            <div class="image-title-wrap">
+                                                                <button type="button" onclick="removeUpload(2)" class="remove-image">Remove
+                                                                    <span class="image-title" id="imgtitle2">Uploaded Image</span></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="padding:10px 0;">
+                                                    <div style=" font-size:12px; line-height:18px; color:#ccc; text-align: left; text-decoration:underline;">File size: 4MB maximum</div>
+                                                    <div style=" font-size:12px; line-height:18px; color:#ccc; text-align: left; text-decoration:underline;">Format : PDF JPEG PNG</div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="col-md-4 hide" id="business-doc">
+
+                                                <div style="min-height:70px; margin-top:10px;">
+                                                    <p style="line-height:20px;">
+                                                        <span class="fileupload_start" id="file_3"></span>
+                                                        Company Incorporation Certificate
+                                                        <br>
+                                                        <span style="font-size:13px;">Trade licence etc.</span>
+                                                    </p>
+
+                                                </div>
+
+                                                <div style=" background-color:#e6f6f4; border:solid thin #CCC; border-radius:5px;">
+                                                    <div class="file-upload">
+                                                        <div style="background-image:url({{ asset('bundles/app/images/onboarding/bg_bttn.png') }}); width:100%;">
+                                                            <button class="file-upload-btn" type="button" onclick="$('#userInformation_document_proof_of_business').trigger( 'click' )">Choose file</button>
+                                                        </div>
+                                                        <div class="image-upload-wrap" id="uploadwrap3">
+                                                            {{ form_widget(form.document.proof_of_business, {attr: {class:"file-upload-input", id:"fileup3", onchange:"readURL(this,3);"}} ) }}
+                                                            <div class="drag-text">
+                                                                <img src="{{ asset('bundles/app/images/onboarding/icons/upload3.jpg') }}" loading="lazy" alt="building icon">
+                                                            </div>
+                                                            <p id="sizeWarning3" class="image-upload-warning">The file you chose was too large.</p>
+                                                            <p id="typeWarning3" class="image-upload-warning">The file you chose was not in a supported format.</p>
+                                                            <p id="tryother3" class="image-upload-warning">Please try a different one.</p>
+                                                        </div>
+                                                        <div class="file-upload-content" id="imgcontent3">
+                                                            <img class="file-upload-image" id="pre3" src="#" loading="lazy" alt="your image"/>
+                                                            <div class="image-title-wrap">
+                                                                <button type="button" onclick="removeUpload(3)" class="remove-image">Remove
+                                                                    <span class="image-title" id="imgtitle3">Uploaded Image</span></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="padding:10px 0;">
+                                                    <div style=" font-size:12px; line-height:18px; color:#ccc; text-align: left; text-decoration:underline;">file size: 4MB maximum</div>
+                                                    <div style=" font-size:12px; line-height:18px; color:#ccc; text-align: left; text-decoration:underline;">Format : PDF JPEG PNG</div>
+                                                </div>
+
+                                            </div>
+                                            <input id="hdndoc1" type="hidden" value="0" />
+                                            <input id="hdndoc2" type="hidden" value="0" />
+                                            <input id="hdndoc3" type="hidden" value="0" />
+                                        </div>
+                                        <button id="submit-compliance" type="submit" class="btn_grdnt" onclick="return check_document();" disabled>Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+    function addRemoveBeneficialButtonListener() {
+        var removeButton = $(".remove-beneficial-field");
+
+        removeButton.off('click');
+
+        removeButton.click(function (event) {
+            event.preventDefault();
+
+            if (confirm('Are you sure?')) {
+                var fieldContainer = $(this).closest('.beneficial-field-container');
+
+                fieldContainer.fadeOut('slow', function () {
+                    $(this).remove();
+                });
+            }
+        })
+    }
+
+    $(function () {
+        var list = $("#fields-list");
+        var trigger = $("#add-beneficial-field");
+        var proto = list.data('prototype');
+        var hr = '<hr/>';
+
+        trigger.click(function () {
+            var widgetContainer = $("<div>", {
+                "id": "beneficial-field-" + count,
+                "class": "beneficial-field-container"
+            });
+
+            var removeButtonWidget = $("<i>", {"class": "fa fa-times remove-beneficial-field pull-right "});
+
+            removeButtonWidget = $('<div>').append(removeButtonWidget);
+
+            var customFieldWidget = proto.replace(/__name__/g, count);
+
+            widgetContainer.append(removeButtonWidget);
+            widgetContainer.append(customFieldWidget);
+
+            list.append(widgetContainer);
+
+            addRemoveBeneficialButtonListener();
+
+            count++;
+
+            return false;
+        });
+
+        addRemoveBeneficialButtonListener();
+    });
+
+    function add() {
+        var collectionHolder = $('#userInformation_info_company_beneficial_owners');
+        var prototype = collectionHolder.attr('data-prototype');
+        form = prototype.replace(/\$\$name\$\$/g, collectionHolder.children().length);
+        collectionHolder.append(form);
+    }
+
+    $('a.jslink').on('click', function (event) {
+        event.preventDefault();
+        add();
+    });
+</script>
+
+<script>
+    $('#userInformation_address_country').on('change', function () {
+
+        var option = document.getElementById("userInformation_address_country").value;
+
+        if (option == "United Kingdom") {
+
+            $("#postcode_lookup").removeClass('hidden');
+            //                    option.removeClass('hidden');
+        } else {
+            $("#postcode_lookup").addClass('hidden');
+        }
+
+    });
+
+    $('#userInformation_info_company_registration_country').on('change', function () {
+
+        var option = document.getElementById("userInformation_address_country").value;
+
+        if (option == "United Kingdom") {
+
+            $("#company_reg_postcode_lookup").removeClass('hidden');
+            //                    option.removeClass('hidden');
+        } else {
+            $("#company_reg_postcode_lookup").addClass('hidden');
+        }
+
+    });
+
+</script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js"></script>
+<script>
+    jQuery(document).ready(function () {
+        $('.js-datepicker').datepicker();
+    });
+</script>
+
+    <script src="{{ asset('bundles/app/build/js/intlTelInput.js') }}"></script>
+
+    <script>
+        {# var input_phone1 = document.querySelector("#userInformation_phone1");
+        var iti1 = window.intlTelInput(input_phone1, {
+            placeholderNumberType: 'FIXED_LINE',
+            utilsScript: "{{ asset('bundles/app/build/js/utils.js') }}",
+        }); #}
+        var input_phone1 = document.querySelector("#userInformation_phone1");
+        var iti1 = window.intlTelInput(input_phone1, {
+            utilsScript: "{{ asset('bundles/app/build/js/utils.js') }}",
+        });
+        var input_phone2 = document.querySelector("#userInformation_phone2");
+        var iti2 = window.intlTelInput(input_phone2, {
+            placeholderNumberType: 'FIXED_LINE',
+            utilsScript: "{{ asset('bundles/app/build/js/utils.js') }}",
+        });
+
+        {# var input_phone2 = document.querySelector("#userInformation_phone2");
+        var iti2 = window.intlTelInput(input_phone2, {
+            utilsScript: "{{ asset('bundles/app/build/js/utils.js') }}",
+        }); #}
+
+        var input_phonebiz = document.querySelector("#userInformation_info_company_telephone");
+        var itibiz = window.intlTelInput(input_phonebiz, {
+            placeholderNumberType: 'FIXED_LINE',
+            utilsScript: "{{ asset('bundles/app/build/js/utils.js') }}",
+        });
+    </script>
+
+    <script type="text/javascript">
+        function attachCountryCode(e) {
+            //e.preventDefault();
+            document.getElementById("userInformation_phone1").value = iti1.getNumber();
+            document.getElementById("userInformation_phone2").value = iti2.getNumber();
+            if ((document.getElementById("userInformation_info_company_telephone").value) != '') {
+                document.getElementById("userInformation_info_company_telephone").value = itibiz.getNumber();
+            }
+            //console.log("phone1: " + document.getElementById("userInformation_phone1").value);
+        }
+        
+    </script>
+
+    <script src="{{ asset('bundles/app/js/onboarding/compliance.js') }}"></script>
+
+
+{% endblock %}

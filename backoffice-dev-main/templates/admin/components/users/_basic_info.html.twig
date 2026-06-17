@@ -1,0 +1,20 @@
+{% embed 'admin/components/_bordered_section.html.twig' with {
+    "sectionId": "user-common",
+    "sectionTitle": "About User",
+    "linkActions": linkActions|default([])
+} %}
+    {% block sectionContent %}
+    {{ include('admin/components/_kv_table.html.twig', {
+        tableId: "account-info-list",
+        valueDefaultStyle: "tw-font-mono",
+        kv: {
+            "User Id": user.id|default("N/A"),
+            "Username":  user.userIdentifier|default("N/A"),
+            "Full Name": user.fullname|default("N/A"),
+        }
+    }) }}
+    {{ include('admin/components/blame-timestamp.html.twig', {
+        object: user,
+    }) }}
+    {% endblock %}
+{% endembed %}

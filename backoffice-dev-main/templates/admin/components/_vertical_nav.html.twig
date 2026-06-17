@@ -1,0 +1,25 @@
+<ul class="nav nav-pills flex-column gap-1 mb-auto w-100 tw-text-sm">
+	{% for linkGroup in links %}
+
+		{% if not loop.first %}
+			<li><hr class="my-2 text-body-tertiary"></li>
+		{% endif %}
+
+		{% if linkGroup.groupName is defined %}
+			<li>
+				<span class="d-block text-body fs-6 fw-bold py-1">{{ linkGroup.groupName }}</span>
+			</li>
+		{% endif %}
+
+		{# Remove any links that the logged in user lacks permissions for - default to any staff (permissive) #}
+		{% set linkDefinitions = linkGroup.linkDefinitions|default([])|filter(v => is_granted(v.roleRequired|default('ROLE_ANALYST'), app.user)) %}
+
+		{% for link in linkDefinitions %}
+			<li class="nav-item">
+				<a class="nav-link text-body {% if app.request.attributes.get('_route') == link.route %}fw-bold active{% endif %}" href="{{ path(link.route, link.params|default({})) }}" aria-current="page">
+					{{ link.text }}
+				</a>
+			</li>
+		{% endfor %}
+	{% endfor %}
+</ul>

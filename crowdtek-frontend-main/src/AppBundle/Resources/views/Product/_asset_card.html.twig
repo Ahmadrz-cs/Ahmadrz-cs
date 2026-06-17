@@ -1,0 +1,93 @@
+{% set logo = asset.documents|filter(doc => doc.tag == "logo")|first %}
+{% set capitalValue = asset.pricePerShare|default(0) * asset.numberOfShares|default(0) %}
+{% set tradingStatus = "Open" %}
+{% if asset.buyRestricted and asset.sellRestricted %}
+	{% set tradingStatus = "Closed" %}
+{% elseif asset.buyRestricted and (not asset.sellRestricted) %}
+	{% set tradingStatus = "Open (Sell Only)" %}
+{% elseif (not asset.buyRestricted) and asset.sellRestricted %}
+	{% set tradingStatus = "Open (Buy Only)" %}
+{% endif %}
+
+
+{% set showFields = showFields|default([
+	"Net Projected Yield",
+	"Target End Date",
+	"Price",
+	"Shares Available",
+]) %}
+{% set assetData = {
+	"Net Projected Yield": asset.netProjectedYield|format_percent_number({max_fraction_digit: 3}),
+	"Target End Date": asset.termEnd|date('M Y'),
+	"Price": asset.pricePerShare|format_currency('GBP'),
+	"Shares Available": asset.buyRestricted ? 0 : asset.sharesAvailable|number_format(0, '.', ','),
+	"Remaining": (asset.buyRestricted ? 0 : asset.sharesAvailable * asset.pricePerShare)|format_currency('GBP'),
+	"Value": capitalValue|format_currency('GBP', {max_fraction_digit:2, min_fraction_digit:2}),
+	"Type": asset.type|capitalize,
+	"Status": asset.status.value|capitalize,
+	"Trading Status": tradingStatus,
+}|filter((v, k) => k in showFields) %}
+
+{% set assetActive = asset.status in [
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring'),
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Active'),
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Closing')
+] %}
+
+<div class="card product-card w-100">
+	{% if logo %}
+		<img class="card-img-top aspect-video object-cover" src="{{ logo.url }}" alt="Card image cap">
+	{% else %}
+		<svg class="card-img-top aspect-video object-cover placeholder-img" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" focusable="false">
+			<title>Placeholder</title>
+			<rect width="100%" height="100%" fill="currentColor"></rect>
+		</svg>
+	{% endif %}
+
+	<div class="card-body d-flex flex-column text-md">
+		<div class="d-flex justify-content-between mb-1">
+			{% if showStatuses ?? true %}
+				{% if not assetActive %}
+				<span class="badge badge-warning badge-md rounded-md">{{ asset.status.value|capitalize }}</span>
+				{% elseif asset.sharesAvailable > 0 and not asset.buyRestricted %}
+				<span class="badge badge-secondary badge-md rounded-md">Available</span>
+				{% else %}
+				<span class="badge badge-danger badge-md rounded-md">Sold Out</span>
+				{% endif %}
+				{% if asset.sharesAvailable > 0 
+					and (asset.featured > 0)
+					and not (asset.buyRestricted)
+					and not (asset.status == constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring'))
+					and assetActive %}
+				<span class="badge badge-warning badge-md rounded-md">Featured</span>{% endif %}
+				{% if asset.status == constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring') %}
+					<span class="badge badge-warning badge-md rounded-md">Prefunding</span>
+				{% endif %}
+			{% endif %}
+		</div>
+		<h5 class="card-title">{{ asset.name }}</h5>
+		<p class="card-subtitle mb-1 text-md font-medium">{{ asset.address.city }}, {{ asset.address.postCode }}
+			{# {{ asset.address.country|country_name }} #}
+		</p>
+		{# <p class="card-text">{{ asset.description }}</p> #}
+		{# "Launch Value": capitalValue|format_currency('GBP', {max_fraction_digit:2, min_fraction_digit:0}), #}
+		{# "Status": asset.status.value|capitalize, #}
+		{% if asset.status == constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring') and asset.numberOfShares > 0 %}
+			<div class="progress mb-1">
+				{% set sharesBought = asset.numberOfShares - asset.sharesAvailable %}
+				{% set progress = (100 * sharesBought / asset.numberOfShares)|round(2) %}
+				<div class="progress-bar bg-secondary text-body font-weight-bold" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
+			</div>
+		{% endif %}
+		
+		{{ include('@AppBundle/Common/_kv_table.html.twig', {
+			tableWrapperStyle: "mt-auto",
+			tableStyle: "table-sm table-borderless mb-0",
+			keyColumnWidth: 60,
+			keyDefaultStyle: "font-light px-0",
+			valueDefaultStyle: "text-right font-semibold px-0",
+			kv: assetData
+		}) }}
+		{% if showLink ?? true %}<a href="{{ path('product_properties_detail',{'id': asset.id}) }}" class="btn btn-primary rounded-pill mt-1">See Property Details</a>{% endif %}
+	</div>
+</div>

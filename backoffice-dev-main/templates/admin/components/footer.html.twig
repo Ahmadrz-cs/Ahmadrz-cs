@@ -1,0 +1,9 @@
+<div class="bg-white border-top p-3">
+	<div class="container-xxl d-flex flex-column gap-3 flex-sm-row align-items-start align-items-sm-center justify-content-sm-between tw-text-sm">
+		<span class="fw-bold d-inline-block">Copyright &copy;
+				{{ 'now'|date('Y') }}
+				{{ app_system_name }}.</span>
+		<span class="fw-bold d-inline-block">v{{ version }}</span>
+		<a class="btn btn-light" href="{{ path('admin_service_status') }}">Check Service Statuses</a>
+	</div>
+</div>

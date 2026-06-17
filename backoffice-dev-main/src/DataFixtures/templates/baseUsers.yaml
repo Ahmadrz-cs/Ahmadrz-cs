@@ -1,0 +1,229 @@
+App\Entity\User:
+    user_base (template):
+        # standard config
+        __construct:
+            - "<dateTimeBetween('-6 months', '-5 months')>"
+        plainPassword: "HarvestBounty!756"
+        password: '\$2y\$13\$x7PxwW7etlCyyuDlikZ2Tend.201AHwEy/7wmmZ2BDvb/x00sqOua'
+        nationality: "GB"
+        birthCountry: "GB"
+        passportCountry: "GB"
+        term_service_accepted: true
+        enabled: true
+        isVIP: 0
+        obstep: 5
+        lifecycleStatus: "approved"
+        # mangoPayUserId: "<{walletUser_<current()>}>"
+        # mangoPayWalletId: "<{wallet_<current()>}>"
+        # randomised config
+        username: "<current()>.auto@test.yielderverse.co.uk"
+        email: "@self->username"
+        jobTitle: "<jobTitle()>"
+        firstname: "<ucfirst($current)>"
+        lastname: "<lastName()>"
+        phone1: "<mobileNumber()>"
+        birthDate: "<dateTime('-18 years', 'UTC')>"
+        gdpraccepted: "<boolean(80)>"
+        # relations - MUST ensure there is a matching id
+        status: "@userstatus<current()>"
+        investor: "@userinvestor<current()>"
+        security: "@usersecurity<current()>"
+        createdAt: "<dateTimeBetween('-6 months', '-5 months')>"
+        walletUserVersion: <(App\Entity\Enum\WalletUserVersion::Original)>
+        # SCA enrollment should be enabled on a per-user basis when you have setup the Mangopay user properly
+        # Default PIN for testing is 502100
+        # Phone number is Mangopay's test number +33 611111111
+        # Phone number code for that number is always 702100
+        # You can also use a real phone number
+        scaStatus: "inactive"
+
+    user_male (template, extends user_base):
+        honoricPrefix: "<titleMale()>"
+        gender: "MALE"
+    user_female (template, extends user_base):
+        honoricPrefix: "<titleFemale()>"
+        gender: "FEMALE"
+    user_random (template, extends user_base):
+        honoricPrefix: "<title()>"
+        firstname: "<firstName()>"
+        gender: "<randomElement(['MALE', 'FEMALE', 'OTHER'])>"
+
+App\Entity\Investor:
+    investors_base (template):
+        cxbRestrictedUser: true
+        cxbSophisticatedInvestor: false
+        cxbWorthInvestor: false
+        corporateInvestor: false
+        createdBy: "@user<current()>"
+
+App\Entity\Company:
+    company_base (template):
+
+App\Entity\Status:
+    userstatus_base (template):
+        user: "@user<current()>"
+        isEmailNotVerifed: false
+        isEmailValidated: true
+        isRegCompleted: true
+        isApproved: true
+        emailNotVerifiedOn: "<dateTimeBetween('-6 months', '-5 months')>"
+        emailValidatedOn: "<dateTimeBetween('-5 months', '-4 months')>"
+        regCompletedOn: "<dateTimeBetween('-4 months', '-3 months')>"
+        approvedOn: "<dateTimeBetween('-3 months', '-2 months')>"
+        lifecycleStatus: "approved"
+
+App\Entity\UserSecurity:
+    usersecurity_base (template):
+        mfaEmail: true
+
+App\Entity\ContegoScore:
+    contegoscore_base (template):
+        user: "@user<current()>"
+        rag: "GREEN"
+        kyc_score: "320"
+        rule_messages: "all good"
+
+App\Entity\ContegoLog:
+    contegolog_base (template):
+        user: "@user<current()>"
+        profile_name: "New KYC Check"
+        rag: "GREEN"
+        kyc_score: 0
+        kyc_type: "Person Check"
+        ext_reference_id: "91357ab5-7d92-4fe2-b9aa-03f9d5b77b1b"
+        pdf_report_url: "http://example.com"
+
+App\Entity\Communication:
+    communication_base (template):
+        recipient: "@userben"
+        content: ""
+        status: 1
+        createdBy: "@userA1"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    communication_admin_base (template, extends communication_base):
+        recipient: "@userA1"
+    communication_login_code (template, extends communication_base):
+        subject: "@user.mfa.email_code->subject"
+    communication_dividend_payment (template, extends communication_base):
+        subject: "@dividend.payment_confirmation->subject"
+    communication_user_registration (template, extends communication_base):
+        subject: "@user.registration->subject"
+    communication_onboarding_complete (template, extends communication_base):
+        subject: "@user.onboarding.complete->subject"
+    communication_bankwire_deposit (template, extends communication_base):
+        subject: "@mangopay.payin_banktransfer->subject"
+    communication_investment_confirmation (template, extends communication_base):
+        subject: "@investment.new->subject"
+    communication_password_reset (template, extends communication_base):
+        subject: "@user.password.forgot->subject"
+
+    communication_admin_user_registration (template, extends communication_admin_base):
+        subject: '<("[Admin]")> @user.registration->subject'
+    communication_admin_investment_confirmation (template, extends communication_admin_base):
+        subject: '<("[Admin]")> @investment.new->subject'
+    communication_admin_bankwire_deposit (template, extends communication_admin_base):
+        subject: '<("[Admin]")> @mangopay.payin_banktransfer->subject'
+
+App\Entity\KycProfile:
+    kycProfile_base (template):
+        createdBy: "@user<current()>"
+        createdAt: "@user<current()>->createdAt"
+
+    kycProfile_verified (template, extends kycProfile_base):
+        verified: true
+        verifiedBy: "@useroperations"
+        lastReviewedAt: "@self->createdAt"
+
+    kycProfile_failed (template, extends kycProfile_verified):
+        verified: false
+        verifiedBy: "@useroperations"
+        lastReviewedAt: "@self->createdAt"
+
+App\Entity\KycReport:
+    kycReport_base (template):
+
+    kycReport_mangopay (template, extends kycReport_base):
+        __construct:
+            - "@user<current()>"
+            - "mangopay"
+            - "90975081"
+            - "Identity proof"
+            - "REGULAR"
+            - "1"
+            - true
+            - "<dateTimeBetween('-3 weeks', '-1 week')>"
+            - "natural user"
+
+    kycReport_contego (template, extends kycReport_base):
+        __construct:
+            - "@user<current()>"
+            - "contego"
+            - "206d3031-bd03-4753-bfeb-f881ea98b2c5"
+            - "Individual only"
+            - "GREEN"
+            - "0"
+            - true
+            - "<dateTimeBetween('-3 weeks', '-1 week')>"
+            - "pdf report: http://example.com"
+
+App\Entity\KycReview:
+    kycReview_base (template):
+        status: <(App\Entity\Enum\KycReviewStatus::Completed)>
+        decision: true
+        completedAt: "<dateTimeBetween('-1 day', 'now')>"
+    kycReview_onboarding (template, extends kycReview_base):
+        __construct:
+            - <(App\Entity\Enum\KycReviewType::Onboarding)>
+            - "@user<current()>"
+        identityReview: true
+        addressReview: true
+        countryReview: true
+        kycProviderReview: true
+        dueDiligenceLevelReview: true
+
+    kycReview_vip (template, extends kycReview_base):
+        __construct:
+            - <(App\Entity\Enum\KycReviewType::Vip)>
+            - "@user<current()>"
+            - "@useroperations"
+        transactionsReview: true
+        createdBy: "@useroperations"
+        updatedBy: "@useroperations"
+    kycReview_recurring (template, extends kycReview_base):
+        __construct:
+            - <(App\Entity\Enum\KycReviewType::Recurring)>
+            - "@user<current()>"
+        identityReview: true
+        createdBy: "@useroperations"
+        updatedBy: "@useroperations"
+    kycReview_adhoc (template, extends kycReview_base):
+        __construct:
+            - <(App\Entity\Enum\KycReviewType::Adhoc)>
+            - "@user<current()>"
+            - "@useroperations"
+        createdBy: "@useroperations"
+        updatedBy: "@useroperations"
+
+App\Entity\OnboardingProfile:
+    onboardingProfile_complete (template):
+        cooloffEnd: "<dateTimeBetween('-3 days', '-2 days')>"
+        cooloffAccepted: true
+        riskWarningAccepted: true
+        category: "restricted"
+        categoryReviewedAt: "<dateTimeBetween('-3 days', '-2 days')>"
+        assessmentPassed: true
+
+App\Entity\UserStatusLog:
+    # Note that users are created with an initial Pending UserStatusLog
+    userstatuslog_pending (template):
+        user: "@user<current()>"
+        status: <(App\Entity\Enum\UserStatus::Pending)>
+    userstatuslog_active (template):
+        user: "@user<current()>"
+        status: <(App\Entity\Enum\UserStatus::Active)>
+    userstatuslog_closed (template):
+        user: "@user<current()>"
+        status: <(App\Entity\Enum\UserStatus::Closed)>
+    userstatuslog_suspended (template):
+        user: "@user<current()>"
+        status: <(App\Entity\Enum\UserStatus::Suspended)>

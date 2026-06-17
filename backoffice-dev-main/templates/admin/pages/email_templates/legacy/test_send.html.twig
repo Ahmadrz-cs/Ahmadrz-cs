@@ -1,0 +1,120 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_email_templates_legacy_edit' %}
+{% set backToRouteParams = { id: emailTemplate.id } %}
+{% set areaHeading = 'Plaform Configuration' %}
+{% set mainHeading = 'Legacy Email Templates' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "test-email-template",
+        "sectionTitle": "Test Email Template #" ~ emailTemplate.id,
+        "linkActions": []
+    } %}
+		{% block sectionContent %}
+			{{ include('admin/components/_alert.html.twig', {
+				variant: "warning",
+				message: "Test emails go to the user you are logged in as. If the email is also enabled for admin, the admin email address will also receive a copy of the test email.",
+			}) }}
+			<div class="row g-3">
+				{{ include('admin/components/stat.html.twig', {
+					key: 'Send to User',
+					value: emailTemplate.sendUser ? 'Yes' : 'No',
+				}) }}
+				{{ include('admin/components/stat.html.twig', {
+					key: 'Send to Admin',
+					value: emailTemplate.sendAdmin ? 'Yes' : 'No',
+				}) }}
+				{{ include('admin/components/stat.html.twig', {
+					key: 'Logged in as',
+					value: app.user.userIdentifier,
+					className: 'col-md-6'
+				}) }}
+			</div>
+			
+			<div class="table-responsive">
+				<table class="table">
+					<thead></thead>
+					<tbody>
+						<tr>
+							<td>Slug</td>
+							<td>{{ emailTemplate.slug }}</td>
+						</tr>
+						<tr>
+							<td>Name</td>
+							<td>{{ emailTemplate.name }}</td>
+						</tr>
+						<tr>
+							<td>Subject</td>
+							<td>{{ emailTemplate.subject }}</td>
+						</tr>
+						<tr>
+							<td>Content Body</td>
+							<td>{{ emailTemplate.body }}</td>
+						</tr>
+						<tr>
+							<td>Content Parameters</td>
+							<td>{{ emailTemplate.params|json_encode }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			{% embed 'admin/components/_alert.html.twig' with {
+				variant: "info",
+			} %}
+				{% block message %}
+					<p>To test emails with object parameters, you can use an equivalent JSON object with nesting and then disable object checks with the additional boolean parameter: <code>skipObjectCheck</code>. A demonstration of both is prefilled for you.</p>
+					<p>The following 3 email types also use a special admin template variant when sending a copy to admin which may cause unexpected errors when testing with parameters:</p>
+					<ul>
+						<li>user.registration</li>
+						<li>user.password.forgot</li>
+						<li>relist.offering.new</li>
+					</ul>
+				{% endblock message %}
+			{% endembed %}
+			{{ form_start(form, { attr: {class: "d-flex flex-column gap-3"} }) }}
+				<div class="col-12">
+					{{ form_label(form.params) }}
+					<div class="d-flex flex-column gap-2 mb-2">
+						<button class="btn btn-outline-secondary btn-sm align-self-start" type="button" onclick="prettyPrint()">Check and Format JSON</button>
+						<pre class="bg-warning-subtle rounded px-3 py-2 mb-0 d-none" id="params-syntax-errors"></pre>
+					</div>
+					{{ form_widget(form.params) }}
+					{{ form_help(form.params) }}
+				</div>
+				<div class="d-flex flex-wrap gap-2">
+					{{ form_widget(form.submit, { attr: {class: "btn btn-primary"} }) }}
+					{{ form_widget(form.submitAsync, { attr: {class: "btn btn-outline-primary"} }) }}
+				</div>
+			{{ form_rest(form) }}
+			{{ form_end(form) }}
+			{% include 'admin/components/blame-timestamp.html.twig' with {'object': emailTemplate} only %}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script type="text/javascript">
+		function prettyPrint() {
+			var textAreaContent = document.getElementById("{{ form.params.vars.id }}").value;
+			try {
+				var parsedTextAreaContent = JSON.parse(textAreaContent);
+				var formattedJson = JSON.stringify(parsedTextAreaContent, undefined, 4);
+				document.getElementById("{{ form.params.vars.id }}").value = formattedJson;
+				document.getElementById("params-syntax-errors").classList.add('d-none');
+			} catch (error) {
+				console.log(error);
+				document.getElementById("params-syntax-errors").textContent = error.message;
+				document.getElementById("params-syntax-errors").classList.remove('d-none');
+			}
+		}
+		document.onload = prettyPrint();
+	</script>
+{% endblock javascripts %}

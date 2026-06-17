@@ -1,0 +1,330 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_report_mangopay_sets' %}
+{% set areaHeading = 'Mangopay Reports' %}
+{% set mainHeading = 'Transaction Report Builder' %}
+{% set maturityLabel = 'beta' %}
+
+{% set statusToColor = {
+    'available': 'green',
+    'pending': 'yellow',
+    'draft': 'gray',
+} %}
+
+{% set mangopayReports = reportSet.reports|filter(r => r.origin == constant('\\App\\Entity\\Report::ORIGIN_MANGOPAY')) %}
+{% set readyMangopayReports = mangopayReports|filter(r => r.status == constant('\\App\\Entity\\Enum\\ReportStatus::Available')) %}
+{% set mergedReports = reportSet.reports|filter(r => r.origin == constant('\\App\\Entity\\Report::ORIGIN_MERGED')) %}
+
+{% block page_content %}
+
+    {% if mangopayReports|length > 0 and mangopayReports|length != readyMangopayReports|length %}
+
+        {% embed 'admin/components/_alert.html.twig' with {
+            variant: "warning",
+            title: "Not Ready for Merging",
+        } %}
+            {% block message %}
+                <p class="">Not all Mangopay reports are ready for merging. You can refresh this page or check each of the Mangopay reports individually for updates.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-dark" href="#reports-info">Show Reports</a>
+                </div>
+            {% endblock message %}
+        {% endembed %}
+
+    {% endif %}
+
+    <section class="tw-grid lg:tw-grid-cols-2 tw-gap-6" id="builder-steps">
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'step-generate-reports',
+        "sectionTitle": 'Step 1 - Generate Mangopay Reports',
+        "linkActions": [
+            {
+				"text": "Configure Mangopay Report Generator",
+				"route": "admin_reports_mangopay_transactions_wallet",
+				"params": { id: reportSet.id },
+				"style": "btn-dark",
+                "render": reportSet.reports|length == 0,
+			},
+            {
+				"text": "View Reports",
+				"url": "#reports-info",
+				"style": "btn-outline-dark",
+                "render": reportSet.progress > 1 and reportSet.reports|length > 0,
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+            {% if reportSet.progress >= 10 and reportSet.reports|length > 0 %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "success",
+                    message: "This step is complete!",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'step-merge',
+        "sectionTitle": 'Step 2 - Merge Reports and Process',
+        "linkActions": [
+            {
+				"text": "Configure Merge and Processing",
+				"route": "admin_reports_mangopay_transactions_merge",
+				"params": { id: reportSet.id },
+				"style": "btn-dark",
+                "render": reportSet.progress == 10 or mergedReport is null,
+			},
+            {
+				"text": "Download Report",
+				"route": "admin_reports_download",
+				"params": { id: mergedReport.id|default() },
+				"style": "btn-dark",
+                "render": reportSet.progress >= 20 and mergedReport is not null,
+                "iconStart": "fa-download",
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+            {% if reportSet.progress >= 20 and mergedReport is not null %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "success",
+                    message: "Merged report is ready for download!",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+    {# {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'step-download',
+        "sectionTitle": 'Step 3 - Download Report',
+        "linkActions": [
+            {
+				"text": "Download Report",
+				"route": "admin_reports_mangopay_transactions_wallet",
+				"params": { id: reportSet.id },
+				"style": "btn-dark",
+                "render": reportSet.progress == 100,
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+            {% if reportSet.progress == 100 %}
+                {{ include('admin/components/_alert.html.twig', {
+                    variant: "success",
+                    message: "The report is ready to download!",
+                }) }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %} #}
+
+    </section>
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'configuration-info',
+        "sectionTitle": 'Configure Report Builder',
+        "linkActions": [
+            {
+				"text": "Edit Configuration",
+				"route": "admin_reports_mangopay_set_edit",
+				"params": { id: reportSet.id },
+				"style": "btn-dark",
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Id',
+                    value: reportSet.id,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Type',
+                    value: reportSet.reportSetType.value|capitalize,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: reportSet.asset is not null 
+                        ? '#' ~ reportSet.asset.id ~ ' // ' ~ reportSet.asset.name ~ ' (' ~ reportSet.asset.companyNumber ~ ')'
+                        : 'N/A',
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Description',
+                    value: reportSet.description,
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-2 p-3'
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Period Start',
+                    value: reportSet.periodStart ? reportSet.periodStart|date('Y-m-d H:i:s') : 'N/A',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Period End',
+                    value: reportSet.periodEnd ? reportSet.periodEnd|date('Y-m-d H:i:s') : 'N/A',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: reportSet.status.value|capitalize,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Progress',
+                    value: reportSet.progress,
+                }) }}
+            </div>
+            {{ include('admin/components/blame-timestamp.html.twig', {
+                object: reportSet,
+            }) }}
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'reports-info',
+        "sectionTitle": 'Reports',
+        "linkActions": [
+            {
+				"text": "Refresh Page",
+				"route": app.request.attributes.get('_route'),
+				"params": { id: reportSet.id },
+				"style": "btn-outline-dark",
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "When complete, the report builder should result in a mixture of Mangopay reports and a merged report as your output. These are all stored on our own servers so have no explicit expiry. Refresh the page to see if pending reports from Mangopay are ready yet.",
+            }) }}
+
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Number of Reports',
+                    value: reportSet.reports|length,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Number of Mangopay Reports',
+                    value: mangopayReports|length,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Number of Available Mangopay Reports',
+                    value: readyMangopayReports|length,
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Number of Merged Reports',
+                    value: mergedReports|length,
+                }) }}
+            </div>
+            <div class="table-responsive">
+                <table class="table" id="reports-list">
+                    <thead>
+                        <tr>
+                            <th>Actions</th>
+                            <th>Id</th>
+                            <th>Description</th>
+                            <th>Origin</th>
+                            <th>Wallet Id</th>
+                            <th>Reference Id</th>
+                            <th>Created At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reportSet.reports %}
+                        <tr class="tw-text-sm" data-object-id="{{ report.id }}">
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {{ include('admin/components/button_link.html.twig', {
+                                        linkProps: {
+                                            "text": "More Info",
+                                            "route": "admin_reports_view",
+                                            "params": {id: report.id},
+                                            "style": "btn-outline-primary text-nowrap",
+                                        },
+                                    }) }}
+                                    {% if report.url is not empty %}
+                                        {{ include('admin/components/button_link.html.twig', {
+                                            linkProps: {
+                                                "text": "Download",
+                                                "route": "admin_reports_download",
+                                                "params": {
+                                                    id: report.id
+                                                },
+                                                "style": "btn-outline-dark text-nowrap",
+                                                "iconStart": "fa-download",
+                                            },
+                                        }) }}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ report.id }}</td>
+                            <td>{{ report.Description }}</td>
+                            <td>{{ report.origin|capitalize }}</td>
+                            <td>{{ report.resourceId }}</td>
+                            <td>{{ report.referenceId }}</td>
+                            <td class="tw-tabular-nums">{{ report.createdAt|date('Y-m-d H:i') }}</td>
+                            <td>
+                                <span class="d-flex gap-2 align-items-center">
+                                    {{ include('admin/components/_indicator.html.twig', {color: statusToColor[report.status.value] }) }}
+                                    {{ report.status.value|capitalize }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'date-ranges',
+        "sectionTitle": 'Date Ranges',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "info",
+                message: "Mangopay reports have a maximum reporting period of 6 months. This section identifies the number of Mangopay reports required to covered the full reporting period defined in the configuration.",
+            }) }}
+
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Number of Mangopay Reports Needed',
+                    value: max(0, dateCheckpoints|length - 1),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Number of Mangopay Reports Found',
+                    value: mangopayReports|length,
+                }) }}
+            </div>
+            {% if dateCheckpoints|length > 1 %}
+            
+            <div class="table-responsive">
+                <table class="table" id="date-checkpoint-list">
+                    <thead>
+                        <tr>
+                            <th>Report Number</th>
+                            <th>Date Range Start</th>
+                            <th>Date Range End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reportNumber in range(0, dateCheckpoints|length - 2) %}
+                        <tr>
+                            <td>{{ reportNumber + 1 }}</td>
+                            <td class="tw-tabular-nums">{{ dateCheckpoints[reportNumber]|date('Y-m-d H:i:s') }}</td>
+                            <td class="tw-tabular-nums">{{ dateCheckpoints[reportNumber + 1]|date('Y-m-d H:i:s') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

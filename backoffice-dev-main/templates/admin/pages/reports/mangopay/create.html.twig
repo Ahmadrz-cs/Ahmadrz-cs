@@ -1,0 +1,59 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_reports_index' %}
+{% set areaHeading = 'Reports' %}
+{% set mainHeading = 'Create Mangopay Report' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+	{% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'create-report-form',
+        "sectionTitle": 'Configure Mangopay Report',
+		"linkActions": [
+            {
+				"text": "Find Asset Wallet Ids",
+				"route": "admin_asset_wallet_list",
+				"params": {},
+				"style": "btn-outline-dark",
+				"newTab": true,
+			},
+        ]
+    } %}
+		{% block sectionContent %}
+			{{ form_start(form) }}
+			<div class="row ">
+				<div class="col-md-6">{{ form_row(form.Tag) }}</div>
+				<div class="col-md-6">{{ form_row(form.Filters.WalletId) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.AfterDate) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.BeforeDate) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Sort) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.AuthorId) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.ResultCode) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.Status) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.Type) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.Nature) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.MinDebitedFundsAmount) }}</div>
+				<div class="col-md-6 col-xl-3">{{ form_row(form.Filters.MaxDebitedFundsAmount) }}</div>
+				<div class="col-12">
+					{{ form_label(form.Columns) }}
+					<div class="d-grid tw-gap-x-4 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 2xl:lg:tw-grid-cols-5">
+						{% for columnChoice in form.Columns %}
+							{{ form_widget(columnChoice) }}
+						{% endfor %}
+					</div>
+				</div>
+				<div class="col-12 mt-5">{{ form_row(form.Preview) }}</div>
+			</div>
+			{{ form_rest(form) }}
+			<div class="">
+				<button class="btn btn-success" id="submit" type="submit">Create Report</button>
+				<a class="btn btn-outline-secondary" href="{{ path('admin_reports_index') }}">Abandon</a>
+			</div>
+			{{ form_end(form) }}
+		{% endblock %}
+	{% endembed %}
+
+{% endblock page_content %}

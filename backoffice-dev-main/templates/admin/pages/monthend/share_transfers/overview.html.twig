@@ -1,0 +1,118 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Share Transfers' %}
+{% set maturityLabel = 'beta' %}
+
+{% set statusToColor = statusToColor|default({
+    'Yes': 'blue',
+    'No': 'gray',
+}) %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% include 'admin/components/_horizontal_nav_btn_group.html.twig' with {
+        'autodetectActive': true,
+        'links': {
+            navId: 'share-transfer-order-filter',
+            navLabel: 'share-transfer-filter-options',
+            linkDefinitions: [
+                {
+                    route: 'admin_monthend_overview_share_transfers',
+                    params: {},
+                    text: 'Pending Share Transfers',
+                },
+                {
+                    route: 'admin_monthend_share_transfers_list',
+                    params: {},
+                    text: 'All Share Transfers',
+                },
+            ]
+	    }
+    } only %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "pending-share-transfers",
+        "sectionTitle": "Pending Share Transfers",
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+
+            {{ include('admin/components/_alert.html.twig', {
+                variant: "notice",
+                title: "Identifying assets that require filing share transfers",
+                message: "This tool is intended to help identify which assets have had share trades within the given period (defaults to current monthend period). If there are any settlement orders or prefunder repayment orders, then share transfers are expected to be filed.
+
+                'Has Share Transfer' indicates whether a share transfer order/checklist has already been created for the given period. 
+                
+                Adjust the date range to search for historical data. This might be useful if filing share transfers in multi-month batches."
+            }) }}
+            
+            {{ form_start(form) }}
+                <section class="row ">
+                    <div class="col-sm-6">{{ form_row(form.dateStart) }}</div>
+                    <div class="col-sm-6">{{ form_row(form.dateEnd) }}</div>
+                    <div class="col-12">
+                        <button type="submit" id="submit" class="btn-primary btn">Apply Filters</button>
+                        <a href="{{ app.request.pathinfo }}" class="btn-secondary btn">Reset to Defaults</a>
+                    </div>
+                </section>
+            {{ form_end(form) }}
+
+            <div class="table-responsive">
+                <table class="table table-striped mb-0" id="asset-orders-list">
+                    <thead>
+                        <tr>
+                            <th>Asset Id</th>
+                            <th>Name</th>
+                            {# <th>SPV Id</th> #}
+                            <th>Has Settlements</th>
+                            <th>Has Repayments</th>
+                            <th>Has Share Transfer</th>
+                            {# <th>Actions</th> #}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assetId, orders in assetOrderSummary %}
+                        {% set asset = assets[assetId] %}
+                        {% set hasSettlements = orders.settlements > 0 ? 'Yes' : 'No' %}
+                        {% set hasRepayments = orders.repayments > 0 ? 'Yes' : 'No' %}
+                        {% set hasShareTransfers = orders.shareTransfers > 0 ? 'Yes' : 'No' %}
+                        <tr>
+                            <td>{{ assetId }}</a></td>
+                            <td>
+                                <a href="{{ path('admin_product_dashboard', {
+                                    id: assetId
+                                }) }}">{{ asset.name }}</a>
+                            </td>
+                            {# <td>{{ asset.companyNumber }}</td> #}
+                            <td>
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: statusToColor[hasSettlements],
+                                    value: hasSettlements ~ ' (' ~ orders.settlements ~ ')'
+                                }) }}
+                            </td>
+                            <td>
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: statusToColor[hasRepayments],
+                                    value: hasRepayments ~ ' (' ~ orders.repayments ~ ')'
+                                }) }}
+                            </td>
+                            <td>
+                                {{ include('admin/components/_indicator_with_text.html.twig', {
+                                    color: statusToColor[hasShareTransfers],
+                                    value: hasShareTransfers ~ ' (' ~ orders.shareTransfers ~ ')'
+                                }) }}
+                            </td>
+                            {# <td></td> #}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

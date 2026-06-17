@@ -1,0 +1,17 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_products_index' %}
+{% set areaHeading = 'Asset Products' %}
+{% set mainHeading = 'Create Asset Product' %}
+
+{% block page_content %}
+	{{ form_start(form) }}
+	<div class="row ">
+		<div class="col-12">{{ form_row(form.name) }}</div>
+	</div>
+	<div class="d-flex flex-wrap gap-2">
+		<button class="btn btn-success text-nowrap" id="submit" type="submit">Create New Product</button>
+		<a class="btn btn-outline-secondary text-nowrap" href="{{ path('admin_products_index') }}">Abandon</a>
+	</div>
+	{{ form_end(form) }}
+{% endblock %}

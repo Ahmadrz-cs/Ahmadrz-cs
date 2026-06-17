@@ -1,0 +1,195 @@
+# Fully funded asset
+# All investors in one place for ease of parsing
+
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseTrade.yaml
+
+# dynamic parameters are broken atm
+# https://github.com/nelmio/alice/issues/902
+parameters:
+    shares_royalglade_ben_1: 7312
+    shares_royalglade_ben_2: 4638
+    shares_royalglade_freya_1: 5398
+    shares_royalglade_holly_1: 2971
+    shares_royalglade_holly_2: 1862
+    shares_royalglade_jim_1: 781
+    shares_royalglade_jim_2: 388
+    shares_royalglade_jim_3: 622
+    shares_royalglade_lorna_1: 1028
+
+App\Entity\TradeOrder:
+    buy_order_royalglade_{ben_1} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userben"
+        numberOfShares: 7312
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -14 months', 'last thursday of -14 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{ben_2} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userben"
+        numberOfShares: 4638
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -12 months', 'last sunday of -12 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{freya_1} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userfreya"
+        numberOfShares: 5398
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -14 months', 'last wednesday of -14 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{holly_1} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userholly"
+        numberOfShares: 2971
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -14 months', 'last saturday of -14 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{holly_2} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userholly"
+        numberOfShares: 1862
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -10 months', 'last saturday of -10 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{jim_1} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userjim"
+        numberOfShares: 781
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -12 months', 'last saturday of -12 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{jim_2} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userjim"
+        numberOfShares: 388
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first thursday of -10 months', 'last saturday of -10 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{jim_3} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userjim"
+        numberOfShares: 622
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -10 months', 'last saturday of -10 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{lorna_1} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userlorna"
+        numberOfShares: 1028
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -10 months', 'last saturday of -10 months')>"
+        createdBy: "$user"
+
+    # Secondary market
+    sell_order_secondary_royalglade_{ben_1} (extends trade_order_secondary):
+        asset: "@assetroyalglade"
+        user: "@userben"
+        numberOfShares: 1480
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first tuesday of -3 months', 'second thursday of -3 months')>"
+        createdBy: "$user"
+    sell_order_secondary_royalglade_{ben_2} (extends trade_order_secondary):
+        asset: "@assetroyalglade"
+        user: "@userben"
+        numberOfShares: 1065
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first thursday of -3 months', 'second thursday of -3 months')>"
+        createdBy: "$user"
+    sell_order_secondary_royalglade_{holly_1} (extends trade_order_secondary):
+        asset: "@assetroyalglade"
+        user: "@userholly"
+        numberOfShares: 890
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        notes: "pending review for publish"
+        createdAt: "<dateTimeBetween('-3 weeks', '-2 weeks')>"
+        createdBy: "$user"
+    buy_order_royalglade_{lorna_2} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userlorna"
+        numberOfShares: 1200
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -2 months', 'last saturday of -2 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{lorna_3} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userlorna"
+        numberOfShares: 280
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -1 months', 'last saturday of -1 months')>"
+        createdBy: "$user"
+    buy_order_royalglade_{jim_4} (extends trade_order_invest):
+        asset: "@assetroyalglade"
+        user: "@userjim"
+        numberOfShares: 860
+        pricePerShare: "@assetroyalglade->pricePerShare"
+        createdAt: "<dateTimeBetween('first friday of -1 months', 'last saturday of -1 months')>"
+        createdBy: "$user"
+
+App\Entity\TradeOrderStatusLog:
+    buy_order_status_active_royalglade_{ben_1, ben_2, freya_1, holly_1, holly_2, jim_1, jim_2, jim_3, lorna_1, lorna_2, lorna_3, jim_4}:
+        tradeOrder: "@buy_order_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "@buy_order_royalglade_<current()>->createdAt"
+    buy_order_status_completed_royalglade_{ben_1, ben_2, freya_1, holly_1, holly_2, jim_1, jim_2, jim_3, lorna_1, lorna_2, lorna_3, jim_4}:
+        tradeOrder: "@buy_order_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_royalglade_<current()>->createdAt"
+    sell_order_status_submitted_royalglade_{ben_1, ben_2, holly_1}:
+        tradeOrder: "@sell_order_secondary_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Submitted)>
+        occuredAt: "@sell_order_secondary_royalglade_<current()>->createdAt"
+    sell_order_status_active_royalglade_{ben_1, ben_2}:
+        tradeOrder: "@sell_order_secondary_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Active)>
+        occuredAt: "<dateTimeBetween('third thursday of -3 months', 'last thursday of -3 months')>"
+    # Fully funded sell orders
+    sell_order_status_completed_royalglade_{ben_1}:
+        tradeOrder: "@sell_order_secondary_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeOrderStatus::Completed)>
+        occuredAt: "@buy_order_royalglade_lorna_3->createdAt"
+
+App\Entity\ShareTrade:
+    share_trade_royalglade_{ben_1, ben_2, freya_1, holly_1, holly_2, jim_1, jim_2, jim_3, lorna_1}:
+        buyOrder: "@buy_order_royalglade_<current()>"
+        sellOrder: "@sell_order_initial_royalglade"
+        numberOfShares: "@buy_order_royalglade_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_royalglade_<current()>->pricePerShare"
+        createdAt: "@buy_order_royalglade_<current()>->createdAt"
+    # Secondary market
+    share_trade_royalglade_{lorna_2, lorna_3}:
+        buyOrder: "@buy_order_royalglade_<current()>"
+        sellOrder: "@sell_order_secondary_royalglade_ben_1"
+        numberOfShares: "@buy_order_royalglade_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_royalglade_<current()>->pricePerShare"
+        createdAt: "@buy_order_royalglade_<current()>->createdAt"
+    share_trade_royalglade_{jim_4}:
+        buyOrder: "@buy_order_royalglade_<current()>"
+        sellOrder: "@sell_order_secondary_royalglade_ben_2"
+        numberOfShares: "@buy_order_royalglade_<current()>->numberOfShares"
+        pricePerShare: "@buy_order_royalglade_<current()>->pricePerShare"
+        createdAt: "@buy_order_royalglade_<current()>->createdAt"
+
+App\Entity\ShareTradeStatusLog:
+    trade_status_unsettled_royalglade_{ben_1, ben_2, freya_1, holly_1, holly_2, jim_1, jim_2, jim_3, jim_4, lorna_1, lorna_2, lorna_3}:
+        shareTrade: "@share_trade_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Unsettled)>
+        occuredAt: "@share_trade_royalglade_<current()>->createdAt"
+    trade_status_settled_royalglade_{ben_1, holly_1, freya_1}:
+        shareTrade: "@share_trade_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -13 months 14:24:15'))>"
+    trade_status_settled_royalglade_{ben_2, jim_1}:
+        shareTrade: "@share_trade_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -11 months 09:15:16'))>"
+    trade_status_settled_royalglade_{holly_2, jim_2, jim_3, lorna_1}:
+        shareTrade: "@share_trade_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -9 months 17:11:34'))>"
+    trade_status_settled_royalglade_{lorna_2}:
+        shareTrade: "@share_trade_royalglade_<current()>"
+        status: <(App\Entity\Enum\TradeStatus::Settled)>
+        occuredAt: "<(new DateTime('first saturday of -1 months 17:11:34'))>"

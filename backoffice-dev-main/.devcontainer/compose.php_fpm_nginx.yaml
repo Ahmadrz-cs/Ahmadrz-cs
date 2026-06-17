@@ -1,0 +1,42 @@
+services:
+  nginx-web:
+    image: nginx:${NGINX_VERSION:-latest}
+    restart: unless-stopped
+    # Use Traefik proxy instead
+    # If you want to directly expose ports, avoid using the default ports 80 and 443
+    # ports:
+    #   - "80:80"
+    labels:
+      # Explicitly tell Traefik to expose this container
+      traefik.enable: true
+      # The domain(s) the service will respond to
+      traefik.http.routers.nginx_back.rule: "Host(`back.dev.local`) || Host(`account.dev.local`) || Host(`api.dev.local`)"
+      # Allow request only from the predefined entry point named "web"
+      traefik.http.routers.nginx_back.entrypoints: "web"
+      # Specify the network Traefik should use
+      traefik.docker.network: "yielderverse-back_net-common"
+    networks:
+      net-common:
+        aliases:
+          - back.dev.local
+          - account.dev.local
+          - api.dev.local
+    volumes:
+      - ./nginx/backoffice.conf:/etc/nginx/conf.d/default.conf
+      - ..:/var/www/backoffice-dev
+  php-fpm:
+    build:
+      context: .
+      dockerfile: php/Dockerfile
+      args:
+        PHP_VERSION: "${PHP_VERSION:-8}"
+    restart: unless-stopped
+    networks:
+      - net-database
+      - net-common
+    volumes:
+      - ..:/var/www/backoffice-dev
+
+networks:
+  net-database:
+  net-common:

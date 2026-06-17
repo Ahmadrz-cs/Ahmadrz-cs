@@ -1,0 +1,90 @@
+{% extends 'admin/layouts/ops.html.twig' %}
+
+{% set areaHeading = 'Legcy Divestment Payouts' %}
+{% set mainHeading = 'Asset Divestments' %}
+{% set maturityLabel = 'legacy' %}
+
+{% block page_content %}
+
+    <section class="row g-3 my-4 text-center">
+        <div class="col-sm-6 col-md-4">
+            <p class="h6 text-uppercase">Asset Name</p>
+            <p class="h4">{{ asset.name }}</p>
+        </div>
+        <div class="col-sm-6 col-md-4 mt-md-0">
+            <p class="h6 text-uppercase">Shares Divested</p>
+            <p class="h4">{{ divestmentReport.totalSharesDivested }}</p>
+        </div>
+        <div class="col-sm-6 col-md-4 mt-md-0">
+            <p class="h6 text-uppercase">Divestment Value</p>
+            <p class="h4">£{{ divestmentReport.totalPaid|number_format(2, '.', ',') }}</p>
+        </div>
+    </section>
+
+    <section class="my-4">
+        <div class="border rounded-2 d-inline-block p-2 my-3" id="payout-count">
+            {{ divestmentReport.payoutsCreated|length }} Payments Made
+        </div>
+        <table class="table table-striped" id="payouts-list">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>User</th>
+                    <th>Mangopay UserId</th>
+                    <th>Payout Amount (£)</th>
+                    <th>Shares Divested</th>
+                    <th>Profit/Loss (£)</th>
+                    <th>Transaction Id</th>
+                    <th>Due Date</th>
+                    <th>Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in divestmentReport.payoutsCreated %}
+                <tr>
+                    <td>{{ payout.id }}</td>
+                    <td>{{ payout.creditedUser.username }}</td>
+                    <td>{{ users[payout.creditedUser.id].mangoPayUserId }}</td>
+                    <td>{{ payout.payoutAmount|number_format(2, '.', ',') }}</td>
+                    <td>{{ payout.shareholding }}</td>
+                    <td>{{ (payout.payoutAmount - (payout.shareholding * asset.pricePerShare))|round(2)|number_format(2, '.', ',') }}</td>
+                    <td>{{ payout.transactionId }}</td>
+                    <td>{{ payout.dueDate|date(constant('DATE_ATOM')) }}</td>
+                    <td><a href="{{ path('admin_payout_edit', { id: payout.id }) }}">View Payout</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <section class="my-4">
+        <div class="border rounded-2 d-inline-block p-2 my-3" id="investment-count">
+            {{ divestmentReport.investmentsUpdated|length }} Investments Updated
+        </div>
+        <table class="table table-striped" id="investments-list">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Investor</th>
+                    <th>Original Shares Held</th>
+                    <th>Total Shares Divested</th>
+                    <th>Divestment Progress (%)</th>
+                    <th>Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for investment in divestmentReport.investmentsUpdated %}
+                <tr>
+                    <td>{{ investment.id }}</td>
+                    <td>{{ investment.user.username }}</td>
+                    <td>{{ investment.shareamount }}</td>
+                    <td>{{ investment.divestedshares|default(0) }}</td>
+                    <td>{{ (100 * (investment.divestedshares|default(0) / investment.shareamount))|number_format(2, '.',
+                        ',') }}</td>
+                    <td><a href="{{ path('admin_investment_edit', { id: investment.id }) }}">View Investment</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+{% endblock page_content %}

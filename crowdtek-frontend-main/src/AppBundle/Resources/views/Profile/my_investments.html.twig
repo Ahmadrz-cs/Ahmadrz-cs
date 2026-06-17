@@ -1,0 +1,351 @@
+{% if active is not defined %}
+{% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+{% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+{% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+{% set hasUserInfo = app.session.has('userInfo') %}
+{% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% extends '@AppBundle/base.html.twig' %}
+
+{% block body %}
+<main role="main">
+    {% include '@AppBundle/Common/portfoliobanner.html.twig' %}
+    <!-- tab bars -->
+    <section class="mt-4">
+
+        {% include '@AppBundle/Common/portfolionav.html.twig' %}
+        <!-- investments -->
+        <div class="tab-pane fade show active" id="pills-investments" role="tabpanel"
+            aria-labelledby="pills-investments-tab">
+            <div class="container py-3">
+                <h3 class="text-center mb-3">My Investments</h3>
+                <div class="d-flex flex-column justify-content-center align-items-center mb-3">
+                    <a href="/investment-history"
+                        class="btn btn-outline-primary rounded-pill px-3 text-uppercase py-2 px-4 mb-2">Export
+                        Investments as CSV</a>
+                    <form id="filter-form" method="get" action="" class="property-listing filter-form">
+                        <select id="filter_asset_name" name="filter_asset_name"
+                            class="form-control rounded-pill w-auto mb-3">
+                            <option value="">
+                                All properties
+                            </option>
+                            {% for item in asset_names|default([]) %}
+                            <option value="{{ item }}"
+                                {% if filter_options.filter_asset_name is defined and filter_options.filter_asset_name == item %}selected="selected"
+                                {% endif %}>
+                                {{ item }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+
+
+                    <p class="text-md">Showing {{ raw_investments|length }} of {{ inv_count_total }} investments
+                        ({{inv_count_active}} active)</p>
+                </div>
+                <div class="transaction-history mb-3">
+                    <table
+                        class="table table-striped table-hover table-borderless border-bottom-0 table-custom text-md">
+                        <thead class="bg-secondary p-3 font-medium">
+                            <th class="table-custom-hd">Id</th>
+                            <th class="table-custom-hd">Date</th>
+                            <th class="table-custom-hd">Original Value</th>
+                            <th class="table-custom-hd">Current Value</th>
+                            <th class="table-custom-hd">Divested Value</th>
+                            <th class="table-custom-hd">Original Shares</th>
+                            <th class="table-custom-hd">Current Shares</th>
+                            <th class="table-custom-hd">Shares Offered</th>
+                            {# <th class="table-custom-hd">Divested Shares</th> #}
+                            <th class="table-custom-hd">Asset Name</th>
+                            <th class="table-custom-hd">Status</th>
+                            {# <th class="table-custom-hd">View Cert</th> #}
+                            <th class="table-custom-hd">Sell Investment</th>
+                        </thead>
+                        <tbody>
+                            {% for inv in raw_investments|default([]) %}
+
+                            {% set share_price = inv|get_info('org_price_per_share') %}
+                            {% set current_share_price = asset_info[inv.asset_id]|get_info('price_per_share') %}
+                            <tr data-original-price="{{ share_price }}" data-current-price="{{ current_share_price }}" data-investment-id="{{ inv.id }}">
+                                <td class="t-attr-header table-custom-data" data-label="Id"><span
+                                        class="table-custom-value d-inline-block">{{ inv.id }}</span></td>
+                                <td class="t-attr-header table-custom-data" data-label="Date"><span
+                                        class="table-custom-value d-inline-block">{{ inv.created_at|date('d/m/Y') }}</span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Original Value"><span
+                                        class="table-custom-value d-inline-block">£{{ inv.investment_amount|number_format(2, '.', ',') }}</span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Current Value"><span
+                                        class="table-custom-value d-inline-block">£{{ ((inv.number_of_shares - inv.divested_shares) * current_share_price)|number_format(2, '.', ',') }}</span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Divested Value"><span
+                                        class="table-custom-value d-inline-block">£{{ inv.divested_amount|number_format(2, '.', ',')|default(0) }}</span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Original Shares"><span
+                                        class="table-custom-value d-inline-block">{{ inv.number_of_shares|number_format }}</span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Current Shares"><span
+                                        class="table-custom-value d-inline-block">{{ (inv.number_of_shares - inv.divested_shares)|number_format }}</span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Shares Offered"><span
+                                        class="table-custom-value d-inline-block">{{ inv.offered_shares|number_format|default(0) }}</span>
+                                </td>
+                                {# <td class="t-attr-header table-custom-data" data-label="Divested Shares"><span
+                                        class="table-custom-value d-inline-block">{{ inv.divested_shares|number_format|default(0) }}</span>
+                                </td> #}
+                                <td class="t-attr-header table-custom-data" data-label="Asset Name">
+                                    <span class="table-custom-value d-inline-block">{{ inv.asset_name }}
+                                        {% if inv.type == 'prefunding' %}
+                                        <span class="badge badge-warning ml-1 ml-lg-0">prefunding</span>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="t-attr-header table-custom-data" data-label="Status">
+                                    <span class="table-custom-value d-inline-block">{{ inv.life_cycle_stage_name }}</span>
+                                    
+                                </td>
+
+                                {% set certificate_file = inv|get_file('share_certificate') %}
+                                {% set share_amount = inv|get_info('share_amount') %}
+                                {% set can_sell = share_amount -inv.offered_shares %}
+                                {% set assetId = inv['asset_id'] %}
+
+                                {% if inv.life_cycle_stage_name =='settled' %}
+
+                                {# <td class="t-attr-header table-custom-data" data-label="View Cert">
+                                    <span class="table-custom-value d-inline-block">
+                                        {% if certificate_file.id is defined %}
+                                        <a class="btn btn-primary rounded-pill" href="{{ certificate_file.url }}"
+                                            download title="Download">
+
+                                            <img src="{{asset('bundles/app/svg/')}}card-award.svg" loading="lazy"
+                                                alt="certificate" class="icon-sm" />
+
+                                        </a>
+
+                                        {% else %}
+                                        <a class="btn btn-primary rounded-pill"
+                                            href="{{ path('create_pdf_certificate',{'offering_id':inv.offering_id}) }}"
+                                            title="Generate">
+
+                                            <img src="{{asset('bundles/app/svg/')}}card-award.svg" loading="lazy"
+                                                alt="certificate" class="icon-sm" />
+
+                                        </a>
+                                        {% endif %}
+                                    </span>
+                                </td> #}
+
+                                {% if inv.type == 'prefunding' %}
+                                <td class="table-custom-data" data-label="Sell Investment">
+                                    <span class="table-custom-value d-inline-block">Prefunding investments cannot be sold</span>
+                                </td>
+                                {% else %}
+                                <td class="t-attr-header table-custom-data" data-label="Sell Investment">
+                                    <span class="table-custom-value d-inline-block">
+                                        {% if asset_info[assetId]['custom']['blocked_for_sale'] == true  %}
+                                        <span class="btn btn-primary rounded-pill text-uppercase px-2 disabled"
+                                            aria-disabled="true" title="Sell my investment"><span>SELL</span></span>
+                                        {% elseif inv.divested_shares >= inv.number_of_shares %}
+                                        <span class="text-uppercase px-2">SOLD</span>
+                                        {% elseif inv.offered_shares >= inv.number_of_shares 
+                                            and inv.offered_shares|default(0) > inv.divested_shares|default(0) %}
+                                        <span class="table-custom-value d-inline-block">Already listed for sale</span>
+                                        {% elseif can_sell > 0 and asset_info[inv['asset_id']]|get_info('sold_off', 'undefined') == 'undefined' %}
+                                        <a href="#" class="sell_invest btn btn-primary rounded-pill text-uppercase px-2"
+                                            data-id="{{ inv.id }}" data-toggle="modal"
+                                            data-target="#modal-sell-investment"
+                                            title="Sell my investment"><span>SELL</span></a>
+                                        {% else %}
+                                        <span class="text-uppercase px-2">SOLD</span>
+                                        {% endif %}</span>
+                                </td>
+                                {% endif %}
+
+                                {% elseif inv.life_cycle_stage_name =='withdrawn' %}
+
+                                <td> </td>
+                                <td> </td>
+
+                                {% else %}
+
+                                {# <td class="t-attr-header table-custom-data" data-label="View Cert">
+                                    <span class="table-custom-value d-inline-block">
+                                        <a class="btn btn-primary rounded-pill" href="#modal-box-notice"
+                                            title="View Certificate" data-toggle="modal"
+                                            data-target="#modal-box-notice">
+
+                                            <img src="{{asset('bundles/app/svg/')}}card-award.svg" class="icon-sm"
+                                                loading="lazy" alt="certificate" />
+
+                                        </a>
+                                    </span>
+                                </td> #}
+
+                                {% if inv.type == 'prefunding' %}
+                                <td class="table-custom-data" data-label="Sell Investment">
+                                    <span class="table-custom-value d-inline-block">Prefunding investments cannot be sold</span>
+                                </td>
+                                {% else %}
+                                <td class="table-custom-data" data-label="Sell Investment">
+                                    <span class="table-custom-value d-inline-block">Investment cannot be sold until it is settled</span>
+                                </td>
+                                {% endif %}
+
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</main>
+{# begin modal:popup#}
+<div class="modal fade y-modal" id="modal-box-notice" tabindex="-1" role="dialog" aria-labelledby="modal-box-notice"
+    aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header" style="border: none">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body text-center p-3">
+
+                <img src="{{ asset('bundles/app/img/logo_wordmark_contained.svg') }}" loading="lazy" alt="yielders logo"
+                    class="img-fluid mb-2 logo-vip" style="max-width: 250px">
+                <p>We are currently approving your investment with HMRC. This normally takes 15-28 working days to
+                    complete.</p>
+                <p>Once we have approval from HMRC, we will notify you by e-mail & issue a copy certificate for you
+                    to see in your portfolio page.<br>For more information, please see our FAQ section here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{# end model:popup#}
+
+{# begin modal:popup documents#}
+<div class="modal fade" id="modal-box-documents" tabindex="-1" role="dialog" aria-labelledby="modal-box-documents"
+    aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content" style="background-color: #efefef;">
+            <div class="modal-header" style="border: none">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body" id="documents-area">
+
+            </div>
+        </div>
+    </div>
+</div>
+{# end model:popup documents#}
+
+<!-- begin:modal-sell-investment -->
+<div class="modal fade y-modal" id="modal-sell-investment" tabindex="-1" role="dialog"
+    aria-labelledby="modal-sell-investment" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content general-modal p-2">
+            <div class="modal-header d-block text-center border-0">
+                <h4 class="h3 modal-title">Sell My Investment</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body box-sell-investment pt-2 px-3 pb-3">
+                <div class="box">
+                    <div class="scroll">
+                        <ol class="color-dol show-bullets">
+                            <li>A Yielders admin fee will be charged for relisting your share sale. (<a
+                                    href="http://help.yielders.co.uk/en/articles/3436312-our-fees"
+                                    target="_blank">Relisting Fees</a>)</li>
+                            <li>Any capital appreciation will be forgone when relisting on the platform</li>
+                            <li>Future dividend income will be forgone</li>
+                            <li>I accept the <a href="{{ path('terms_conditions') }}" target="_blank">Terms &
+                                    Conditions</a> to buying and selling on the Yielders platform</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="custom-control custom-checkbox checkbox mb-3">
+
+                    <input type="checkbox" required="" id="check_confirm_sell_investment" class="custom-control-input"
+                        name="" value="">
+                    <label class="custom-control-label" for="check_confirm_sell_investment">I agree to the above terms &
+                        risks involved with buying shares on the secondary market</label>
+
+                    <span id="error_sell_invest" style="display: none; color: red">* Required field</span>
+                </div>
+
+                <div class="text-center">
+                    <input type="hidden" id="inv_id" />
+                    <button class="btn btn-primary rounded-pill px-2" id="sell_my_invest_btn"
+                        name="sell-my-invest-btn">Accept and Sell Investment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!-- /#modal-sell-investment -->
+{% endblock %}
+
+{% block pagejs %}
+<script>
+    $(document).ready(function () {
+
+        $('.show-documents').on('click', function () {
+            var offering_id = $(this).data('offering-id');
+            $.ajax({
+                type: "POST",
+                url: '{{ path('investment_documents') }}',
+                data: { 'offering_id': offering_id }, // serializes the form's elements.
+                beforeSend: function () {
+                    $("#modal-box-documents").modal('show');
+                    $('#documents-area').html('<p>Loading...</p>');
+                },
+                success: function (data) {
+                    $('#documents-area').html(data);
+                },
+                error: function () {
+                    $('#documents-area').html('<p>ERROR: Cannot load documents.</p>');
+                    $("#modal-box-documents").modal('show');
+                }
+            });
+        });
+
+        $('.sell_invest').on('click', function (e) {
+            e.preventDefault();
+            var inv_id = $(this).data('id');
+            $('#inv_id').val(inv_id);
+            return true;
+        });
+
+        $('#sell_my_invest_btn').on('click', function (e) {
+            e.preventDefault();
+            $('#error_sell_invest').hide();
+            if ($('#check_confirm_sell_investment').is(':checked') === false) {
+                $('#check_confirm_sell_investment').focus();
+                $('#error_sell_invest').show();
+                return false;
+            }
+            var url = "{{ path('sell_my_investment', {'inv_id': '__id__' }) }}";
+            window.location.href = url.replace('__id__', $('#inv_id').val());
+        });
+    });
+    $(function () {
+        $('#filter_asset_name').on('change', function (e) {
+            e.stopPropagation();
+            $('#filter-form').submit();
+            return true;
+        });
+    });
+</script>
+{% endblock %}

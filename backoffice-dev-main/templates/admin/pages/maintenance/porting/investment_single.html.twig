@@ -1,0 +1,54 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set areaHeading = 'Maintenance Tools' %}
+{% set mainHeading = 'Activity Logs Cleanup' %}
+{% set maturityLabel = 'beta' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "port-investment",
+        "sectionTitle": "Port Investment",
+    } %}
+        {% block sectionContent %}
+        {{ form_start(form) }}
+        {{ form_row(form.port) }}
+        {{ form_end(form) }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            title: title|default(null),
+            tableId: tableId|default("trade-order-info"),
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Id": investment.id,
+                "Type": investment.type|capitalize,
+                "Comments": investment.comments,
+                "Status": investment.lifecycleStatus|capitalize,
+                "Buyer": "#" ~ investment.user.id ~ " // " ~ investment.user.username,
+                "Offering": "#" ~ investment.offering.id ~ " // " ~ investment.offering.name,
+                "Asset": "#" ~ investment.offering.asset.id ~ " // " ~ investment.offering.asset.name,
+                "Investment Share Quantity": investment.shareAmount|default(0)|number_format,
+                "Investment Share Price": investment.orgPricePerShare|default(0)|string|format_currency('GBP', {fraction_digit: 6}),
+                "Investment Funding Goal": investment.investmentValue|default(0)|string|format_currency('GBP'),
+                "Created At": investment.createdAt ? investment.createdAt|date : 'N/A',
+                "Created By": investment.createdBy|default('N/A'),
+                "Updated At": investment.updatedAt ? investment.createdAt|date : 'N/A',
+                "Updated By": investment.updatedBy|default('N/A'),
+            }
+        }) }}
+        {{ include('admin/components/status_record_table.html.twig', {
+            object: investment,
+            places: [
+                'open',
+                'rejected',
+                'approved',
+                'withdrawn',
+                'settled',
+            ]}) 
+        }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

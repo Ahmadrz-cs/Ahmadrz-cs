@@ -1,0 +1,5 @@
+Id, Date, Original Value, Current Value, Divested Value, Original Shares, Current Shares, Shares Offered, Asset Name, Status
+{% for row in investments|default([]) %}
+{% set share_price = row|get_info('org_price_per_share') %}
+{{ row.id }}, {{ row.created_at|date('d/m/Y') }}, {{ row.investment_amount|number_format(2, '.', '') }}, {{ (((row|get_info('share_amount')) - row.divested_shares) * share_price)|number_format(2, '.', '') }}, {{ row.divested_shares * share_price|number_format(2, '.', '') }}, {{ row|get_info('share_amount') }}, {{ (row|get_info('share_amount')) - row.divested_shares }}, {{ row.offered_shares|replace({".00" : ""})|default(0) }}, {{ row.asset_name|replace({',': " -"}) }}, {{ row.life_cycle_stage_name }}
+{% endfor %}

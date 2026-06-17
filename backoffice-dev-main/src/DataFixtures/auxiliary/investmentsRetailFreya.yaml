@@ -1,0 +1,155 @@
+include:
+    - ../standardUsers.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseInvestment.yaml
+
+App\Entity\Investment:
+    investment{freya_neptunis1} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringneptunis"
+        orgPricePerShare: "@offeringneptunis->pricePerShare"
+        share_amount: 15000
+        type: "normal"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{freya_neptunis2} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringneptunis"
+        orgPricePerShare: "@offeringneptunis->pricePerShare"
+        share_amount: 60000
+        type: "prefunding"
+        createdAt: "<dateTimeBetween('-1 week', 'now')>"
+    investment{freya_nixis1} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringnixis"
+        orgPricePerShare: "@offeringnixis->pricePerShare"
+        share_amount: 1000
+        type: "normal"
+    investment{freya_nixis2} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringnixis"
+        orgPricePerShare: "@offeringnixis->pricePerShare"
+        share_amount: 4000
+        type: "prefunding"
+    investment{freya_nixis3} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringnixis"
+        orgPricePerShare: "@offeringnixis->pricePerShare"
+        share_amount: 150
+        type: "prefunding"
+    investment{freya_nixis4} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringnixis"
+        orgPricePerShare: "@offeringnixis->pricePerShare"
+        share_amount: 250
+        type: "prefunding"
+    investment{freya_lodge1} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 50451
+        type: "prefunding"
+        createdAt: "<(new DateTime('first friday of -2 month'))>"
+    investment{freya_lodge2} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 6723
+        type: "prefunding"
+        createdAt: "<(new DateTime('first friday of -2 month'))>"
+    investment{freya_lodge3} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 25813
+        type: "prefunding"
+        createdAt: "<(new DateTime('first friday of -2 month'))>"
+    investment{freya_lodge4} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 1183
+        createdAt: "<(new DateTime('first friday of -2 month'))>"
+    investment{freya_lodge5} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringlodge"
+        orgPricePerShare: "@offeringlodge->pricePerShare"
+        share_amount: 5263
+        type: "prefunding"
+        createdAt: "<(new DateTime('first friday of -2 month'))>"
+    investment{freya_nova1} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringnova"
+        orgPricePerShare: "@offeringnova->pricePerShare"
+        share_amount: 305
+    investment{freya_neptunis3} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringneptunis"
+        orgPricePerShare: "@offeringneptunis->pricePerShare"
+        share_amount: 571
+    investment{freya_neptunis4} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringneptunis"
+        orgPricePerShare: "@offeringneptunis->pricePerShare"
+        share_amount: 580
+    investment{freya_royalglade1} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringroyalglade"
+        orgPricePerShare: "@offeringroyalglade->pricePerShare"
+        share_amount: 5398
+    investment{freya_kolness1} (extends investment_base):
+        user: "@userfreya"
+        offering: "@offeringkolness"
+        orgPricePerShare: "@offeringkolness->pricePerShare"
+        share_amount: 1958
+
+App\Entity\InvestmentStatus:
+    investmentstatusfreya_{neptunis1, neptunis2, nixis1, nixis2, lodge1, lodge4, lodge5, royalglade1} (extends investmentstatus_base):
+    investmentstatusfreya_{nova1, neptunis3, neptunis4, kolness1} (extends investmentstatus_base):
+        lifecycleStatus: "approved"
+    investmentstatusfreya_{nixis3} (extends investmentstatus_base):
+        lifecycleStatus: "open"
+    investmentstatusfreya_{nixis4} (extends investmentstatus_base):
+        lifecycleStatus: "approved"
+    investmentstatusfreya_{lodge2} (extends investmentstatus_base):
+        lifecycleStatus: "withdrawn"
+    investmentstatusfreya_{lodge3} (extends investmentstatus_base):
+        lifecycleStatus: "rejected"
+
+App\Entity\InvestmentDocuments:
+    idoc_freya_neptunis{1..2}:
+        investment: "@investmentfreya_neptunis<current()>"
+        document: "@sharecert_freya_neptunis<current()>"
+    idoc_freya_nixis{1..2}:
+        investment: "@investmentfreya_nixis<current()>"
+        document: "@sharecert_freya_nixis<current()>"
+    idoc_freya_lodge{1}:
+        investment: "@investmentfreya_lodge<current()>"
+        document: "@sharecert_freya_lodge<current()>"
+    idoc_freya_royalglade{1}:
+        investment: "@investmentfreya_royalglade<current()>"
+        document: "@sharecert_freya_royalglade<current()>"
+
+App\Entity\Document:
+    sharecert_freya_neptunis{1..2} (extends doc_certificate):
+    sharecert_freya_nixis{1..2} (extends doc_certificate):
+    sharecert_freya_lodge{1} (extends doc_certificate):
+    sharecert_freya_royalglade{1} (extends doc_certificate):
+
+App\Entity\InvestmentAddFields:
+    investmentaddfields{freya_nixis1, freya_neptunis1, freya_lodge4} (extends prefundingId_base):
+    investmentaddfields{freya_nixis2} (extends sharesToKeep_base):
+        fieldValue: 1000
+    investmentaddfields{freya_neptunis2} (extends sharesToKeep_base):
+        fieldValue: 15000
+    investmentaddfields{freya_lodge1} (extends sharesToKeep_base):
+        fieldValue: 1183
+
+App\Entity\Offering:
+    relisting{freya_lodge4} (extends offering_base):
+        sell_investment: "@investment<current()>"
+        asset: "@assetlodge"
+        name: "@offeringlodge->name"
+        pricePerShare: "@offeringlodge->pricePerShare"
+        noOfShares: 135
+        createdBy: "@userfreya"
+        lifecyclestatus: "submitted"

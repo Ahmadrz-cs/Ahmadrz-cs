@@ -1,0 +1,15 @@
+# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle
+oneup_flysystem:
+    adapters: # League\Flysystem\AwsS3v3\AwsS3Adapter
+        public_lf_adapter:
+            local:
+                location: "%kernel.project_dir%/tests/Support/Data/uploads/public"
+        private_lf_adapter:
+            local:
+                location: "%kernel.project_dir%/tests/Support/Data/uploads/private"
+
+    filesystems: # League\Flysystem\Filesystem
+        fs.public:
+            adapter: public_lf_adapter
+        fs.private:
+            adapter: private_lf_adapter

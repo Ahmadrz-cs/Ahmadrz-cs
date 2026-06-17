@@ -1,0 +1,278 @@
+{% extends 'admin/layouts/cms.html.twig' %}
+
+{% set backToRoute = 'admin_transfer_order_index' %}
+{% set areaHeading = 'Transfer Orders' %}
+{% set mainHeading = 'Manage Transfer Order #' ~ transferOrder.id|default() %}
+{% set htmlTitle = 'Manage Transfer Order' %}
+
+{% set asset = transferOrder.asset %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "order-info",
+        "sectionTitle": "Order Info",
+        "linkActions": [
+            {
+                "text": "Edit Transfer Order",
+                "route": "admin_transfer_order_edit",
+                "params": {id: transferOrder.id},
+                "style": "btn-secondary",
+                "roleRequired": "ROLE_OPERATIONS",
+            },
+            {
+                "text": "View Wallet Balances",
+                "route": "admin_asset_wallets_manage",
+                "params": {asset: asset.id|default('')},
+                "style": "btn-outline-dark",
+                "render": asset is not empty,
+            },
+            {
+                "text": "Go to Monthend Dashboard",
+                "route": "admin_monthend_asset_dashboard",
+                "params": {id: asset.id|default('')},
+                "style": "btn-outline-dark",
+                "render": asset is not empty,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Order Id',
+                    value: transferOrder.id
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Transfer Type',
+                    value: transferOrder.transferType.value|capitalize
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Scheduled For',
+                    value: transferOrder.scheduledFor|date('Y-m-d', false)
+                }) }}
+                {% if asset is not empty %}
+                    {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: '#%s // %s (%s)'|format(asset.id, asset.name, asset.companyNumber),
+                    className: 'col-12 col-md-6'
+                }) }}
+                {% else %}
+                    {{ include('admin/components/stat.html.twig', {
+                    key: 'Asset',
+                    value: 'None',
+                    className: 'col-12 col-md-6'
+                }) }}
+                {% endif %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Description',
+                    value: transferOrder.description|default('-'),
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-2 p-3'
+                }) }}
+                {{ include('admin/components/blame-timestamp.html.twig', {
+                    object: transferOrder,    
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "order-status",
+        "sectionTitle": "Order Status",
+    } %}
+        {% block customLinkActions %}
+            {{ include('admin/pages/transfer_order/_status_transitions.html.twig') }}
+        {% endblock customLinkActions %}
+
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: transferOrder.status|capitalize|replace({'_':'-'})
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Transfers Pending',
+                    value: transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_PENDING'))|length
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Transfers Completed',
+                    value: transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE'))|length
+                }) }}
+                {% set lastTransfer = transferOrder.transfers|filter(p => p.status == constant('App\\Entity\\TransferRequest::STATE_COMPLETE'))|sort((a, b) => a.updatedAt <=>
+                b.updatedAt)|last %}
+                    {{ include('admin/components/stat.html.twig', {
+                    key: 'Most Recently Completed',
+                    value: lastTransfer is empty ? "-" : lastTransfer.updatedAt|date('Y-m-d H:i:s (P)'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Approved By',
+                    value: transferOrder.approvedBy|default('-'),
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-2 p-3'
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "transfers-info",
+        "sectionTitle": "Transfers Info",
+        "linkActions": [
+            {
+                "text": "Add Transfer",
+                "route": "admin_transfer_order_add_transfer",
+                "params": {id: transferOrder.id},
+                "style": "btn-success",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": workflow_can(transferOrder, 'approve'),
+            },
+            {
+                "text": "Add Asset Transfer",
+                "route": "admin_add_asset_transfer",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-success",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": workflow_can(transferOrder, 'approve') and transferOrder.asset is not null,
+            },
+            {
+                "text": "Generate Prefunder Repayment Transfer",
+                "route": "admin_monthend_repayment_transfer_generate",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-success",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": workflow_can(transferOrder, 'approve') and transferOrder.description == constant('\\App\\Entity\\Enum\\TransferOrderPreset::PrefunderRepaymentTransfer').value,
+            },
+            {
+                "text": "Clear All Transfers",
+                "route": "admin_transfer_order_clear_transfers",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-danger",
+                "roleRequired": "ROLE_OPERATIONS",
+                "render": workflow_can(transferOrder, 'approve'),
+            },
+            {
+                "text": "Export Transfers List",
+                "route": "admin_transfer_order_transfers_export",
+                "params": {id: transferOrder.id},
+                "style": "btn-outline-dark",
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="row mb-3">
+                {% set transfersList = transferOrder.transfers %}
+                {% set originalTotal = transfersList|reduce((carry, v) => carry + v.amount) %}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Total to Transfer (£)',
+                    value: originalTotal|number_format(2, '.', ',')
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Total Transfers',
+                    value: transferOrder.transfers|length
+                }) }}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped datatable" id="transfers-list">
+                    <thead>
+                        <tr>
+                            <th>Actions</th>
+                            <th>Id</th>
+                            <th>Debit Wallet Id</th>
+                            <th>Credit Wallet Id</th>
+                            <th>Mode</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount (£)</th>
+                            <th class="text-end">Proportion (%)</th>
+                            <th>Updated</th>
+                            <th>Status</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transferRequest in transferOrder.transfers|default([]) %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% if is_granted('ROLE_OPERATIONS') %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "Edit",
+                                                    "route": 'admin_transfer_request_edit',
+                                                    "params": {id: transferRequest.id},
+                                                    "style": "btn-outline-primary text-nowrap",
+                                                },
+                                            }) }}
+                                            {% if transferOrder.status == constant('App\\Entity\\AbstractOrder::STATE_DRAFT') %}
+                                                {{ include('admin/components/button_link.html.twig', {
+                                                    linkProps: {
+                                                        "text": "Delete",
+                                                        "route": 'admin_transfer_request_delete',
+                                                        "params": {id: transferRequest.id},
+                                                        "style": "btn-outline-danger text-nowrap",
+                                                        "dangerous": true,
+                                                    },
+                                                }) }}
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if is_granted('ROLE_FINANCIAL_OPS')
+                                            and workflow_can(transferRequest, constant('App\\Entity\\TransferRequest::TRANSITION_TRANSFER'))
+                                            and workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN')) %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "Transfer Single",
+                                                    "route": 'admin_transfer_request_run',
+                                                    "params": {id: transferRequest.id},
+                                                    "style": "btn-primary text-nowrap",
+                                                },
+                                            }) }}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "Link Existing Transaction",
+                                                    "route": 'admin_transfer_request_search_transfer',
+                                                    "params": {id: transferRequest.id},
+                                                    "style": "btn-outline-primary text-nowrap",
+                                                },
+                                            }) }}
+                                        {% endif %}
+                                        {% if transferRequest.transaction is not null %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "View Transaction",
+                                                    "route": 'admin_transactions_view',
+                                                    "params": {id: transferRequest.transaction.id},
+                                                    "style": "btn-outline-dark text-nowrap",
+                                                },
+                                            }) }}
+                                        {% endif %}
+                                        {% if transferRequest.shareTrade is not null %}
+                                            {{ include('admin/components/button_link.html.twig', {
+                                                linkProps: {
+                                                    "text": "View Share Trade",
+                                                    "route": 'admin_share_trade_view',
+                                                    "params": {id: transferRequest.shareTrade.id},
+                                                    "style": "btn-outline-dark text-nowrap",
+                                                    "newTab": true,
+                                                },
+                                            }) }}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td data-field="id">{{ transferRequest.id }}</td>
+                                <td class="tw-text-sm tw-font-mono" data-field="debitWalletId">{{ transferRequest.debitWalletId }}</td>
+                                <td class="tw-text-sm tw-font-mono" data-field="creditWalletId">{{ transferRequest.creditWalletId }}</td>
+                                <td data-field="mode">{{ transferRequest.mode.name|humanize }}</td>
+                                <td data-field="description">{{ transferRequest.description }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                                <td class="text-end tw-tabular-nums">{{ (transferRequest.amount * 100 / max(originalTotal, 0.01))|number_format(3, '.', ',') }}</td>
+                                <td>{{ transferRequest.updatedAt|date('Y-m-d H:i:s (P)') }}</td>
+                                <td data-field="status">{{ transferRequest.status|capitalize }}{% if transferRequest.statusInfo %} ({{ transferRequest.statusInfo }}){% endif %}</td>
+                                
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

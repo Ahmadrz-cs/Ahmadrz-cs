@@ -1,0 +1,51 @@
+{% set menuLinks = [
+    {
+        "groupName": "Hubs",
+        "linkDefinitions": [
+            {
+                route: 'admin_products_index',
+                text: 'Product Hub',
+            },
+            {
+                route: 'admin_monthend_index',
+                text: 'Monthend Hub',
+            },
+            {
+                route: 'admin_kyc_index',
+                text: 'KYC Hub',
+            },
+            {
+                route: 'admin_onboarding_index',
+                text: 'Onboarding Hub',
+            },
+        ]
+    },
+    {
+        "groupName": "Support",
+        "linkDefinitions": [
+            {
+                route: 'admin_bank_account_index',
+                text: 'Bank Account Registrations',
+            }
+        ]
+    },
+    {
+        "groupName": "Legacy Support",
+        "linkDefinitions": [
+            {
+                route: 'direct_debit_all',
+                text: 'Direct Debits (Mothballed)',
+            },
+            {
+                route: 'admin_share_certificate_upload',
+                text: 'Share Certificate Uploader',
+            }
+        ],
+    },
+] %}
+
+{{ include('admin/components/' ~ template|default('_vertical_nav') ~'.html.twig', {
+    navId: 'opsNav',
+    toggleText: 'Ops',
+    links: menuLinks,
+}) }}

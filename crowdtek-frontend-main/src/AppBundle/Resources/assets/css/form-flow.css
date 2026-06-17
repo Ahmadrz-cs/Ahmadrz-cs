@@ -1,0 +1,60 @@
+.craue_formflow_steplist li {
+	line-height: 1.5em;
+}
+.craue_formflow_steplist li.craue_formflow_skipped_step {
+	text-decoration: line-through;
+}
+.craue_formflow_steplist li.craue_formflow_done_step:after {
+	content: ' \2713';
+}
+.craue_formflow_steplist li.craue_formflow_current_step {
+	font-weight: bold;
+}
+
+.craue_formflow_buttons {
+	float: left;
+	margin-top: 10px;
+}
+
+.flow-steps {
+	float: left;
+	padding: 20px 50px 250px 20px;
+	background-color: #dbdcf4;
+}
+
+.flow-form {
+	float: left;
+	width: 600px;
+	margin-top: 10px;
+	margin-left: 10px;
+}
+
+.flow-form label {
+	display: inline-block;
+    width: 160px;
+}
+
+.flow-form input[type="text"] {
+	width: 300px;
+}
+
+.flow-form textarea {
+	width: 550px;
+	height: 200px;
+}
+
+.flow-form dl dt {
+	float: left;
+	width: 100px;
+}
+
+.data-usage-notice {
+	padding: 10px 20px;
+	background-color: #f4dbdc;
+	color: #836a6b;
+	display: inline-block;
+}
+
+.clear {
+	clear: both;
+}

@@ -1,0 +1,432 @@
+{% extends '@AppBundle/base.html.twig' %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated= app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% set assetActive = asset.status in [
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring'),
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Active'),
+	constant('AppBundle\\Entity\\Enum\\AssetStatus::Closing')
+] %}
+
+{% block body %}
+<style>
+    #map {
+        height: 400px;
+        width: 100%;
+    }
+</style>
+
+<main role="main">
+    <div class="hero-banner properties-inner banner-medium bg-fixed bg-overlay">
+        <div class="container pt-6 pt-md-8 position-relative layer-z-1">
+            <nav aria-label="breadcrumb">
+                <h2 class="sr-only">Breadcrumb</h2>
+                <ol class="breadcrumb text-sm bg-transparent px-0">
+                    <li class="breadcrumb-item">
+                        <a href="/">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        {% if assetActive %}
+                            {% if asset.status == constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring') %}
+                                <a href="{{ path('product_properties_prefunding')}}">Properties</a>
+                            {% else %}
+                                <a href="{{ path('product_properties_current')}}">Properties</a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ path('product_properties_archived')}}">Properties</a>
+                        {% endif %}
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ asset.name|default() }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <section class="container my-4">
+        <div class="row">
+            <div class="col-md-6 col-lg-4 my-2" id="product-info">
+                {% if not assetActive %}
+                    {% set showFields = [
+                        "Net Projected Yield",
+                        "Target End Date",
+                        "Price",
+                        "Type",
+                    ] %}
+                {% else %}
+                    {% set showFields = [
+                        "Net Projected Yield",
+                        "Target End Date",
+                        "Price",
+                        "Shares Available",
+                        "Type",
+                        "Value",
+                    ] %}
+                {% endif %}
+                
+                <article>
+                    {{ include('@AppBundle/Product/_asset_card.html.twig', {
+                        asset: asset,
+                        showLink: false,
+                        showFields: showFields,
+                    }) }}
+                </article>
+            </div>
+            <div class="col-md-6 col-lg-4 my-2" id="product-listings">
+                <section class="d-flex flex-column gap-y-3">
+                    {% if (sellOrders|length > 0) and not asset.buyRestricted|default(false) and assetActive %}
+                        <h6>Selected Offer</h6>
+                        {% if selectedOrder ?? null %}
+                            <article id="selected-order">
+                                {{ include('@AppBundle/Product/_sell_order_card.html.twig', {
+                                    order: selectedOrder,
+                                    selected: true,
+                                }) }}
+                            </article>
+                        {% endif %}
+                        {% set otherListings = sellOrders|filter(s => s.uuid != selectedOrder.uuid) %}
+                        {% if otherListings|length > 0 %}
+                            <button class="btn btn-light mt-2" type="button" data-toggle="collapse" data-target="#more-orders" aria-expanded="false" aria-controls="more-orders">
+                                Show {{ otherListings|length }} more offers
+                            </button>
+                            <div class="collapse" id="more-orders"> 
+                                <section class="d-flex flex-column gap-y-3 my-2 overflow-y-auto" style="max-height: 400px;">
+                                {% for entry in otherListings %}
+                                    <article>
+                                        {{ include('@AppBundle/Product/_sell_order_card.html.twig', {
+                                            order: entry,
+                                        }) }}
+                                    </article>
+                                {% endfor %}
+                                </section>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <h6>No offers available</h6>
+                    {% endif %}
+                </section>
+            </div>
+            <div class="col-lg-4 my-2" id="product-invest-review">
+                {% if asset.sharesAvailable <= 0 or selectedOrder is null %}
+                    <h6 class="mb-2">This asset has currently sold out.</h6>
+                {% elseif asset.status == constant('AppBundle\\Entity\\Enum\\AssetStatus::Acquiring') %}
+                    <div class="alert bg-light border" role="alert">
+                        <a class="font-medium" 
+                            target="_blank"
+                            href="https://help.yielders.co.uk/en/articles/4879106-how-does-prefunding-work">Prefunding opportunities</a>
+                        are exclusive to Top Yielders.
+                        <a class="font-medium"
+                            target="_blank"
+                            href="https://help.yielders.co.uk/en/articles/5210027-prefunding-guide">Read the guide to prefunding</a>.
+                    </div>
+                    {% if hasUserInfo and userInfo.is_vip %}
+                        {% include '@AppBundle/Common/prefunding_product_review.html.twig' with {
+                            'documents': asset.documents|filter(doc => doc.tag in ["read_to_activate", "calculations"]),
+                            'asset': asset,
+                            'selectedOrder': selectedOrder ?? null,
+                            'isAllowedToInvest': isAllowedToInvest,
+                            'onboardingProfile': onboardingProfile,
+                        } only %}
+                    {% else %}
+                        {# <h6 class="mb-2">Please
+                            <a class="" href="{{ path('contact_us') }}">contact us</a>
+                            to invest in this Top Yielder opportunity</h6> #}
+                        <h6 class="mb-2">This asset is currently prefunding and only available to Top Yielders.</h6>
+                        <a class="btn btn-primary rounded-pill px-3 text-nowrap" href="{{ path('apply-top-yielder') }}">Apply to become a Top Yielder</a>
+                    {% endif %}
+                {% elseif asset.buyRestricted|default(false) or not assetActive %}
+                    <h6 class="mb-2">This asset is currently closed for new investments.</h6>
+                {% else %}
+                    {% include '@AppBundle/Common/retail_product_review.html.twig' with {
+                        'documents': asset.documents|filter(doc => doc.tag in ["read_to_activate", "calculations"]),
+                        'asset': asset,
+                        'selectedOrder': selectedOrder ?? null,
+                        'isAllowedToInvest': isAllowedToInvest,
+                        'onboardingProfile': onboardingProfile,
+                    } only %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-light py-8">
+        <div class="container">
+            <div class="d-flex justify-content-center">
+                <div class="calc-detail mx-auto">
+                    <h3 class="text-center">Investment Calculator</h3>
+                    <p class="font-medium mb-1 text-center mb-2">Calculate your returns, and get paid monthly.</p>
+                    <div class="calc rounded border overflow-hidden">
+                        <div class="p-2">
+                            <div>
+                                <span class="font-medium">For an investment of</span>
+                                <small>(Investment should be an increment of 500)</small>
+                            </div>
+                            <div class="row justify-content-between mt-1 align-items-center">
+                                <div class="col-md-8">
+                                    <input type="text" class="js-range-slider2" name="my_range" value=""/>
+                                    <input type="hidden" class="sliderData" value="1000"/>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <button class="btn btn-primary rounded-pill px-2 finalCalc">Calculate</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-greymedium">
+                            <div class="row">
+                                <div class="col">
+                                    <p class="calc-subtitle font-medium text-sm mb-0">Projected Net Annual Rent</p>
+                                </div>
+                                <div class="col">
+                                    <p class="calc-subtitle font-medium text-sm mb-0">Rental Return per Month</p>
+                                </div>
+                                <div class="col">
+                                    <p class="calc-subtitle font-medium text-sm mb-0">Rental Return per Year</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="calc-value mb-0 mt-lg-1" data-calcprojectedrent="{{ asset.netProjectedYield|default(0) * 100 }}">{{ asset.netProjectedYield|default(0) * 100 }}%</p>
+                                </div>
+                                <div class="col">
+                                    <p class="calc-value mb-0 mt-lg-1" data-calcrentalreturnpm="10.00">£10.00</p>
+                                </div>
+                                <div class="col">
+                                    <p class="calc-value mb-0 mt-lg-1" data-calcrentalreturnpy="120">£120.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="text-right mt-1">
+                        {% set calculation_file = asset.documents|filter(doc => doc.tag == "calculations")|first %}
+                        {% if calculation_file is not empty %}
+                            <a target="_blank" href="{{ calculation_file.url }}" class="btn-underline text-sm font-medium">Download detailed breakdown</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5">
+        <ul class="nav nav-pills nav-fill border rounded-top overflow-hidden property-tab" id="propertyTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active h6 py-3 mb-0" id="ProductDetails-tab" data-toggle="tab" href="#productDtls" role="tab" aria-controls="productDtls" aria-selected="true">Property description</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link h6 py-3 mb-0" id="location-tab" data-toggle="tab" href="#location" role="tab" aria-controls="location" aria-selected="false">Location</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link h6 py-3 mb-0" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents" aria-selected="false">Documents</a>
+            </li>
+        </ul>
+
+        <div class="tab-content border p-4 border-top-0">
+            <div class="tab-pane active" id="productDtls" role="tabpanel" aria-labelledby="ProductDetails-tab">
+                <p><strong>{{ asset.name }}</strong></p>
+                <p>{{ asset.description }}</p>
+            </div>
+            <div class="tab-pane" id="location" role="tabpanel" aria-labelledby="location-tab">
+                <div id="map"></div>
+            </div>
+            <div class="tab-pane" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                {% set asset_docs = asset.documents|filter(doc => doc.tag in ["read_to_activate", "calculations"]) %}
+                {% if asset_docs|length > 0 %}
+                    <p>Download and review the supporting documents for this opportunity</p>
+                    {% for doc in asset_docs %}
+                        <a target="_blank" href="{{ doc.url }}" class="btn btn-sm mb-1 btn-secondary">{{ doc.filename }}</a>
+                    {% endfor %}
+                {% else %}
+                    <p>There are no supporting documents for this opportunity</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-light py-8">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-7 order-2 order-lg-1">
+                    <div class="pd-gallery property-gallery">
+                        {% set property_photos = asset.documents|filter(doc => doc.tag == "property_photos") %}
+                        {% for photos in property_photos %}
+                            <div class="property-gallery-item">
+                                <img src="{{ photos.url }}" loading="lazy" alt="image" draggable="false"/>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="pd-nav property-gallery-nav my-2">
+                        {% set property_photos = asset.documents|filter(doc => doc.tag == "property_photos") %}
+                        {% for photos in property_photos %}
+                            <div class="property-gallery-thumb">
+                                <img src="{{ photos.url }}" loading="lazy" alt="image" draggable="false"/>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-lg-5 order-1 order-lg-2 mb-3 mb-lg-0">
+                    <div class="d-block d-md-flex flex-column align-items-center mt-0 mt-lg-8">
+                        <h3 class="text-center mb-2 mb-lg-6">Property Gallery</h3>
+                        <p class="text-center">Swipe to see more pictures of this property
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block pagecss %}
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+    <link rel="stylesheet" href="{{ cssPath }}ion.rangeSlider.css" />
+{% endblock %}
+
+{% block pagejs %}
+
+    {% set jsPath=asset('bundles/app/js/')%}
+
+    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script type="text/javascript" src="{{jsPath}}ion.rangeSlider.min.js"></script>
+
+    <script>
+        $(".js-range-slider2").ionRangeSlider({
+            type: "single",
+            skin: "round",
+            min: 0,
+            max: 25000,
+            from_min: 100,
+            prettify: function(n) {
+                return (n.toFixed(0)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+            },
+            step: 500,
+            from: $('.sliderData').val(),
+            prefix: "£",
+            tooltips: [true],
+            onChange: function(data) {
+                $('.sliderData').val(data.from);
+            }
+        });
+        $('.pd-gallery').slick({
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            arrows: false,
+            fade: true,
+            dots: false,
+            arrows: false,
+            infinite: false,
+            asNavFor: '.pd-nav'
+        });
+        $('.pd-nav').slick({
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            asNavFor: '.pd-gallery',
+            dots: true,
+            arrows: false,
+            variableWidth: true,
+            infinite: false,
+            focusOnSelect: true
+        });
+
+        function initMap() { 
+            var coordinates = {
+                lat: {{ asset.address.latitude }},
+                lng: {{ asset.address.longitude }},
+            };
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 17,
+                center: coordinates,
+                mapId: "property_location",
+            });
+            var marker = new google.maps.marker.AdvancedMarkerElement({ map: map, position: coordinates });
+        }
+
+        function singPlur(text, data) {
+            if (parseInt(data) > 1) {
+                return data + text + 's';
+            } else if (parseInt(data) == 1) {
+                return data + text;
+            } else {
+                return '0' + text;
+            }
+        }
+
+        function digitsFormat(num) {
+            return num.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+        }
+
+
+        function SetViewData(dataName, mainData, visData)
+        {
+            if (mainData == null) {
+                mainData = 0;
+                visData = visData.replace("null", "0.0");
+            }
+            if (isNaN(mainData)) {
+                visData = visData.replace("NaN", "0.0");
+            }
+            $('[data-' + dataName + ']').attr('data-' + dataName, mainData); //set data
+            $('[data-' + dataName + ']').html(visData); //display data
+        }
+
+        function getAttrData(attrName) {
+            return parseFloat($('[data-' + attrName + ']').attr('data-' + attrName));
+        }
+
+        function calculateAll() {
+            let sliderVal = parseFloat($('.sliderData').val()); //amount
+            //projected rent
+
+            SetViewData('calcProjectedRent', parseFloat(getAttrData('calcprojectedrent')), getAttrData('calcprojectedrent') + '%');
+            // rental return per year
+            let newcalcrentalreturnpy = parseFloat(getAttrData('calcprojectedrent') / 100) * sliderVal;
+            SetViewData('calcrentalreturnpy', newcalcrentalreturnpy, '£' + digitsFormat(newcalcrentalreturnpy.toFixed(2)));
+            // rental return per month
+            let calcRentalReturnPM = parseFloat(parseFloat(newcalcrentalreturnpy / 12));
+            SetViewData('calcrentalreturnpm', calcRentalReturnPM, '£' + digitsFormat(calcRentalReturnPM.toFixed(2)));
+
+            //net projected Capital Return  
+
+            let var1 = (parseFloat(((getAttrData('calcprojectedrent') / 100) / 12) * getAttrData('cardinvestementterm'))) || 0;
+            let var2 = (parseFloat((getAttrData('cardProjectedReturn') / 100) - (parseFloat((getAttrData('calcprojectedrent') / 100) * getAttrData('cardterm'))))) || 0;
+        
+            SetViewData('calcnetprojectedcapitalreturn', (var1 + var2) * 100, ((var1 + var2) * 100).toFixed(2) + '%');
+
+
+            //calcProjectedReturn cardProjectedReturn
+            SetViewData('calcprojectedtotalreturn', getAttrData('cardProjectedReturn'), getAttrData('cardProjectedReturn') + '%');
+
+            //remaining term income 
+            let remtermincome = sliderVal + (sliderVal * (var1 + var2));
+            SetViewData('calcprojectedcapitalreturn', remtermincome, '£' + digitsFormat(remtermincome.toFixed(2)));
+
+            //projected capital & rental at end of investement
+            let finalcalcpcrei = sliderVal + ((sliderVal * parseFloat(getAttrData('cardprojectedreturn') / 100)) || 0);
+            SetViewData('calcpcrei', finalcalcpcrei, '£' + digitsFormat(parseFloat(finalcalcpcrei).toFixed(2)));
+            // console.log('data updated');
+
+        }
+
+        $('.finalCalc').click(function() {
+            calculateAll();
+        });
+
+        calculateAll();
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&loading=async&libraries=marker&callback=initMap"></script>
+
+{% endblock %}

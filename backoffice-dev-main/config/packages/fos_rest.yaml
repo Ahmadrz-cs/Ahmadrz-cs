@@ -1,0 +1,90 @@
+# Read the documentation: https://symfony.com/doc/master/bundles/FOSRestBundle/index.html
+fos_rest:
+    param_fetcher_listener: true
+    view:
+        formats:
+            json: true
+            xml: false
+            rss: false
+        mime_types:
+            json:
+                - "application/json"
+                - "application/x-json"
+                - "application/vnd.example-com.foo+json"
+            png: "image/png"
+        failed_validation: HTTP_BAD_REQUEST
+        view_response_listener: true
+    exception:
+        enabled: false
+        map_exception_codes: true
+        flatten_exception_format: "rfc7807"
+        codes:
+            # App\Exception\MyException: 403
+            'App\Exception\ContegoServiceException': 500
+            'App\Exception\MangopayServiceException': 500
+            'App\Exception\NationalityNotFoundException': 400
+            'App\Exception\BirthdateNotFoundException': 400
+            'App\Exception\AddressNotFoundException': 400
+            'App\Exception\UserNotApprovedException': 400
+            'App\Exception\UserStatusException': 400
+            'App\Exception\SharesNotAvailableException': 400
+            'App\Exception\InsufficientBalanceException': 400
+            'App\Exception\MinCommitViolationException': 400
+            'App\Exception\MaxCommitViolationException': 400
+        messages:
+            # App\Exception\MyException: Forbidden area.
+            'App\Exception\NationalityNotFoundException': true
+            'App\Exception\BirthdateNotFoundException': true
+            'App\Exception\AddressNotFoundException': true
+            'App\Exception\UserNotApprovedException': true
+            'App\Exception\UserStatusException': true
+            'App\Exception\SharesNotAvailableException': true
+            'App\Exception\InsufficientBalanceException': true
+            'App\Exception\MinCommitViolationException': true
+            'App\Exception\MaxCommitViolationException': true
+    format_listener:
+        rules:
+            - {
+                  path: "^/v1/",
+                  priorities: ["json"],
+                  fallback_format: json,
+                  prefer_extension: false,
+              }
+            - {
+                  path: "^/v2/",
+                  priorities: ["json"],
+                  fallback_format: json,
+                  prefer_extension: false,
+              }
+            - { path: "^/", priorities: ["html"], fallback_format: html }
+    body_converter:
+        enabled: false
+        validate: true
+        validation_errors_argument: validationErrors
+    serializer:
+        serialize_null: true
+#    allowed_methods_listener:  true
+    body_listener:
+        decoders:
+            json: fos_rest.decoder.json
+
+framework:
+    exceptions:
+        App\Exception\NationalityNotFoundException: 
+            status_code: 400
+        App\Exception\BirthdateNotFoundException: 
+            status_code: 400
+        App\Exception\AddressNotFoundException: 
+            status_code: 400
+        App\Exception\UserNotApprovedException: 
+            status_code: 400
+        App\Exception\UserStatusException: 
+            status_code: 400
+        App\Exception\SharesNotAvailableException: 
+            status_code: 400
+        App\Exception\InsufficientBalanceException: 
+            status_code: 400
+        App\Exception\MinCommitViolationException: 
+            status_code: 400
+        App\Exception\MaxCommitViolationException: 
+            status_code: 400

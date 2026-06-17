@@ -1,0 +1,62 @@
+{% extends 'admin/layouts/filtered_list.html.twig' %}
+
+{% set areaHeading = 'Documents' %}
+{% set mainHeading = 'User Documents List' %}
+{% set baseTemplate = 'cms' %}
+
+{% block createActions %}
+{% if is_granted('ROLE_OPERATIONS', app.user) %}
+    <a href="{{ path('admin_userdocument_add') }}" class="btn btn-success">Add Document</a>
+{% endif %}
+{% endblock %}
+
+{% block filterPresets %}
+<a href="{{ path('admin_userdocument_index', { documentTag: 'proof_of_identity' }) }}" class="btn btn-light">Proof of Id</a>
+<a href="{{ path('admin_userdocument_index', { documentTag: 'proof_of_address' }) }}" class="btn btn-light">Proof of Address</a>
+<a href="{{ path('admin_userdocument_index', { documentTag: 'proof_of_company' }) }}" class="btn btn-light">Proof of Company</a>
+<a href="{{ path('admin_userdocument_index', { documentTag: 'proof_of_funds' }) }}" class="btn btn-light">Proof of Funds</a>
+
+{% endblock %}
+
+{% block collapsibleFilters %}
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.documentTag) }}</div>
+<div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.userId) }}</div>
+{% endblock %}
+
+{% block table %}
+<table class="table table-striped" id="userlist_doc">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>File name</th>
+            <th>File description</th>
+            <th>Tag</th>
+            <th>Has Url</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for userdocument in objects %}
+        <tr>
+            <td><a href="{{ path('admin_userdocument_edit', { id: userdocument.id }) }}">{{
+                    userdocument.id }}</a></td>
+            <td>{{ userdocument.user }}</td>
+            <td><a href="{{ path('admin_userdocument_edit', { id: userdocument.id }) }}">{{
+                    userdocument.document.filename }}</a></td>
+            <td>{{ userdocument.document.description }}</td>
+            <td>{{ userdocument.document.tag }}</td>
+            <td>
+                {% set has_url = userdocument.document.documentUrl ? 'Set' : 'Missing' %}
+                {{ include('admin/components/_indicator_with_text.html.twig', {
+                    color: statusToColor[has_url],
+                    value: has_url
+                }) }}
+            </td>
+            <td>{% include 'admin/pages/documents/user/_actions.html.twig' %}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_product_dashboard' %}
+{% set backToRouteParams = {'id': asset.id} %}
+{% set areaHeading = 'Asset Products Editor' %}
+{% set mainHeading = asset.name %}
+
+{% block page_content %}
+	{{ include('admin/components/nav_menus/product_editor.html.twig') }}
+	{% block editor_content %}{% endblock editor_content %}
+{% endblock page_content %}

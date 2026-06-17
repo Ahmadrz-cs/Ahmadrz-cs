@@ -1,0 +1,181 @@
+{% extends "@AppBundle/onboarding-base.html.twig" %}
+
+{% if active is not defined %}
+    {% set active = '' %}
+{% endif %}
+{% if sub_active is not defined %}
+    {% set sub_active = '' %}
+{% endif %}
+
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% set userInfo = [] %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+{% block stylesheets %}{% endblock %}
+
+{% block bodystyle %} 
+class="section_wrap_2" 
+onload="load_submenu();"
+{% endblock %}
+
+{% block body %}
+    <section class="wrap">
+        {% include '@AppBundle/Onboarding/sidebar-left.html.twig' %}
+
+        <div class="col-md-9 right_section">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="m_t_4">
+                        {% include '@AppBundle/Onboarding/errorflash.html.twig' %}
+                        <div class="sub_header">
+                            <h4>Self assessment</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-offset-2 col-md-8">
+                    {% if authenticated %}
+                        {{ form_start(form) }}
+                        {{ form_errors(form) }}
+
+                        {% if flow.getCurrentStepNumber() == 1 %}
+
+                            <h3>Marketing preferences</h3>
+                            <p>Yielders will use the information you provide on this form to be in touch with you and to provide updates and marketing. Do note that opting in allows you to receive emails notifying you as soon as a new asset is live. Please let us know all the ways you would like to hear from us:</p>
+
+                            <label class="control control--checkbox chk_box">
+                                Email
+                                {{ form_widget(form.contact_via_email) }}
+                                <div class="control__indicator"></div>
+                            </label>
+                            <label class="control control--checkbox chk_box">
+                                Telephone
+                                {{ form_widget(form.contact_via_tele) }}
+                                <div class="control__indicator"></div>
+                            </label>
+                            <label class="control control--checkbox chk_box">
+                                SMS
+                                {{ form_widget(form.contact_via_sms) }}
+                                <div class="control__indicator"></div>
+                            </label>
+
+                            <p style="padding-top:10px;">
+                                You can change your mind at any time by clicking the unsubscribe link in the footer of any email you receive from us, or by heading to the Contact Preferences section of your profile. We always treat your information with respect. For more information about how we use your infomration please refer to our <a href="{{ path('privacy_policy') }}" target="_blank"> Privacy Policy</a>.
+                            </p>
+
+                            {% include '@CraueFormFlow/FormFlow/buttons.html.twig' with {
+                                craue_formflow_button_label_last : 'Next',
+                                craue_formflow_button_class_last: 'btn_grdnt',
+                                craue_formflow_button_render_reset: false,
+                                craue_formflow_button_label_back: 'Previous'
+                            } %}
+                        {% endif %}
+
+                            {% if flow.getCurrentStepNumber() == 2 %}
+                                {# <h3>Step 1 : Investor Declaration</h3>
+                                <p>Please select one</p>
+
+                                <div class="row" style="margin-top:-10px;">
+                                    <div class="col-md-4 mobile-clear">
+                                        <label class="radio" for="userPreference_investor_type_0">
+                                            {{ form_widget(form.investor_type[0], {attr: {class:"hidden", onclick:"showcontent();", checked:""}}) }}
+                                            <span class="label" ></span>Restricted
+                                        </label>
+                                    </div>
+                                    <div class="col-md-4 mobile-clear">
+                                        <label class="radio"  for="userPreference_investor_type_1">
+                                            {{ form_widget(form.investor_type[1], {attr: {class:"hidden", onclick:"showcontent();"}}) }}
+                                            <span class="label"></span>Sophisticated
+                                        </label>
+                                    </div>
+                                    <div class="col-md-4 mobile-clear">
+                                        <label class="radio">
+                                            {{ form_widget(form.investor_type[2], {attr: {class:"hidden", onclick:"showcontent();"}}) }}
+                                            <span class="label"></span>High Net Worth
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <br> 
+
+                                <div class="trms_con" id="content1">
+                                    {{ include('@AppBundle/Common/categorisation/_restricted.html.twig') }}
+                                </div>
+
+                                <div class="trms_con hide" id="content2">
+                                    {{ include('@AppBundle/Common/categorisation/_sophisticated.html.twig') }}
+                                </div>
+
+                                <div class="trms_con hide" id="content3">
+                                    {{ include('@AppBundle/Common/categorisation/_hnw.html.twig') }}
+                                </div> #}
+                                
+                                <div id="fatca">
+                                    <h3>
+                                        US Taxpayer Declaration
+                                    </h3>
+                                    <div class="trms_con">
+                                        <p> 
+                                            As part of the Foreign Account Tax Compliance Act (FATCA), we are required to report on foreign assets held by US taxpayers to the US Internal Revenue Service (IRS). </a href="https://help.yielders.co.uk/en/articles/4556445-fatca-considerations-for-us-taxpaying-investors">Read More</a>
+                                        </p>
+                                        <p>
+                                            Please check the box below if you are subject to this as a US taxpayer
+                                        </p>
+                                    </div>
+                                    <label class="control control--checkbox radio">
+                                        I am a US taxpayer
+                                        {{ form_widget(form.fatca) }}
+                                        <div class="control__indicator"></div>
+                                    </label>
+                                </div>
+
+                                {% include '@CraueFormFlow/FormFlow/buttons.html.twig' with {
+                                    craue_formflow_button_label_finish : 'Next',
+                                    craue_formflow_button_class_finish: 'btn_grdnt',
+                                    craue_formflow_button_render_reset: false,
+                                    craue_formflow_button_class_back: 'hidden',
+                                    craue_formflow_button_label_back: 'Previous'
+                                } %}
+                            {% endif %}
+
+                            {{ form_end(form) }}
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+   function showcontent() {    
+    if ($('#userPreference_investor_type_0').is(":checked")) {
+        $('#content1').removeClass('hide');
+        $('#content2').addClass('hide');
+        $('#content3').addClass('hide');
+    }
+    if ($('#userPreference_investor_type_1').is(":checked")) {
+        $('#content1').addClass('hide');
+        $('#content2').removeClass('hide');
+        $('#content3').addClass('hide');
+    }
+    if ($('#userPreference_investor_type_2').is(":checked")) {
+        $('#content1').addClass('hide');
+        $('#content2').addClass('hide');
+        $('#content3').removeClass('hide');
+    }
+}
+        function load_submenu() {
+        $('#step4').removeClass("mobile_step");
+        $('#step5').removeClass("mobile_step");
+        };
+    </script>
+{% endblock %}

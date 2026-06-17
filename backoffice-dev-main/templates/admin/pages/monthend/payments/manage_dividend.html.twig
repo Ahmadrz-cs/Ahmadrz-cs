@@ -1,0 +1,433 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_asset_dashboard' %}
+{% set backToRouteParams = {id: paymentOrder.asset.id} %}
+{% set areaHeading = 'Monthend - ' ~ paymentOrder.paymentType %}
+{% set mainHeading = paymentOrder.asset.name %}
+
+{% set sharesInCirculation = currentShareholders|reduce((carry, v) => carry + v.currentHolding) %}
+{% set paymentsList = paymentOrder.payments %}
+{% set paymentsCompletedList = paymentOrder.payments|filter(p => p.status == constant('App\\Entity\\PaymentRequest::STATE_PAID')) %}
+{% set originalTotal = paymentsList|reduce((carry, v) => carry + v.amount) %}
+{% set completedTotal = paymentsCompletedList|reduce((carry, v) => carry + v.amount) %}
+
+{% set monthlyDividend = paymentOrder.asset.netProjectedIncome / 12 %}
+{% set actualYield = (originalTotal * 12) / paymentOrder.asset.fundingGoal %}
+{% set yieldPerformance = 100 * (actualYield / paymentOrder.asset.netProjectedYield|default(1)) %}
+
+{% block page_content %}
+
+    {{ include('admin/pages/monthend/order_actions.html.twig', {
+        order: paymentOrder,
+        originalTotal: originalTotal
+    }) }}
+
+    {{ include('admin/pages/monthend/_wallet_balance_warning.html.twig', {
+        walletName: paymentOrder.debitWallet|default('main')
+    }) }}
+
+    {{ include('admin/components/monthend/_empty_payment_warning.html.twig') }}
+
+    {% if paymentOrder.payments is not empty 
+            and yieldPerformance < 90
+            and paymentOrder.description is empty %}
+        
+        {% embed 'admin/components/_bordered_section.html.twig' with {
+            "sectionId": "low-dividend-warning",
+            "sectionTitle": "Dividend Below Target",
+            "sectionStyle": "border rounded-3 p-4 border-warning",
+            "linkActions": [
+                {
+                    "text": "Add Description",
+                    "route": "admin_payment_order_description",
+                    "params": {
+                        id: paymentOrder.id,
+                        redirectRoute: 'admin_monthend_dividend_manage',
+                    },
+                    "style": "btn-outline-secondary",
+                    "roleRequired": "ROLE_OPERATIONS",
+                },
+            ]
+        } %}
+            {% block sectionContent %}
+            {% embed 'admin/components/_alert.html.twig' with {
+                variant: "warning",
+            } %}
+                {% block message %}The payment total is less than <span class="fw-bold">90%</span> of the expected dividend. Consider adding a description to record why.{% endblock message %}
+            {% endembed %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Dividend Expected',
+                    value: monthlyDividend|format_currency('GBP'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Dividend Being Paid',
+                    value: originalTotal|format_currency('GBP'),
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Performance',
+                    value: yieldPerformance|round(2, 'floor')|number_format(2, '.') ~ '%',
+                }) }}
+            </div>
+            {% endblock %}
+        {% endembed %}
+
+    {% endif %}
+
+    <div class="row g-3">
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-payment",
+                "sectionTitle": "About Payment Order",
+                "linkActions": [
+                    {
+                        "text": "Edit Order",
+                        "route": "admin_payment_order_date",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_dividend_manage',
+                        },
+                        "style": "btn-outline-secondary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                    {
+                        "text": "Edit Description",
+                        "route": "admin_payment_order_description",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_dividend_manage',
+                        },
+                        "style": "btn-outline-secondary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Order Id',
+                        value: paymentOrder.id,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Scheduled Monthend',
+                        value: paymentOrder.scheduledFor|date('Y-m-d'),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Covering Period Between',
+                        value: paymentOrder.scheduledFor|date_modify('-1 month')|date('01 F Y') 
+                            ~ ' - ' 
+                            ~ paymentOrder.scheduledFor|date_modify('-1 month')|date('t F Y'),
+                        className: 'col-12',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Paying from Wallet',
+                        value: paymentOrder.debitWallet|default('main')|capitalize 
+                            ~ ' (' 
+                            ~ (paymentOrder.debitWallet == 'distribution' ? paymentOrder.asset.distributionWalletId : paymentOrder.asset.mainWalletId)
+                            ~ ')',
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Description',
+                        value: paymentOrder.description|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "about-asset",
+                "sectionTitle": "About Asset",
+                "linkActions": [
+                    {
+                        "text": "View Asset Product",
+                        "route": "admin_product_dashboard",
+                        "params": {id: paymentOrder.asset.id},
+                        "style": "btn-outline-dark",
+                    },
+                    {
+                        "text": "View Wallet Balances",
+                        "route": "admin_asset_wallets_manage",
+                        "params": {asset: paymentOrder.asset.id},
+                        "style": "btn-outline-dark",
+
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'SPV Company Number',
+                        value: paymentOrder.asset.companyNumber,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Asset Valuation',
+                        value: '£' ~ paymentOrder.asset.fundingGoal|number_format(2, '.', ','),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Current Shareholders',
+                        value: currentShareholders|length,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Active Shares in Circulation',
+                        value: sharesInCirculation|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+        
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "payment-target",
+                "sectionTitle": "Payment Target",
+                "linkActions": []
+            } %}
+                {% block sectionContent %}
+                <details class="bg-light rounded-2 p-3">
+                    <summary class="fw-bold">What do the shareholders/shareholdings stats mean?</summary>
+                    
+                    <p class="mt-3">Each shareholder should be a paid a dividend. Both stats should be "full" when all dividends have been correctly created/generated. The stats are intended to highlight issues:</p>
+                    <ul class="mb-0">
+                        <li> "Shareholders Being Paid" - Are any shareholders are not receiving a dividend?</li>
+                        <li>"Shareholding With Payments" - Is there an issue with share tracking? If there are issues, the dividends should be generated again.</li>
+                    </ul>
+                </details>                         
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shareholders Being Paid',
+                        value: paymentOrder.payments|length ~ '/' ~ currentShareholders|length,
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Shareholding With Payments',
+                        value: paymentOrder.payments|reduce((carry, v) => carry + v.shareholding)|number_format(0, '', ',')
+                            ~ '/' ~ sharesInCirculation|number_format(0, '', ','),
+                        className: 'col-md-6'
+                    }) }}
+                </div>
+                <div class="d-flex justify-content-between g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Actual (' ~ actualYield|format_number({max_fraction_digit: 3}, style: 'percent') ~ ')',
+                        value: '£' ~ originalTotal|number_format(2, '.', ',')
+                            ~ '\n(~£' ~ (originalTotal * 12)|number_format(2, '.', ',') ~ '/year)',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Target (' ~ paymentOrder.asset.netProjectedYield|format_number({max_fraction_digit: 3}, style: 'percent') ~ ')',
+                        value: '£' ~ monthlyDividend|number_format(2, '.', ',')
+                            ~ '\n(~£' ~ (monthlyDividend * 12)|number_format(2, '.', ',') ~ '/year)',
+                        className: 'text-end'
+                    }) }}
+                </div>
+
+                {% if yieldPerformance < 50 %}
+                    {% set barColourClass = 'text-bg-danger' %}
+                {% elseif yieldPerformance < 90 %}
+                    {% set barColourClass = 'text-bg-warning' %}
+                {% else %}
+                    {% set barColourClass = 'text-bg-success' %}
+                {% endif %}
+                {{ include('admin/components/_progress_bar.html.twig', {
+                    progressBars: [
+                        {
+                            color: barColourClass,
+                            label: "yield-performance",
+                            value: yieldPerformance,
+                            valueText: yieldPerformance|round(2, 'floor')
+                        },
+                    ]
+                }) }}
+
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-lg-6">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "order-status",
+                "sectionTitle": "Order Status",
+                "linkActions": []
+            } %}
+                {% block customLinkActions %}
+                    {{ include('admin/pages/payment_order/_status_transitions.html.twig', {
+                        additionalParams: { redirectRoute: 'admin_monthend_dividend_manage' }
+                    }) }}
+                {% endblock customLinkActions %}
+
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Status',
+                        value: paymentOrder.status|capitalize|replace({'_':'-'}),
+                        className: 'col-md-6'
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Approved By',
+                        value: paymentOrder.approvedBy|default('-'),
+                        className: 'col-12',
+                        valueClassName: 'bg-light rounded-2 p-3'
+                    }) }}
+                    {{ include('admin/components/blame-timestamp.html.twig', {
+                        object: paymentOrder,
+                    }) }}
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+
+        <div class="col-12">
+            {% embed 'admin/components/_bordered_section.html.twig' with {
+                "sectionId": "payments",
+                "sectionTitle": "Payments",
+                "linkActions": [
+                    {
+                        "text": "Add Payment",
+                        "route": "admin_payment_order_add_payment",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_dividend_manage',
+                        },
+                        "style": "btn-success",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": paymentOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Generate Payments",
+                        "route": "admin_monthend_dividend_generate",
+                        "params": {id: paymentOrder.id},
+                        "style": "btn-outline-primary",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": paymentOrder.status == 'draft' and paymentOrder.asset is not null,
+                    },
+                    {
+                        "text": "Clear All Payments",
+                        "route": "admin_payment_order_clear_payments",
+                        "params": {
+                            id: paymentOrder.id,
+                            redirectRoute: 'admin_monthend_dividend_manage'
+                        },
+                        "style": "btn-outline-danger",
+                        "roleRequired": "ROLE_OPERATIONS",
+                        "render": paymentOrder.status == 'draft',
+                    },
+                    {
+                        "text": "Export Payments List",
+                        "route": "admin_payment_order_payments_export",
+                        "params": {id: paymentOrder.id},
+                        "style": "btn-outline-dark",
+                    },
+                    {
+                        "text": "Manage Email Notifications",
+                        "route": "admin_monthend_payment_notifications",
+                        "params": {id: paymentOrder.id},
+                        "style": "btn-dark",
+                    },
+                ]
+            } %}
+                {% block sectionContent %}
+                <div class="row g-3">
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Wallet Balance (£)',
+                        value: walletBalance|number_format(2, '.', ',')
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Payments Completed',
+                        value: paymentsCompletedList|length
+                            ~ '/' ~ paymentOrder.payments|length
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Total Paid (£)',
+                        value: completedTotal|number_format(2, '.', ',') ~ '/' ~ originalTotal|number_format(2, '.', ',')
+                    }) }}     
+                    {% set lastTransfer = paymentsCompletedList|sort((a, b) => a.updatedAt <=>
+                    b.updatedAt)|last %}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Most Recently Completed',
+                        value: lastTransfer is empty ? "-" : lastTransfer.updatedAt|date('Y-m-d H:i:s (P)'),
+                    }) }}
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped datatable" id="payments-list">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Payee</th>
+                                <th>Payee Wallet</th>
+                                <th class="text-end">Amount(£)</th>
+                                <th class="text-end">Proportion (%)</th>
+                                <th class="text-end">Shareholding</th>
+                                <th>Updated</th>
+                                <th>Status</th>
+                                <th>Transaction Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paymentRequest in paymentOrder.payments|default([]) %}
+                            <tr data-object-id="{{ paymentRequest.id }}">
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% if is_granted('ROLE_OPERATIONS') and paymentOrder.status == 'draft' %}
+                                            <a class="btn btn-outline-primary text-nowrap"
+                                                href="{{ path('admin_payment_request_edit', {
+                                                    id: paymentRequest.id,
+                                                    redirectRoute: 'admin_monthend_dividend_manage',
+                                                }) }}">Edit</a>
+                                            <a class="btn btn-outline-danger text-nowrap mt-1 mt-xl-0"
+                                                href="{{ path('admin_payment_request_delete', {
+                                                    id: paymentRequest.id,
+                                                    redirectRoute: 'admin_monthend_dividend_manage'
+                                                }) }}"
+                                                onclick="return confirm('Are you sure? This cannot be undone')">Delete</a>
+                                        {% elseif is_granted('ROLE_FINANCIAL_OPS')
+                                            and workflow_can(paymentRequest, constant('App\\Entity\\PaymentRequest::TRANSITION_PAY'))
+                                            and workflow_can(paymentOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_RUN'))
+                                        %}
+                                            <a class="btn btn-outline-primary text-nowrap"
+                                                href="{{ path('admin_payment_request_pay', {
+                                                    id: paymentRequest.id,
+                                                    redirectRoute: 'admin_monthend_dividend_manage',
+                                                }) }}">Pay Single</a>
+                                            {% elseif paymentRequest.payout is not null %}
+                                            <a class="btn btn-outline-primary text-nowrap"
+                                                href="{{ path('admin_payout_edit', {
+                                                    id: paymentRequest.payout.id
+                                                }) }}">View Payout</a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td data-field="debitWalletId">
+                                    <a href="{{ path('admin_user_edit', { id: paymentRequest.payee.id }) }}">#{{ paymentRequest.payee.id
+                                        }} // {{ paymentRequest.payee.username }}</a>
+                                </td>
+                                <td class="tw-text-sm tw-font-mono">{{ paymentRequest.payee.mangoPayWalletId }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="amount">{{ paymentRequest.amount|number_format(2, '.', ',') }}</td>
+                                <td class="text-end tw-tabular-nums">{{ (paymentRequest.amount * 100 / max(originalTotal, 0.01))|number_format(3, '.', ',') }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="shareholding">{{ paymentRequest.shareholding|number_format(0, '', ',') }}</td>
+                                <td>{{ paymentRequest.updatedAt|date('Y-m-d H:i:s') }}</td>
+                                <td data-field='status'>{{ paymentRequest.status|capitalize }}{% if paymentRequest.statusInfo %} ({{ paymentRequest.statusInfo }}){% endif %}</td>
+                                <td class="tw-text-sm tw-font-mono">{{ paymentRequest.payout.transactionId|default('N/A') }}</td>
+                                
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endblock %}
+            {% endembed %}
+        </div>
+    </div>
+
+{% endblock page_content %}

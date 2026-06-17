@@ -1,0 +1,56 @@
+<div class="d-flex flex-wrap gap-2">
+    {{ include('admin/components/button_link.html.twig', {
+        linkProps: {
+            "text": "Create New Transfer",
+            "route": "admin_monthend_income_transfer_builder_add",
+            "params": {
+                id: transferOrder.id,
+                creditWallet: section,
+            },
+            "style": "btn-success",
+        },
+    }) }}
+</div>
+<div class="table-responsive">
+    <table class="table" id="{{ section }}-list">
+        <thead>
+            <tr>
+                {# <th>Transfer From</th> #}
+                <th>Transfer To</th>
+                <th>Description</th>
+                <th class="text-end">Amount (£)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transferRequest in groupedTransfers[section] %}
+                <tr data-object-id="{{ transferRequest.id }}">
+                    {# <td data-field="debitWalletId">{{ walletIdMap[transferRequest.debitWalletId]|default('Invalid')|capitalize }}
+                        <br>({{ transferRequest.debitWalletId }})</td> #}
+                    <td data-field="creditWalletId">{{ walletIdMap[transferRequest.creditWalletId]|default('Invalid')|capitalize }}
+                        {# <br>({{ transferRequest.creditWalletId }}) #}
+                        </td>
+                    <td data-field="description">{{ transferRequest.description }}</td>
+                    <td class="text-end tw-tabular-nums" data-field="amount">{{ transferRequest.amount|number_format(2, '.', ',') }}</td>
+                    <td>
+                        {% if is_granted('ROLE_OPERATIONS')
+                            and workflow_can(transferOrder, constant('App\\Entity\\AbstractOrder::TRANSITION_APPROVE'))
+                        %}
+                            <a class="btn btn-outline-primary"
+                                href="{{ path('admin_monthend_income_transfer_builder_edit', {
+                                    id: transferOrder.id,
+                                    transferRequest: transferRequest.id
+                                }) }}">Edit</a>
+                            <a class="btn btn-outline-danger mt-1 mt-xl-0"
+                                href="{{ path('admin_transfer_request_delete', {
+                                    id: transferRequest.id,
+                                    redirectRoute: app.request.get("_route")
+                                }) }}"
+                                onclick="return confirm('Are you sure? This cannot be undone')">Delete</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

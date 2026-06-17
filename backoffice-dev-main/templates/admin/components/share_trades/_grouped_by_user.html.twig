@@ -1,0 +1,61 @@
+<div class="table-responsive">
+    {% if title|default() %}<h5 class="fw-bold fs-5">{{ title }}</h5>{% endif %}
+    <table class="table {{ tableStyle|default() }}" id="{{ tableId|default('share-trades-list') }}">
+        <thead>
+            <tr>
+                <th colspan="2">User Info</th>
+                <th colspan="5" title="bought">Bought</th>
+                <th colspan="5" title="sold">Sold</th>
+                <th colspan="5" title="current-net">Current/Net</th>
+            </tr>
+            <tr>
+                <th>Id</th>
+                <th>Username</th>
+                <th class="text-end">Shares</th>
+                <th class="text-end">Value</th>
+                <th class="text-end">Count</th>
+                <th class="text-end">Average Value</th>
+                <th class="text-end">Average Price</th>
+                <th class="text-end">Shares</th>
+                <th class="text-end">Value</th>
+                <th class="text-end">Count</th>
+                <th class="text-end">Average Value</th>
+                <th class="text-end">Average Price</th>
+                <th class="text-end">Shares</th>
+                <th class="text-end">Value</th>
+                <th class="text-end">Count</th>
+                <th class="text-end">Average Value</th>
+                <th class="text-end">Average Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for userId, item in objects %}
+            {% set buyAvg = item.buy.shares != 0 ? item.buy.value / item.buy.shares : 0 %}
+            {% set sellAvg = item.sell.shares != 0 ? item.sell.value / item.sell.shares : 0 %}
+            {% set currentAvg = item.total.shares != 0 ? item.total.value / item.total.shares : 0 %}
+            {% set buyAvgVal = item.buy.count != 0 ? item.buy.value / item.buy.count : 0 %}
+            {% set sellAvgVal = item.sell.count != 0 ? item.sell.value / item.sell.count : 0 %}
+            {% set currentAvgVal = item.total.count != 0 ? item.total.value / item.total.count : 0 %}
+            <tr>
+                <td>{{ userId|capitalize }}</td>
+                <td>{{ userIdMap[userId] is defined ? userIdMap[userId].userIdentifier : 'N/A' }}</td>
+                <td class="tw-font-mono text-end">{{ item.buy.shares|number_format }}</td>
+                <td class="tw-font-mono text-end">{{ (item.buy.value|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ item.buy.count|number_format }}</td>
+                <td class="tw-font-mono text-end">{{ (buyAvgVal|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ (buyAvg|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ item.sell.shares|number_format }}</td>
+                <td class="tw-font-mono text-end">{{ (item.sell.value|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ item.sell.count|number_format }}</td>
+                <td class="tw-font-mono text-end">{{ (sellAvgVal|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ (sellAvg|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ item.total.shares|number_format }}</td>
+                <td class="tw-font-mono text-end">{{ (item.total.value|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ item.total.count|number_format }}</td>
+                <td class="tw-font-mono text-end">{{ (currentAvgVal|string)|format_currency('GBP') }}</td>
+                <td class="tw-font-mono text-end">{{ (currentAvg|string)|format_currency('GBP') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

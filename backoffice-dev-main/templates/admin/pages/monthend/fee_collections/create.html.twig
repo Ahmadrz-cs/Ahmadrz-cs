@@ -1,0 +1,19 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_index' %}
+{% set areaHeading = 'Monthend - Fee Collection' %}
+{% set mainHeading = 'Create Fee Collection Order' %}
+
+{% block page_content %}
+
+	{{ form_start(form) }}
+	<div class="row">
+		<div class="col-12">{{ form_row(form.scheduledFor) }}</div>
+	</div>
+	<div class="">
+		<button class="btn btn-success" id="submit" type="submit">Create Transfer Order</button>
+		<a class="btn btn-outline-secondary" href="{{ path('admin_monthend_fee_collection_index') }}">Abandon</a>
+	</div>
+	{{ form_end(form) }}
+
+{% endblock page_content %}

@@ -1,0 +1,9 @@
+{% block menu_content %}
+	{% for linkGroup in links %}
+		<div class="nav nav-pills nav-fill d-flex flex-wrap gap-2 border rounded-3 p-2 tw-text-sm tw-place-self-start" id="{{ navId }}" role="tablist">
+			{% for link in linkGroup.linkDefinitions %}
+				<button class="nav-link fw-medium text-body {% if loop.first %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#{{ link.route }}" type="button" role="tab">{{ link.text }}</button>
+			{% endfor %}
+		</div>
+	{% endfor %}
+{% endblock menu_content %}

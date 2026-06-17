@@ -1,0 +1,110 @@
+{% extends 'admin/layouts/monthend.html.twig' %}
+
+{% set areaHeading = 'Monthend' %}
+{% set mainHeading = 'Repayments Overview' %}
+
+{% set assetsAvailableToRepay = shareholdings|filter((s, assetId) => 
+    assets[assetId] is defined and (s.shares - assets[assetId].amountOfShares > 0)
+) %}
+
+{% block page_content %}
+
+    {% include 'admin/components/_horizontal_nav_btn_group.html.twig' with {
+        'autodetectActive': true,
+        'links': {
+            navId: 'dividend-order-filter',
+            navLabel: 'dividend-filter-options',
+            linkDefinitions: [
+                {
+                    route: 'admin_monthend_overview_repayments',
+                    params: {},
+                    text: 'Repayments Pending',
+                },
+                {
+                    route: 'admin_monthend_overview_repayments_list',
+                    params: {},
+                    text: 'All Repayments',
+                },
+            ]
+	    }
+    } only %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "pending-repayments",
+        "sectionTitle": "Pending Prefunder Repayments",
+        "linkActions": [
+            {
+				"text": "Create Repayment",
+				"route": "admin_monthend_repayment_create",
+				"params": {},
+				"style": "btn-success",
+				"roleRequired": "ROLE_OPERATIONS",
+			},
+            {
+				"text": "Review All Tracked Shares",
+				"route": "admin_administration_shares_circulation",
+				"params": {},
+				"style": "btn-outline-dark",
+				"newTab": true,
+			},
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assets with Prefunders to Repay',
+                value: repaymentSummary|filter(v => v.shares > 0)|length,
+                className: "col-md-6",
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Assets With Shares Available to Repay',
+                value: assetsAvailableToRepay|length,
+                className: "col-md-6",
+            }) }}
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="prefunder-repayment-list">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Asset</th>
+                        <th class="text-end">Shares Issued</th>
+                        <th class="text-end">Shares in Circulation</th>
+                        <th class="text-end">Shares Still to Repay</th>
+                        <th class="text-end">Shares Available to Repay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assetId, assetSummary in repaymentSummary %}
+
+                        {% set sharesAvailableToRepay = shareholdings[assetId].shares - assets[assetId].amountOfShares %}
+
+                        {% if assetSummary.shares > 0  %}
+                            <tr data-asset-id="{{ assetId }}">
+                                <td>
+                                    <a class="btn btn-outline-primary" href="{{ path('admin_monthend_repayments', { id: assetId }) }}">
+                                        Review Asset Repayments
+                                    </a>
+                                </td>
+                                <td data-field="asset">
+                                    <a href="{{ path('admin_product_dashboard', { id: assetId }) }}">
+                                        #{{ assetId }} // {{ assets[assetId].name }}
+                                        ({{ assets[assetId].companyNumber }})
+                                    </a>
+                                </td>
+                                <td class="text-end tw-tabular-nums" data-field="shares-issued">{{ assets[assetId].amountOfShares }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="shares-circulating">{{ shareholdings[assetId].shares }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="shares-remaining">{{ assetSummary.shares }}</td>
+                                <td class="text-end tw-tabular-nums" data-field="shares-available">{{ sharesAvailableToRepay > 0 ? sharesAvailableToRepay : 0 }}</td>
+                            </tr>
+
+                        {% endif %}
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

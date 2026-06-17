@@ -1,0 +1,134 @@
+{% extends 'admin/layouts/trading_hub.html.twig' %}
+
+{% set baseTemplate = 'col_1' %}
+{% set areaHeading = 'Trading' %}
+{% set mainHeading = 'Asset Products' %}
+
+{% set linkDefinitions = [] %}
+
+{% for status in enum('App\\Entity\\Enum\\AssetStatus').publicCases() %}
+    {% set linkDefinitions = linkDefinitions|merge([{
+        route: status.value,
+        text: status.name,
+        isRelative: true,
+    }]) %}
+{% endfor %}
+
+{% set menuLinks = [
+    {
+        "linkDefinitions": linkDefinitions
+    },
+] %}
+
+{% block page_content %}
+
+    <div class="tw-sticky tw-top-20">
+        <nav>
+            {{ include('admin/components/_horizontal_nav.html.twig', {
+                navId: 'productStatusNav',
+                links: menuLinks,
+            }) }}
+        </nav>
+    </div>
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "acquiring",
+        "sectionTitle": "Prefunding (Acquiring)",
+        "sectionStyle": "",
+        "linkActions": [
+            {
+                "text": "Back to Top",
+                "route": "",
+                "style": "btn-outline-secondary",
+                "isRelative": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="tw-grid tw-gap-y-2 tw-gap-x-4 sm:tw-grid-cols-2 sm:tw-gap-y-4 lg:tw-grid-cols-3">
+                {% for asset in assets|filter(a => a.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Acquiring) %}
+                    {{ include('admin/components/assets/_card.html.twig', {
+                    asset: asset,
+                    sellOrders: assetInitialSellOrders[asset.id] ?? [],
+                }) }}
+                {% endfor %}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "active",
+        "sectionTitle": "Retail (Active)",
+        "sectionStyle": "",
+        "linkActions": [
+            {
+                "text": "Back to Top",
+                "route": "",
+                "style": "btn-outline-secondary",
+                "isRelative": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="tw-grid tw-gap-y-2 tw-gap-x-4 sm:tw-grid-cols-2 sm:tw-gap-y-4 lg:tw-grid-cols-3">
+                {% for asset in assets|filter(a => a.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Active) %}
+                    {{ include('admin/components/assets/_card.html.twig', {
+                    asset: asset,
+                    sellOrders: assetInitialSellOrders[asset.id] ?? [],
+                }) }}
+                {% endfor %}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "closing",
+        "sectionTitle": "Retail (Closing)",
+        "sectionStyle": "",
+        "linkActions": [
+            {
+                "text": "Back to Top",
+                "route": "",
+                "style": "btn-outline-secondary",
+                "isRelative": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="tw-grid tw-gap-y-2 tw-gap-x-4 sm:tw-grid-cols-2 sm:tw-gap-y-4 lg:tw-grid-cols-3">
+                {% for asset in assets|filter(a => a.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Closing) %}
+                    {{ include('admin/components/assets/_card.html.twig', {
+                    asset: asset,
+                    sellOrders: assetInitialSellOrders[asset.id] ?? [],
+                }) }}
+                {% endfor %}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "archived",
+        "sectionTitle": "Completed (Archived)",
+        "sectionStyle": "",
+        "linkActions": [
+            {
+                "text": "Back to Top",
+                "route": "",
+                "style": "btn-outline-secondary",
+                "isRelative": true,
+            },
+        ]
+    } %}
+        {% block sectionContent %}
+            <div class="tw-grid tw-gap-y-2 tw-gap-x-4 sm:tw-grid-cols-2 sm:tw-gap-y-4 lg:tw-grid-cols-3">
+                {% for asset in assets|filter(a => a.currentStatus == enum('App\\Entity\\Enum\\AssetStatus').Archived) %}
+                    {{ include('admin/components/assets/_card.html.twig', {
+                    asset: asset,
+                    sellOrders: assetInitialSellOrders[asset.id] ?? [],
+                }) }}
+                {% endfor %}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

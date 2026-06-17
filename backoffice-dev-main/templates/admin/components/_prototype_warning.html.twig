@@ -1,0 +1,14 @@
+<div class="col-12">
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "prototype-warning",
+        "sectionTitle": "This is a Prototype!",
+        "sectionStyle": "border rounded-3 p-4 border-warning",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "warning",
+            message: "This is a prototype for " ~ featureName ~ ". Please report any bugs and provide feedback to the tech team.",
+        }) }}
+        {% endblock %}
+    {% endembed %}
+</div>

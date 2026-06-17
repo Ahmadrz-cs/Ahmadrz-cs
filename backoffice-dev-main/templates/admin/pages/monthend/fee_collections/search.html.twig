@@ -1,0 +1,116 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{% set backToRoute = 'admin_monthend_fee_collection_manage' %}
+{% set backToRouteParams = { id: transferOrder.id } %}
+{% set areaHeading = 'Monthend - Fee Collection' %}
+{% set mainHeading = 'Setup Transfers' %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "asset-list",
+        "sectionTitle": "Assets",
+        "linkActions": [
+            {
+                "text": "Finish and Review",
+                "route": "admin_monthend_fee_collection_manage",
+                "params": {id: transferOrder.id},
+                "style": "btn-dark",
+            }
+        ]
+    } %}
+        {% block sectionContent %}
+        <div class="row g-3">
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Assets',
+                value: matchingAssets|length,
+                className: 'col-md-6'
+            }) }}
+            {{ include('admin/components/stat.html.twig', {
+                key: 'Number of Existing Transfers',
+                value: transferOrder.transfers|length,
+                className: 'col-md-6'
+            }) }}
+        </div>
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Management and relisting fees only require an amount, the other fields will be prefilled. Custom transfers will require all fields to be manually configured.",
+        }) }}
+        <table class="table table-striped datatable" id="assets-list">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Number of Existing Transfers</th>
+                    <th>Collect Fee</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in matchingAssets|default([]) %}
+                    <tr data-object-id="{{ asset.id }}">
+                        <td data-field="asset">
+                            <a href="{{ path('admin_product_dashboard', { 
+                                    id: asset.id
+                                    }) }}">#{{ asset.id }} // {{ asset.name }} ({{ asset.companyNumber }})
+                            </a>
+                            
+                        </td>
+                        <td>{{ transferOrder.transfers|filter(t => t.asset is not null and t.asset.id == asset.id)|length }}</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Management",
+                                        "route": "admin_monthend_fee_collection_add_transfer",
+                                        "params": { 
+                                            transferOrder: transferOrder.id,
+                                            asset: asset.id,
+                                            feeType: 'management',
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Relisting",
+                                        "route": "admin_monthend_fee_collection_add_transfer",
+                                        "params": { 
+                                            transferOrder: transferOrder.id,
+                                            asset: asset.id,
+                                            feeType: 'relisting',
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "YPML",
+                                        "route": "admin_monthend_fee_collection_add_transfer",
+                                        "params": { 
+                                            transferOrder: transferOrder.id,
+                                            asset: asset.id,
+                                            feeType: 'ypml',
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                                {{ include('admin/components/button_link.html.twig', {
+                                    linkProps: {
+                                        "text": "Custom",
+                                        "route": "admin_monthend_fee_collection_add_transfer",
+                                        "params": { 
+                                            transferOrder: transferOrder.id,
+                                            asset: asset.id,
+                                        },
+                                        "style": "btn-outline-dark text-nowrap",
+                                    },
+                                }) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

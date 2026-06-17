@@ -1,0 +1,108 @@
+{% set hasUserInfo = false %}
+{% set authenticated = false %}
+{% if app.session.has('authenticated') %}
+    {% set authenticated = app.session.get('authenticated') %}
+{% endif %}
+{% if app.session.has('userInfo') %}
+    {% set hasUserInfo = app.session.has('userInfo') %}
+    {% set userInfo = app.session.get('userInfo') %}
+{% endif %}
+
+
+{% extends '@AppBundle/base.html.twig' %}
+{% block title %}Transaction Export{% endblock %}
+
+
+
+{% block body %}
+   {% include('@AppBundle/Common/breadcrumb.html.twig')%}
+
+        <!-- profile detail -->
+        <section>
+            <div class="container my-2 my-md-4">
+                <div class="page-head pb-2 d-flex justify-content-between align-items-center">
+                    <h3><img src="{{asset('bundles/app/svg/')}}account_circle.svg" loading="lazy" alt=""> My Profile</h3>
+                </div>
+                <div class="row no-gutters border-top">
+                    <div class="col-md-3">
+                    {% include('@AppBundle/Common/profilenav.html.twig')%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content p-1 pt-md-4 pl-md-4 pb-md-4" id="v-pills-tabContent">
+                             <div class="transaction-history-block t-history">
+                            
+                                <div class="com-block">
+                                <a href="/" class="btn btn-sm btn-outline-primary rounded-pill go-b px-2">&#60; Go back</a>
+                                    <div class="transaction-history mt-3">
+                                        <h4>Transaction Export</h4>
+                                    </div><!-- /.transaction-history -->
+                                    <form id="filter-form" method="get" action="/transaction-history" class="property-listing filter-form">
+                                        <div>
+                                            <p class="color-dol text-sm">If no date range is provided, the last 10 transactions will be returned.</p>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="startdate">Date start <small>(YYYY-MM-DD)</small></label>
+                                                    <div class='input-group date' id='startdate'>
+                                                        <input type='text' id="transactions-from" name="start" class="form-control" />
+                                                        <span class="input-group-addon d-flex justify-content-center align-items-center">
+                                                            <img src="{{asset('bundles/app/svg/')}}calendar.svg" loading="lazy" alt="">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class='col-md-6'>
+                                                <div class="form-group">
+                                                    <label for="startdate">Date end <small>(YYYY-MM-DD)</small></label>
+                                                    <div class='input-group date' id='enddate'>
+                                                        <input type='text' id="transactions-until" name="end" class="form-control" />
+                                                        <span class="input-group-addon d-flex justify-content-center align-items-center">
+                                                            <img src="{{asset('bundles/app/svg/')}}calendar.svg" loading="lazy" alt="">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="color-dol text-sm">Note there is a limit of 1000 transactions per export.</p>
+                                            <button class="btn btn-primary px-2 rounded-pill" id="transaction-download">Download Transactions</button>
+                                        </div>
+                                    </form>
+                                </div>
+                           
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+   
+    
+   
+{% endblock %}
+
+{% block pagejs %}
+    <script type="text/javascript" src="{{ asset('bundles/app/js/moment/moment-with-locales.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/app/js/bootstrap-datetimepicker.js') }}"></script>
+    <script type="text/javascript">           
+        $(function () {
+            $('#startdate').datetimepicker({
+                locale: 'en-GB',
+                format: 'YYYY-MM-DD'
+            });
+            $('#enddate').datetimepicker({
+                locale: 'en-GB',
+                format: 'YYYY-MM-DD',
+                useCurrent: false //Important! See issue #1075
+            });
+            $("#startdate").on("dp.change", function (e) {
+                $('#enddate').data("DateTimePicker").minDate(e.date);
+            });
+            $("#enddate").on("dp.change", function (e) {
+                $('#startdate').data("DateTimePicker").maxDate(e.date);
+            });
+        });
+    </script>
+{% endblock%}

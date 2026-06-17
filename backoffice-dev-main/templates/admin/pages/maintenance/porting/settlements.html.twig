@@ -1,0 +1,66 @@
+{% extends 'admin/layouts/col_1_fluid.html.twig' %}
+
+{% set backToRoute = 'admin_trade_system_porting_index' %}
+{% set areaHeading = 'Trade System Porting Tools' %}
+{% set mainHeading = 'Port Settlements' %}
+{% set maturityLabel = 'alpha' %}
+
+{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+
+{% block page_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "port-settlements",
+        "sectionTitle": "Port Settlements",
+    } %}
+        {% block sectionContent %}
+
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            title: "What is this tool for?",
+            message: "Settlement order requests have an investment relation. This tool adds a share trade relation based on the investment relation. This relies on the investment itself having been ported to have a share trade relation.
+            
+            The status of the settlement request does not matter, as the relation is purely referential and not used to derive any status info or aggregate.
+            
+            Once ported, a 'View Share Trade' link will be available on the updated settlement orders.",
+        }) }}
+        
+        {{ form_start(form) }}
+        {{ form_row(form.port) }}
+        {{ form_end(form) }}
+
+        {{ include('admin/components/_kv_table.html.twig', {
+            tableId: "aggregate-info",
+            title: "Aggregate Summary",
+            valueDefaultStyle: "tw-font-mono",
+            kv: {
+                "Settlement Orders Count": settlementOrderCounts|length|number_format,
+                "Requests w/ Investment Relation": settlementOrderCounts|reduce((carry, v) => carry + v.count)|number_format,
+                "Requests w/ Share Trade Relation": settlementOrderCounts|reduce((carry, v) => carry + v.hasShareTrade)|number_format,
+            }
+        }) }}
+
+        <table class="table table-bordered table-striped-columns" id="settlement-order-summary">
+            <thead>
+                <tr>
+                    <th>Transfer order Id</th>
+                    <th>Transfer Order Type</th>
+                    <th>Count Transfer</th>
+                    <th>Count w/ Share Trade </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in settlementOrderCounts %}
+                <tr>
+                    <td><a href="{{ path('admin_monthend_settlement_manage', { id: entry.id }) }}">#{{ entry.id }}</a></td>
+                    <td>{{ entry.transferType }}</td>
+                    <td>{{ entry.count }}</td>
+                    <td>{{ entry.hasShareTrade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    {% endembed %}
+
+{% endblock page_content %}

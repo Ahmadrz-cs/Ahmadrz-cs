@@ -1,0 +1,41 @@
+{% extends 'admin/layouts/kyc.html.twig' %}
+
+{% set mainHeading = 'Onboarding' %}
+
+{% block dashboard_content %}
+
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "notice",
+        title: "Users without KYC Profile (Legacy users)",
+        message: "These are existing users who submitted their onboarding information before the new KYC tracking system was introduced. These users may already be KYC verified, but you can still retrospectively perform a manual KYC review on them.",
+    }) }}
+
+    {{ include('admin/pages/users/_list_w_filters.html.twig', {
+        options: {
+            tableId: "kyc-user-list",
+            showLinks: true,
+            showPresets: true,
+            showFilters: true,
+            kycOnlyPresets: true,
+            onboardingOnlyPresets: true,
+            actions: [
+                {
+                    "text": "Review",
+                    "route": "admin_kyc_onboarding_review",
+                    "params": {},
+                    "style": "btn-outline-primary",
+                },
+            ],
+            showFields: [
+                'contactEmail',
+                'name',
+                'createdAt',
+                'lastLogin',
+                'userType',
+                'status',
+                'kycStatus',
+            ],
+        },
+        
+    }) }}
+{% endblock dashboard_content %}

@@ -1,0 +1,29 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+
+{% set defaultBackToRoute = app.session.get('questionBuilderMode') ? 'admin_onboarding_assessment_questions' : 'admin_question_index' %}
+
+{% set backToRoute = backToRoute|default(defaultBackToRoute) %}
+{% set areaHeading = 'Questions' %}
+{% set mainHeading = mainHeading|default('New Question') %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'cms' %}
+
+{% block formContents %}
+    <section class="row">
+        <div class="col-md-6">{{ form_row(form.questionType) }}</div>
+        <div class="col-md-6">{{ form_row(form.section) }}</div>
+        <div class="col-12">{{ form_row(form.content) }}</div>
+        <div class="col-md-6">
+            <label class="card card-body bg-light shadow-none border mb-3">
+                {{ form_widget(form.active) }}
+                <span class="">{{ form_help(form.active) }}</span>
+            </label>
+        </div>
+    </section>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success" id="submit" type="submit">Create Question</button>
+    <a class="btn btn-outline-secondary" href="{{ path(defaultBackToRoute) }}">Cancel</a>
+{% endblock %}

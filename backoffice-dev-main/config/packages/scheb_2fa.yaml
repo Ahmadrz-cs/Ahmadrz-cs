@@ -1,0 +1,25 @@
+# See the configuration reference at https://symfony.com/bundles/SchebTwoFactorBundle/5.x/configuration.html
+scheb_two_factor:
+    security_tokens:
+        - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
+        # If you're using guard-based authentication, you have to use this one:
+        # - Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken
+        # If you're using authenticator-based security (introduced in Symfony 5.1), you have to use this one:
+        - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
+    email:
+        enabled: true
+        mailer: App\Service\MailerService
+        sender_email: "noreply@yielders.co.uk"
+        sender_name: Yielders
+        digits: 6
+        template: security/mfa-email-login.html.twig
+    totp:
+        enabled: true # If TOTP authentication should be enabled, default false
+        server_name: backoffice # Server name used in QR code
+        issuer: Yielders # Issuer name used in QR code
+        leeway: 20 # How many seconds before/after the current one would be accepted as valid
+        template: security/mfa-totp-login.html.twig # app/Resources/views/Authentication/mfa-login.html.twig
+    trusted_device:
+        enabled: true
+        lifetime: 1209600 # 14 days
+        extend_lifetime: false

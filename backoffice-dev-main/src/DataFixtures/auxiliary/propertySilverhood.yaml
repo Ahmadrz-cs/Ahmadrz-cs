@@ -1,0 +1,75 @@
+# This is Silverhood Down
+# Unique trait - double digit capital appreciation, ready for launch to retail
+
+include:
+    - ../templates/baseAsset.yaml
+    - ../templates/baseOffering.yaml
+    - ../templates/baseDocument.yaml
+
+App\Entity\Asset:
+    asset{silverhood} (extends asset_base):
+        name: Silverhood Down - Brighton
+        alternateName: 24 Silverhood Down
+        briefDescription: Comfy 3 bedroom house in the popular coastal town, Brighton.
+        pricePerShare: 1.89
+        amountOfShares: 100000
+        netProjectedYield: '0.0585'
+        netProjectedIncome: '11056'
+        minimumInvestment: '125'
+        companyNumber: SPVAF00010
+        termStart: "@self->createdAt"
+
+App\Entity\AssetAddress:
+    assetaddress{silverhood} (extends assetaddress_base):
+        address1: Silverhood Down - Brighton
+        address2: 24 Silverhood Down
+        city: Brighton
+        postCode: BN5 1GT
+        longitude: -0.157922
+        latitude: 50.834171
+
+App\Entity\AssetMember:
+    assetmember{silverhood} (extends assetmember_base):
+
+App\Entity\AssetDocuments:
+    assetdoc{silverhood_aoa, silverhood_im}:
+        asset: "@assetsilverhood"
+        document: "@doc<current()>"
+    assetdoc{silverhood_logo}:
+        asset: "@assetsilverhood"
+        document: "@doc<current()>"
+    assetgallerysilverhood{1}:
+        asset: "@assetsilverhood"
+        document: "@gallerysilverhood<current()>" 
+    assetdoc{silverhood_calc}:
+        asset: "@assetsilverhood"
+        document: "@doc<current()>"
+
+App\Entity\Offering:
+    offering{silverhood} (extends offering_base):
+        asset: "@asset<current()>"
+        name: "@asset<current()>->name"
+        pricePerShare: "@asset<current()>->pricePerShare"
+        noOfShares: "@asset<current()>->amountOfShares"
+        netRentProjected: 5.85
+        grossProjectReturn: 42.26
+        lifecyclestatus: "approved"
+
+App\Entity\OfferingDocuments:
+    offeringdoc{silverhood_calc}:
+        offering: "@offeringsilverhood"
+        document: "@doc<current()>"
+
+App\Entity\Document:
+    doc{silverhood_aoa} (extends doc_aoa):
+    doc{silverhood_im} (extends doc_im):
+    doc{silverhood_logo} (extends doc_logo):
+        description: "Suburban bungalow"
+        filename: "brightonstock.jpg"
+    doc{silverhood_calc} (extends doc_calculations):
+    gallerysilverhood{1} (extends doc_property_photo):
+        description: "Example property document"
+
+App\Entity\AssetStatusLog:
+    assetstatuslog_retail_{silverhood} (extends assetstatuslog_base):
+        status: <(App\Entity\Enum\AssetStatus::Draft)>

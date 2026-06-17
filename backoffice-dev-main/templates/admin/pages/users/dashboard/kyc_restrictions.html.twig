@@ -1,0 +1,29 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = 'admin_bank_account_manage' %}
+{% set backToRouteParams = {id: user.id} %}
+{% set mainHeading = 'KYC - Account Restrictions' %}
+{% set baseTemplate = 'user_dashboard' %}
+
+{% block notices %}
+{{ include('admin/components/_alert.html.twig', {
+    variant: "info",
+    title: "Only Affects Verified Users",
+    message: "Unverified users are already blocked from all actions, so these overrides have no additional effect on them.
+    Verified users will by default have access to all actions (buy, sell, deposit, withdraw). This form allows you to individually disable actions for verified users.",
+}) }}
+{% endblock %}
+
+{# Configure page blocks #}
+{% block formContents %}
+    {{ form_row(form.buyRestricted) }}
+    {{ form_row(form.sellRestricted) }}
+    {{ form_row(form.depositRestricted) }}
+    {{ form_row(form.withdrawRestricted) }}
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-primary" id="submit" type="submit">Save Changes</button>
+    <a class="btn btn-outline-secondary"
+        href="{{ path('admin_user_dashboard_kyc', { id: user.id }) }}">Discard Changes</a>
+{% endblock %}

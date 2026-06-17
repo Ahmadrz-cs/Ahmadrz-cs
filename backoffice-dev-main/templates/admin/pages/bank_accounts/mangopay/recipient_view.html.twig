@@ -1,0 +1,152 @@
+{% extends 'admin/layouts/col_1.html.twig' %}
+
+{# {% set backToRoute = 'admin_webhooks_mangopay_index' %} #}
+{% set areaHeading = 'Bank Accounts' %}
+{% set mainHeading = 'Mangopay Recipient' %}
+{% set maturityLabel = 'alpha' %}
+
+{% set statusToColor = {
+    'ACTIVE': 'green',
+    'PENDING': 'gray',
+    'CANCELED': 'yellow',
+    'DEACTIVATED': 'red',
+} %}
+
+
+{% block page_content %}
+
+<div class="d-grid lg:tw-grid-cols-2 gap-3">
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'recipient-outline',
+        "sectionTitle": 'Outline',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Recipient Id',
+                    value: recipient.Id,
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'User Id',
+                    value: recipient.UserId,
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Tag/Description',
+                    value: recipient.Tag,
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-3 p-3 tw-text-sm',
+                }) }}
+            </div>
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Status',
+                    value: recipient.Status|capitalize,
+                    indicator: statusToColor[recipient.Status]|default('gray'),
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Created At',
+                    value: recipient.CreationDate|date('Y-m-d H:i:s'),
+                    className: 'col-md-6',
+                }) }}
+            </div>
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Pending User Action',
+                    value: recipient.PendingUserAction|json_encode,
+                    className: 'col-12',
+                    valueClassName: 'bg-light rounded-3 p-3 tw-text-sm',
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'recipient-account-details',
+        "sectionTitle": 'Account Details',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Display Name',
+                    value: recipient.DisplayName|default("N/A"),
+                    className: 'col-12',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Country',
+                    value: recipient.Country,
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Currency',
+                    value: recipient.Currency,
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Payout Method',
+                    value: recipient.PayoutMethodType,
+                    className: 'col-md-6',
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Recipient Type',
+                    value: recipient.RecipientType,
+                    className: 'col-md-6',
+                }) }}
+            </div>
+            <section>
+                {% if recipient.PayoutMethodType == "LocalBankTransfer" %}
+                    {% set accountDetails = recipient.LocalBankTransfer %}
+                {% elseif recipient.PayoutMethodType == "InternationalBankTransfer" %}
+                    {% set accountDetails = recipient.InternationalBankTransfer  %}
+                {% else %}
+                    {% set accountDetails = ["N/A"] %}
+                {% endif %}
+                <h4 class="fw-bold fs-5">Account Details</h4>
+                <pre>{{ accountDetails|json_encode(constant('JSON_PRETTY_PRINT'))  }}</pre>
+            </section>
+        {% endblock %}
+    {% endembed %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": 'recipient-identity',
+        "sectionTitle": 'Identity',
+        "linkActions": []
+    } %}
+        {% block sectionContent %}
+        {% set identityInfo = recipient.RecipientType == "Business" ? recipient.BusinessRecipient : recipient.IndividualRecipient %}
+            <div class="row g-3">
+                {% if recipient.RecipientType == "Business" %}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Account Holder Name',
+                        value: identityInfo.BusinessName,
+                        className: 'col-12',
+                    }) }}
+                {% else %}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Account Holder First Name',
+                        value: identityInfo.FirstName,
+                        className: 'col-md-6',
+                    }) }}
+                    {{ include('admin/components/stat.html.twig', {
+                        key: 'Account Holder Last Name',
+                        value: identityInfo.LastName,
+                        className: 'col-md-6',
+                    }) }}
+                {% endif %}
+                
+                <section>
+                    <h4 class="fw-bold fs-5">Address</h4>
+                    <pre>{{ identityInfo.Address|json_encode(constant('JSON_PRETTY_PRINT'))  }}</pre>
+                </section>
+            </div>
+        {% endblock %}
+    {% endembed %}
+
+</div>
+
+{% endblock page_content %}

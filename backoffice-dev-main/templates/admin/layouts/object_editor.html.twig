@@ -1,0 +1,23 @@
+{% extends 'admin/layouts/' ~ baseTemplate|default('col_1') ~'.html.twig' %}
+
+{% if form_theme_preference is defined %}
+	{% form_theme form with form_theme_preference only %}
+{% else %}
+	{% form_theme form with ['bootstrap_5_layout.html.twig'] only %}
+{% endif %}
+
+{% block page_content %}
+	<section class="d-flex flex-column gap-4">
+		{% block notices %}{% endblock %}
+		{% block objectMeta %}{% endblock %}
+		{{ form_start(form) }}
+		<div class="d-flex flex-column gap-3">
+		{% block formContents %}{% endblock %}
+		</div>
+		{{ form_rest(form) }}
+		<section class="d-flex flex-wrap gap-2">
+			{% block formSubmit %}{% endblock %}
+		</section>
+		{{ form_end(form) }}
+	</section>
+{% endblock page_content %}

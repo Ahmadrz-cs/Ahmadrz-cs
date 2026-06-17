@@ -1,0 +1,4 @@
+# This is the release number. Update before creating a release branch
+parameters:
+    app.version: 3.22.0.0
+

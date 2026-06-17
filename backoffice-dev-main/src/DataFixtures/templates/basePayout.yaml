@@ -1,0 +1,12 @@
+App\Entity\Payout:
+    payout_base (template):
+        # investment:
+        currency: GBP
+        payoutType: 0
+        dueDate: "<dateTime('first day of this month')>"
+        createdBy: "@userA1"
+        # payout ought to be calculated from source objects, but seems to be broken in Alice at the moment
+        # payoutAmount: <(@offeringlodge->netRentProjected * @investmentben_lodge1->investmentValue / 1200)>
+        payoutAmount: 1 # customise this
+        transactionId: "88821408"
+        createdAt: "$dueDate"

@@ -1,0 +1,5 @@
+# This file is a "template" of what your parameters.yml file should look lik
+parameters:
+  logentries_token: 9071bb55-d93e-39b2-81cd-48a2ae103c9e
+  #recaptcha_site_key: '6Lfgxx0TAAAAALR_cYf3WojR0yuGyl_e8gxrMVzI'
+  #recaptcha_secret_key: '6Lfgxx0TAAAAAH81c9IktSS3bBztFqh4W8hq_SnD'

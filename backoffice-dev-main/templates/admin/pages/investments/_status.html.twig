@@ -1,0 +1,11 @@
+{% if investment.lifecyclestatus %}
+    {% if investment.lifecyclestatus == 'rejected' %}
+        <span class="badge text-bg-warning">{{ investment.lifecyclestatus }}</span>
+    {% elseif investment.lifecyclestatus == 'withdrawn' %}
+        <span class="badge text-bg-danger">{{ investment.lifecyclestatus }}</span>
+    {% else %}
+        <span class="badge text-bg-success">{{ investment.lifecyclestatus }}</span>
+    {% endif %}
+{% else %}
+    <span class="badge text-bg-warning">Unknown</span>
+{% endif %}

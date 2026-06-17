@@ -1,0 +1,67 @@
+{% extends 'admin/pages/products/editor/_editor.html.twig' %}
+
+{% block editor_content %}
+
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "wallets",
+        "sectionTitle": "Wallets",
+        "sectionStyle": "pb-3",
+    } %}
+        {% block sectionContent %}
+        {{ include('admin/components/_alert.html.twig', {
+            variant: "info",
+            message: "Only the Hold and Settlement (aka Main/Actual) wallets are required for classic functionality. Additional wallets are optional and only required for the split wallet system.",
+        }) }}
+        {{ form_start(form, {attr: {class: "d-flex flex-column gap-3"}}) }}
+        <div class="row ">
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.holdWalletId) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.settlementWalletId) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.depositWalletId) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.expensesWalletId) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.taxWalletId) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.distributionWalletId) }}</div>
+            <div class="col-sm-6 col-md-4 col-xl-3">{{ form_row(form.treasuryWalletId) }}</div>
+        </div>
+        <div class="">
+            {% set redirectParams = { 
+                'asset': asset.id,
+                'redirectRoute': 'admin_product_dashboard',
+                'redirectId': asset.id 
+            } %}
+            {% if app.request.query.get('setup') %}
+                {% set setupFlow = constant('App\\Controller\\Admin\\ProductEditorController::SETUP_FLOW') %}
+                {% set redirectParams = { 
+                    'asset': asset.id,
+                    'redirectRoute': setupFlow[app.request.attributes.get('_route')]|default('admin_product_dashboard'),
+                    'redirectId': asset.id,
+                    'setup': 1
+                } %}
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2">
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": "Auto-generate Missing Hold and Main Wallets",
+                        "route": "admin_asset_wallets_create_all",
+                        "params": redirectParams|merge({"onlyMinimum": true}),
+                        "style": "btn-success text-nowrap",
+                    },
+                }) }}
+                {{ include('admin/pages/products/editor/_editor_form_actions.html.twig', {
+                    routeParams: {id: asset.id},
+                    wrapActions: false
+                }) }}
+                {{ include('admin/components/button_link.html.twig', {
+                    linkProps: {
+                        "text": "Auto-generate All Missing Wallets",
+                        "route": "admin_asset_wallets_create_all",
+                        "params": redirectParams,
+                        "style": "btn-outline-success text-nowrap",
+                    },
+                }) }}
+            </div>
+        </div>
+        {{ form_end(form) }}
+        {% endblock %}
+    {% endembed %}
+
+{% endblock editor_content %}

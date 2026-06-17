@@ -1,0 +1,87 @@
+{% extends 'admin/layouts/object_editor.html.twig' %}
+
+{% set backToRoute = redirectRoute %}
+{% set backToRouteParams = {'id': redirectToId} %}
+{% set areaHeading = parentEntityName %}
+{% set mainHeading = mainHeading|default('Create ' ~ parentEntityName ~ ' Status Log') %}
+{% set maturityLabel = 'beta' %}
+{% set baseTemplate = 'col_2_med_left' %}
+
+{% block notices %}
+    {{ include('admin/components/_alert.html.twig', {
+        variant: "info",
+        title: "How Status Logs Work",
+        message: "Records using the status logs system keep track of status changes over time. The most recently 'occuredAt' status represents the current status.
+        
+        To update the status of an record, add a new status log with a more recent 'occuredAt' time. You can retrospectively changed the 'occuredAt' and notes on a status log to fix old or incorrect logs, but not the status itself.",
+    }) }}
+{% endblock %}
+
+{% block side_content %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "status-log-records",
+        "sectionTitle": "Status Log Records" ,
+    } %}
+        {% block sectionContent %}
+            <div class="row g-3">
+                {{ include('admin/components/stat.html.twig', {
+                    key: parentEntityName ~ ' Id',
+                    value: parentEntity.id,
+                    className: "col-md-6",
+                }) }}
+                {{ include('admin/components/stat.html.twig', {
+                    key: 'Current Status',
+                    value: parentEntity.status.value|capitalize,
+                    className: "col-md-6",
+                }) }}
+            </div>
+            {{ include('admin/components/_status_logs_table.html.twig', {
+                mini: true,
+                statusLogs: parentEntity.statusLogs,
+                statusToColor: {
+                    'draft': 'gray',
+                    'submitted': 'yellow',
+                    'active': 'blue',
+                    'reserved': 'yellow',
+                    'unsettled': 'blue',
+                    'settled': 'green',
+                    'completed': 'green',
+                    'suspended': 'yellow',
+                    'cancelled': 'red',
+                }
+            }) }}
+        {% endblock %}
+    {% endembed %}
+{% endblock side_content %}
+
+{% block objectMeta %}
+    {% embed 'admin/components/_bordered_section.html.twig' with {
+        "sectionId": "entity-metadata",
+        "sectionTitle": "About Status Log" ,
+    } %}
+        {% block sectionContent %}
+            {{ include('admin/components/_kv_table.html.twig', {
+                tableId: tableId|default("metadata-info"),
+                valueDefaultStyle: "tw-font-mono",
+                kv: {
+                    "Parent Identifier": parentEntityIdentifier|default(parentEntity.id ~ ' (' ~ parentEntityName ~ ')'),
+                    "Status Log Id": statusLog.id ? statusLog.id : 'Available after creation',
+                    "Transitioned By": statusLog.transitionedBy.userIdentifier|default('System')
+                }
+            }) }}
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block formContents %}
+    <div class="row">
+        <div class="col-md-6">{{ form_row(form.status) }}</div>
+        <div class="col-md-6">{{ form_row(form.occuredAt) }}</div>
+        <div class="col-12">{{ form_row(form.notes) }}</div>
+    </div>
+{% endblock %}
+
+{% block formSubmit %}
+    <button class="btn btn-success text-nowrap" id="submit" type="submit">Create {{ parentEntityName }} Status Log</button>
+    <a class="btn btn-outline-secondary text-nowrap" href="{{ path(redirectRoute, {'id': redirectToId}) }}">Abandon</a>
+{% endblock %}
